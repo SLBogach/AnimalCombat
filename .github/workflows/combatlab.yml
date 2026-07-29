@@ -1,0 +1,46 @@
+name: CombatLab
+
+on:
+  push:
+    paths:
+      - "CombatLab/**"
+      - ".github/workflows/combatlab.yml"
+  pull_request:
+    paths:
+      - "CombatLab/**"
+      - ".github/workflows/combatlab.yml"
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+
+    defaults:
+      run:
+        working-directory: CombatLab
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: CombatLab/global.json
+          cache: true
+          cache-dependency-path: CombatLab/**/packages.lock.json
+
+      - name: Restore locked packages
+        run: dotnet restore CombatLab.sln --locked-mode
+
+      - name: Build
+        run: dotnet build CombatLab.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test CombatLab.sln --configuration Release --no-build --no-restore

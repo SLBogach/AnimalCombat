@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/combat/event/0.1/combat-event.schema.json",
+  "title": "Combat Event Schema v0.1",
+  "description": "Standalone entry point for one canonical event.",
+  "$ref": "https://schemas.example.invalid/combat/replay/0.1/combat-replay.schema.json#/$defs/event"
+}

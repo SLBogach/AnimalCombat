@@ -1,0 +1,1821 @@
+{
+  "schema_version": "combat.replay/0.1",
+  "replay_id": "replay-schema-fixture-0001",
+  "battle_id": "battle-schema-fixture-0001",
+  "profile": "diagnostic",
+  "engine": {
+    "engine_version": "battle.core/0.1.0",
+    "rng_version": "pcg32/1",
+    "ordering_version": "tick-pipeline/1"
+  },
+  "config": {
+    "balance_schema_version": "combat.balance/0.1",
+    "config_version": "v0.1",
+    "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064"
+  },
+  "input": {
+    "master_seed": "2026072901",
+    "mode_rules_id": "schema_fixture_v01",
+    "arena": {
+      "arena_id": "combat_lab_arena",
+      "min_position": 0,
+      "max_position": 10000,
+      "start_position_a": 2000,
+      "start_position_b": 3000
+    },
+    "fighters": [
+      {
+        "fighter_id": "fighter_a",
+        "side": "A",
+        "animal_id": "bear",
+        "build_id": "build_bear_default",
+        "special_action_ids": [
+          "bear_earthbreaker",
+          "bear_rampage_charge"
+        ],
+        "passive_id": "bear_thick_hide",
+        "gear": {
+          "offense": "gear_offense_power_wraps",
+          "defense": "gear_defense_reinforced_hide",
+          "utility": "gear_utility_energy_cell"
+        },
+        "tactic_id": "tactic_pressure",
+        "initial_frame": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        }
+      },
+      {
+        "fighter_id": "fighter_b",
+        "side": "B",
+        "animal_id": "kangaroo",
+        "build_id": "build_kangaroo_default",
+        "special_action_ids": [
+          "kangaroo_flying_kick",
+          "kangaroo_tail_counter"
+        ],
+        "passive_id": "kangaroo_never_still",
+        "gear": {
+          "offense": "gear_offense_precision_lens",
+          "defense": "gear_defense_vital_harness",
+          "utility": "gear_utility_sprint_soles"
+        },
+        "tactic_id": "tactic_position",
+        "initial_frame": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      }
+    ]
+  },
+  "summary": {
+    "outcome": "FighterAWin",
+    "winner_fighter_id": "fighter_a",
+    "end_reason": "Defeat",
+    "end_tick": 3,
+    "duration_ticks": 3,
+    "event_count": 13,
+    "pivotal_event_ids": [
+      "evt-0000000007",
+      "evt-0000000009"
+    ],
+    "final_frames": [
+      {
+        "fighter_id": "fighter_a",
+        "position": 2000,
+        "facing": "Right",
+        "state": "AttackActive",
+        "state_ticks_remaining": 1,
+        "action_id": "bear_paw_jab",
+        "action_phase": "Active",
+        "health": 1650,
+        "max_health": 1650,
+        "energy": 1000,
+        "max_energy": 1000,
+        "unique_resource": {
+          "resource_id": "rage",
+          "value": 0,
+          "max": 1000
+        },
+        "stagger": 0,
+        "stagger_threshold": 260,
+        "effects": []
+      },
+      {
+        "fighter_id": "fighter_b",
+        "position": 3000,
+        "facing": "Left",
+        "state": "Defeated",
+        "state_ticks_remaining": null,
+        "action_id": null,
+        "action_phase": null,
+        "health": 0,
+        "max_health": 1150,
+        "energy": 1000,
+        "max_energy": 1000,
+        "unique_resource": {
+          "resource_id": "tempo",
+          "value": 0,
+          "max": 1000
+        },
+        "stagger": 0,
+        "stagger_threshold": 180,
+        "effects": []
+      }
+    ]
+  },
+  "keyframes": [
+    {
+      "tick": 0,
+      "after_sequence": 0,
+      "scope": "public_playback",
+      "fighters": [
+        {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      ],
+      "active_grab_id": null,
+      "state_digest": "sha256:a5b2642d36dbd5514893cfe3e55b705196a052aa7dc8b24da9dd42255c2639b9"
+    },
+    {
+      "tick": 3,
+      "after_sequence": 12,
+      "scope": "public_playback",
+      "fighters": [
+        {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Defeated",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 0,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      ],
+      "active_grab_id": null,
+      "state_digest": "sha256:4e64855179860635d72aab284128657a6ad6364d1ecc84f721d58bb18c0cbeef"
+    }
+  ],
+  "events": [
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 0,
+      "sequence": 0,
+      "event_id": "evt-0000000000",
+      "source_event_id": null,
+      "event_type": "BattleStarted",
+      "actor_id": null,
+      "target_id": null,
+      "action_id": null,
+      "effect_id": null,
+      "decision_id": null,
+      "resolution_group_id": null,
+      "reason_codes": [],
+      "rng": null,
+      "before": {
+        "actor": null,
+        "target": null
+      },
+      "after": {
+        "actor": null,
+        "target": null
+      },
+      "payload": {
+        "related_event_ids": [],
+        "input_digest": "sha256:26bd0244bada8360818da1de29c926c09ae1f2e31915654c5e86fd954b2cca5b",
+        "initial_frames": [
+          {
+            "fighter_id": "fighter_a",
+            "position": 2000,
+            "facing": "Right",
+            "state": "DecisionReady",
+            "state_ticks_remaining": null,
+            "action_id": null,
+            "action_phase": null,
+            "health": 1650,
+            "max_health": 1650,
+            "energy": 1000,
+            "max_energy": 1000,
+            "unique_resource": {
+              "resource_id": "rage",
+              "value": 0,
+              "max": 1000
+            },
+            "stagger": 0,
+            "stagger_threshold": 260,
+            "effects": []
+          },
+          {
+            "fighter_id": "fighter_b",
+            "position": 3000,
+            "facing": "Left",
+            "state": "DecisionReady",
+            "state_ticks_remaining": null,
+            "action_id": null,
+            "action_phase": null,
+            "health": 70,
+            "max_health": 1150,
+            "energy": 1000,
+            "max_energy": 1000,
+            "unique_resource": {
+              "resource_id": "tempo",
+              "value": 0,
+              "max": 1000
+            },
+            "stagger": 0,
+            "stagger_threshold": 180,
+            "effects": []
+          }
+        ],
+        "initiative_order": [
+          "fighter_b",
+          "fighter_a"
+        ],
+        "initiative_tie_break": "StatThenSeededHash"
+      },
+      "integrity": {
+        "prev_digest": "sha256:26bd0244bada8360818da1de29c926c09ae1f2e31915654c5e86fd954b2cca5b",
+        "event_digest": "sha256:094151775898f6de0d93b233b7a4a12569ed4e82cdcc2d347c090c47552fa40f"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 0,
+      "sequence": 1,
+      "event_id": "evt-0000000001",
+      "source_event_id": "evt-0000000000",
+      "event_type": "DecisionMade",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": null,
+      "reason_codes": [
+        "PreferredRange",
+        "TacticBias"
+      ],
+      "rng": {
+        "stream": "Decision",
+        "index": "0",
+        "operation": "NextInt",
+        "range_min_inclusive": 0,
+        "range_max_exclusive": 1150,
+        "raw_u32": "123456789",
+        "result": 700,
+        "normalized_fp": 608
+      },
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "chosen_action_id": "bear_paw_jab",
+        "legal_action_ids": [
+          "bear_paw_jab",
+          "sys_wait"
+        ],
+        "candidate_count": 2,
+        "chosen_weight": 1000,
+        "weight_sum": 1150,
+        "selection_mode": "WeightedRng",
+        "dominant_modifiers": [
+          {
+            "code": "PreferredRange",
+            "multiplier_fp": 1250
+          },
+          {
+            "code": "TacticBias",
+            "multiplier_fp": 1150
+          }
+        ]
+      },
+      "integrity": {
+        "prev_digest": "sha256:094151775898f6de0d93b233b7a4a12569ed4e82cdcc2d347c090c47552fa40f",
+        "event_digest": "sha256:c458f657c57b844e63a42d78baf3eeeee98c4f4522e84a9658939e10705e336b"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 0,
+      "sequence": 2,
+      "event_id": "evt-0000000002",
+      "source_event_id": "evt-0000000000",
+      "event_type": "DecisionMade",
+      "actor_id": "fighter_b",
+      "target_id": "fighter_a",
+      "action_id": "sys_wait",
+      "effect_id": null,
+      "decision_id": "dec-fighter_b-000001",
+      "resolution_group_id": null,
+      "reason_codes": [
+        "OnlyLegalAction"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "chosen_action_id": "sys_wait",
+        "legal_action_ids": [
+          "sys_wait"
+        ],
+        "candidate_count": 1,
+        "chosen_weight": 150,
+        "weight_sum": 150,
+        "selection_mode": "OnlyLegalAction",
+        "dominant_modifiers": []
+      },
+      "integrity": {
+        "prev_digest": "sha256:c458f657c57b844e63a42d78baf3eeeee98c4f4522e84a9658939e10705e336b",
+        "event_digest": "sha256:1033e185300b7ec100a5e3e6ffac7c37292fe0c176508446a2894e05548f5fd5"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 0,
+      "sequence": 3,
+      "event_id": "evt-0000000003",
+      "source_event_id": "evt-0000000001",
+      "event_type": "ActionCommitted",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": null,
+      "reason_codes": [
+        "ActionLegal"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackPrepare",
+          "state_ticks_remaining": 3,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Startup",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "target_fighter_id": "fighter_b",
+        "energy_cost": 0,
+        "resource_cost": 0,
+        "startup_ticks": 3,
+        "active_ticks": 1,
+        "recovery_ticks": 5,
+        "cooldown_ticks": 0,
+        "commit_direction": "Right",
+        "target_position_at_commit": 3000
+      },
+      "integrity": {
+        "prev_digest": "sha256:1033e185300b7ec100a5e3e6ffac7c37292fe0c176508446a2894e05548f5fd5",
+        "event_digest": "sha256:b963560e0e33797fc79d5b435e1744533e81cd157a2dfc643b86f81a56954638"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 0,
+      "sequence": 4,
+      "event_id": "evt-0000000004",
+      "source_event_id": "evt-0000000003",
+      "event_type": "AttackPrepared",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": null,
+      "reason_codes": [
+        "TelegraphVisible"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackPrepare",
+          "state_ticks_remaining": 3,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Startup",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackPrepare",
+          "state_ticks_remaining": 3,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Startup",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "telegraph_tick": 0,
+        "impact_ticks": [
+          3
+        ],
+        "direction_locked": true,
+        "target_fighter_id": "fighter_b"
+      },
+      "integrity": {
+        "prev_digest": "sha256:b963560e0e33797fc79d5b435e1744533e81cd157a2dfc643b86f81a56954638",
+        "event_digest": "sha256:269c6727bf18214d1bd8a4917357b4f9d8c657183f9fea027dd0ac3dade9416c"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 0,
+      "sequence": 5,
+      "event_id": "evt-0000000005",
+      "source_event_id": "evt-0000000002",
+      "event_type": "ActionCommitted",
+      "actor_id": "fighter_b",
+      "target_id": "fighter_a",
+      "action_id": "sys_wait",
+      "effect_id": null,
+      "decision_id": "dec-fighter_b-000001",
+      "resolution_group_id": null,
+      "reason_codes": [
+        "OnlyLegalAction"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "DecisionReady",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackPrepare",
+          "state_ticks_remaining": 3,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Startup",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackPrepare",
+          "state_ticks_remaining": 3,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Startup",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "target_fighter_id": "fighter_a",
+        "energy_cost": 0,
+        "resource_cost": 0,
+        "startup_ticks": 0,
+        "active_ticks": 0,
+        "recovery_ticks": 5,
+        "cooldown_ticks": 0,
+        "commit_direction": "None",
+        "target_position_at_commit": 2000
+      },
+      "integrity": {
+        "prev_digest": "sha256:269c6727bf18214d1bd8a4917357b4f9d8c657183f9fea027dd0ac3dade9416c",
+        "event_digest": "sha256:a63f56fb32047d143597a9fbc1b8a520a76f53e39cbaa91312e725ec7c9f04ac"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 6,
+      "event_id": "evt-0000000006",
+      "source_event_id": "evt-0000000004",
+      "event_type": "ActionPhaseChanged",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": null,
+      "reason_codes": [
+        "StartupComplete"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackPrepare",
+          "state_ticks_remaining": 3,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Startup",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "from_phase": "Startup",
+        "to_phase": "Active",
+        "phase_ticks": 1
+      },
+      "integrity": {
+        "prev_digest": "sha256:a63f56fb32047d143597a9fbc1b8a520a76f53e39cbaa91312e725ec7c9f04ac",
+        "event_digest": "sha256:4be82754c8f055fcef91089c9b8532461e8f57c1af34774c08bb317443ef0305"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 7,
+      "event_id": "evt-0000000007",
+      "source_event_id": "evt-0000000006",
+      "event_type": "FinisherTriggered",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": "resolution-group-000003",
+      "reason_codes": [
+        "PredictedLethal"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "predicted_lethal_event_id": "evt-0000000009",
+        "marker_kind": "PredictedLethalImpact",
+        "confidence": "GuaranteedByCurrentIntent"
+      },
+      "integrity": {
+        "prev_digest": "sha256:4be82754c8f055fcef91089c9b8532461e8f57c1af34774c08bb317443ef0305",
+        "event_digest": "sha256:df3c2d31f1387bf6b06ca3994d106a8d287b4a46f71e7b87cadff25b7aed7613"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 8,
+      "event_id": "evt-0000000008",
+      "source_event_id": "evt-0000000006",
+      "event_type": "AttackHit",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": "resolution-group-000003",
+      "reason_codes": [
+        "GeometryValid"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "impact_id": "impact-000001",
+        "hit_group_id": "hitgroup-000001",
+        "gap": 50,
+        "hit_range_min": 0,
+        "hit_range_max": 1050,
+        "hit_direction": "Right",
+        "attack_tags": [
+          "fallback",
+          "light",
+          "strike"
+        ]
+      },
+      "integrity": {
+        "prev_digest": "sha256:df3c2d31f1387bf6b06ca3994d106a8d287b4a46f71e7b87cadff25b7aed7613",
+        "event_digest": "sha256:b590598977de624ce545328b4c67334eea116bff5bca96f611611f6ab7e16562"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 9,
+      "event_id": "evt-0000000009",
+      "source_event_id": "evt-0000000008",
+      "event_type": "DamageApplied",
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": "dec-fighter_a-000001",
+      "resolution_group_id": "resolution-group-000003",
+      "reason_codes": [
+        "HitConfirmed",
+        "Lethal"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 70,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_a",
+          "position": 2000,
+          "facing": "Right",
+          "state": "AttackActive",
+          "state_ticks_remaining": 1,
+          "action_id": "bear_paw_jab",
+          "action_phase": "Active",
+          "health": 1650,
+          "max_health": 1650,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "rage",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 260,
+          "effects": []
+        },
+        "target": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 0,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        }
+      },
+      "payload": {
+        "related_event_ids": [],
+        "impact_id": "impact-000001",
+        "damage_id": "damage-000001",
+        "breakdown": {
+          "power_term": 88,
+          "raw": 88,
+          "after_armor": 73,
+          "after_block": 73,
+          "final": 73,
+          "minimum": 12,
+          "cap": 600,
+          "overkill": 3
+        },
+        "hp_before": 70,
+        "hp_after": 0,
+        "damage_tags": [
+          "light",
+          "strike"
+        ],
+        "lethal": true
+      },
+      "integrity": {
+        "prev_digest": "sha256:b590598977de624ce545328b4c67334eea116bff5bca96f611611f6ab7e16562",
+        "event_digest": "sha256:28955b6adb1eaa4def39e9d1e4a0ae95f2a5278b113b5e4e8a8a4c230403fa6c"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 10,
+      "event_id": "evt-0000000010",
+      "source_event_id": "evt-0000000009",
+      "event_type": "StateChanged",
+      "actor_id": "fighter_b",
+      "target_id": null,
+      "action_id": "sys_wait",
+      "effect_id": null,
+      "decision_id": null,
+      "resolution_group_id": "resolution-group-000003",
+      "reason_codes": [
+        "HealthDepleted"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Recovery",
+          "state_ticks_remaining": 5,
+          "action_id": "sys_wait",
+          "action_phase": "Recovery",
+          "health": 0,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": null
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Defeated",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 0,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": null
+      },
+      "payload": {
+        "related_event_ids": [],
+        "old_state": "Recovery",
+        "new_state": "Defeated",
+        "duration_ticks": null,
+        "control_ratio_fp": null,
+        "fatigue_multiplier_fp": null,
+        "immunity_result": "NotChecked"
+      },
+      "integrity": {
+        "prev_digest": "sha256:28955b6adb1eaa4def39e9d1e4a0ae95f2a5278b113b5e4e8a8a4c230403fa6c",
+        "event_digest": "sha256:f4b8c81b8cb4124e028b66f51165f07b886002eef53aa672dfbc25e9d1d8d2a6"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 11,
+      "event_id": "evt-0000000011",
+      "source_event_id": "evt-0000000010",
+      "event_type": "FighterDefeated",
+      "actor_id": "fighter_b",
+      "target_id": null,
+      "action_id": "bear_paw_jab",
+      "effect_id": null,
+      "decision_id": null,
+      "resolution_group_id": "resolution-group-000003",
+      "reason_codes": [
+        "HealthDepleted"
+      ],
+      "rng": null,
+      "before": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Defeated",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 0,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": null
+      },
+      "after": {
+        "actor": {
+          "fighter_id": "fighter_b",
+          "position": 3000,
+          "facing": "Left",
+          "state": "Defeated",
+          "state_ticks_remaining": null,
+          "action_id": null,
+          "action_phase": null,
+          "health": 0,
+          "max_health": 1150,
+          "energy": 1000,
+          "max_energy": 1000,
+          "unique_resource": {
+            "resource_id": "tempo",
+            "value": 0,
+            "max": 1000
+          },
+          "stagger": 0,
+          "stagger_threshold": 180,
+          "effects": []
+        },
+        "target": null
+      },
+      "payload": {
+        "related_event_ids": [],
+        "defeated_fighter_id": "fighter_b",
+        "lethal_source_event_id": "evt-0000000009",
+        "simultaneous_group_id": "resolution-group-000003",
+        "final_health": 0
+      },
+      "integrity": {
+        "prev_digest": "sha256:f4b8c81b8cb4124e028b66f51165f07b886002eef53aa672dfbc25e9d1d8d2a6",
+        "event_digest": "sha256:cdbf2e4a7db4753cd07a385d03c5c8e00c338e53f71e9fc7fb09a198b82bd7bf"
+      },
+      "extensions": {}
+    },
+    {
+      "schema_version": "combat.event/0.1",
+      "engine_version": "battle.core/0.1.0",
+      "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+      "battle_id": "battle-schema-fixture-0001",
+      "tick": 3,
+      "sequence": 12,
+      "event_id": "evt-0000000012",
+      "source_event_id": "evt-0000000011",
+      "event_type": "BattleEnded",
+      "actor_id": null,
+      "target_id": null,
+      "action_id": null,
+      "effect_id": null,
+      "decision_id": null,
+      "resolution_group_id": null,
+      "reason_codes": [
+        "Defeat"
+      ],
+      "rng": null,
+      "before": {
+        "actor": null,
+        "target": null
+      },
+      "after": {
+        "actor": null,
+        "target": null
+      },
+      "payload": {
+        "related_event_ids": [],
+        "outcome": "FighterAWin",
+        "winner_fighter_id": "fighter_a",
+        "end_reason": "Defeat",
+        "end_tick": 3,
+        "duration_ticks": 3,
+        "pivotal_event_ids": [
+          "evt-0000000007",
+          "evt-0000000009"
+        ],
+        "final_frames": [
+          {
+            "fighter_id": "fighter_a",
+            "position": 2000,
+            "facing": "Right",
+            "state": "AttackActive",
+            "state_ticks_remaining": 1,
+            "action_id": "bear_paw_jab",
+            "action_phase": "Active",
+            "health": 1650,
+            "max_health": 1650,
+            "energy": 1000,
+            "max_energy": 1000,
+            "unique_resource": {
+              "resource_id": "rage",
+              "value": 0,
+              "max": 1000
+            },
+            "stagger": 0,
+            "stagger_threshold": 260,
+            "effects": []
+          },
+          {
+            "fighter_id": "fighter_b",
+            "position": 3000,
+            "facing": "Left",
+            "state": "Defeated",
+            "state_ticks_remaining": null,
+            "action_id": null,
+            "action_phase": null,
+            "health": 0,
+            "max_health": 1150,
+            "energy": 1000,
+            "max_energy": 1000,
+            "unique_resource": {
+              "resource_id": "tempo",
+              "value": 0,
+              "max": 1000
+            },
+            "stagger": 0,
+            "stagger_threshold": 180,
+            "effects": []
+          }
+        ]
+      },
+      "integrity": {
+        "prev_digest": "sha256:cdbf2e4a7db4753cd07a385d03c5c8e00c338e53f71e9fc7fb09a198b82bd7bf",
+        "event_digest": "sha256:bdf470b43b23569fbfbe053772fdc4684b531e48b4a88d6b3b577ad122a1e69e"
+      },
+      "extensions": {}
+    }
+  ],
+  "diagnostics": {
+    "decisions": [
+      {
+        "decision_id": "dec-fighter_a-000001",
+        "tick": 0,
+        "sequence": 1,
+        "actor_id": "fighter_a",
+        "snapshot_digest": "sha256:f57a02aa1c9f66483d43d37e79b6d414cf6337c8e83632c097b931fc89c43d42",
+        "candidates": [
+          {
+            "action_id": "bear_paw_jab",
+            "legal": true,
+            "first_rejection_code": null,
+            "base_weight": 1000,
+            "modifiers": [
+              {
+                "code": "PreferredRange",
+                "multiplier_fp": 1250
+              },
+              {
+                "code": "TacticBias",
+                "multiplier_fp": 1150
+              }
+            ],
+            "final_weight": 1000
+          },
+          {
+            "action_id": "sys_wait",
+            "legal": true,
+            "first_rejection_code": null,
+            "base_weight": 150,
+            "modifiers": [],
+            "final_weight": 150
+          },
+          {
+            "action_id": "bear_crushing_swipe",
+            "legal": false,
+            "first_rejection_code": "CooldownNotReady",
+            "base_weight": 720,
+            "modifiers": [],
+            "final_weight": 0
+          }
+        ]
+      }
+    ],
+    "warnings": []
+  },
+  "integrity": {
+    "canonicalization": "combat-canonical-json/1",
+    "hash_algorithm": "sha256",
+    "input_digest": "sha256:26bd0244bada8360818da1de29c926c09ae1f2e31915654c5e86fd954b2cca5b",
+    "final_digest": "sha256:bdf470b43b23569fbfbe053772fdc4684b531e48b4a88d6b3b577ad122a1e69e",
+    "event_count": 13,
+    "signature": null
+  },
+  "metadata": {
+    "created_at_utc": "2026-07-29T12:00:00Z",
+    "producer": "combat-schema-fixture-builder-diagnostic",
+    "fixture": true,
+    "notes": "Diagnostic overlay for the same canonical event chain. Events and final_digest are byte-for-byte identical to the standard profile.",
+    "extensions": {}
+  },
+  "extensions": {}
+}

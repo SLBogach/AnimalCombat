@@ -1,0 +1,136 @@
+{
+  "schema_version": "combat.presentation/0.1",
+  "presentation_version": "unity-prototype/0.1",
+  "battle_id": "battle-schema-fixture-0001",
+  "source_replay_schema_version": "combat.replay/0.1",
+  "source_final_digest": "sha256:bdf470b43b23569fbfbe053772fdc4684b531e48b4a88d6b3b577ad122a1e69e",
+  "tick_ms": 100,
+  "presentation_seed": "9988776655",
+  "timeline_duration_ms": 1400,
+  "cues": [
+    {
+      "cue_id": "cue-000001",
+      "cue_type": "Hud",
+      "cue_key": "battle_intro",
+      "at_tick": 0,
+      "offset_ms": 0,
+      "duration_ms": 250,
+      "actor_id": null,
+      "target_id": null,
+      "source_event_ids": [
+        "evt-0000000000"
+      ],
+      "priority": 10,
+      "blocking": false,
+      "parameters": {
+        "show_health": true,
+        "show_resources": true
+      }
+    },
+    {
+      "cue_id": "cue-000002",
+      "cue_type": "PlayAnimation",
+      "cue_key": "bear_paw_jab_prepare",
+      "at_tick": 0,
+      "offset_ms": 0,
+      "duration_ms": 300,
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "source_event_ids": [
+        "evt-0000000003",
+        "evt-0000000004"
+      ],
+      "priority": 20,
+      "blocking": true,
+      "parameters": {
+        "speed_fp": 1000
+      }
+    },
+    {
+      "cue_id": "cue-000003",
+      "cue_type": "TimeScale",
+      "cue_key": "finisher_slow_motion",
+      "at_tick": 3,
+      "offset_ms": 0,
+      "duration_ms": 300,
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "source_event_ids": [
+        "evt-0000000007"
+      ],
+      "priority": 90,
+      "blocking": false,
+      "parameters": {
+        "time_scale_fp": 350
+      }
+    },
+    {
+      "cue_id": "cue-000004",
+      "cue_type": "Vfx",
+      "cue_key": "light_strike_hit",
+      "at_tick": 3,
+      "offset_ms": 120,
+      "duration_ms": 250,
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "source_event_ids": [
+        "evt-0000000008",
+        "evt-0000000009"
+      ],
+      "priority": 60,
+      "blocking": false,
+      "parameters": {
+        "intensity_fp": 1000,
+        "damage": 73
+      }
+    },
+    {
+      "cue_id": "cue-000005",
+      "cue_type": "Result",
+      "cue_key": "fighter_a_win",
+      "at_tick": 3,
+      "offset_ms": 650,
+      "duration_ms": 750,
+      "actor_id": "fighter_a",
+      "target_id": "fighter_b",
+      "source_event_ids": [
+        "evt-0000000012"
+      ],
+      "priority": 100,
+      "blocking": true,
+      "parameters": {
+        "reason_key": "defeat"
+      }
+    }
+  ],
+  "markers": [
+    {
+      "marker_id": "marker-000001",
+      "kind": "Finisher",
+      "at_tick": 3,
+      "source_event_ids": [
+        "evt-0000000007",
+        "evt-0000000009"
+      ],
+      "label_key": "pivotal_lethal_hit",
+      "importance": 1000
+    },
+    {
+      "marker_id": "marker-000002",
+      "kind": "Outcome",
+      "at_tick": 3,
+      "source_event_ids": [
+        "evt-0000000012"
+      ],
+      "label_key": "fighter_a_win",
+      "importance": 1000
+    }
+  ],
+  "integrity": {
+    "canonicalization": "combat-canonical-json/1",
+    "hash_algorithm": "sha256",
+    "presentation_digest": "sha256:a3818d93ed1e12b0817d6f5b81e189eea1cdd807519f62ad6c0c3e34ec740f46",
+    "signature": null
+  },
+  "extensions": {}
+}

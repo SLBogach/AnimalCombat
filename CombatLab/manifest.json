@@ -1,0 +1,51 @@
+{
+  "package": "Combat Event & Replay Schema v0.1",
+  "generated_at_utc": "2026-07-29T19:50:48Z",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1866,
+      "sha256": "d66e61a9edb95081fa2128a743040ec257a5d0e97e229a3715f1fb7ab80fdb20"
+    },
+    {
+      "path": "examples/battle-rejected.example.json",
+      "bytes": 613,
+      "sha256": "8e4e43ccfaa929425e2056d957243faca402ff497ea4fa2cc6629302b1a57b5b"
+    },
+    {
+      "path": "examples/presentation-timeline.example.json",
+      "bytes": 3268,
+      "sha256": "48299058686f6c8d002cfa3a9c21630746b2e1d6379e60d68a8788df856c08ab"
+    },
+    {
+      "path": "examples/replay-diagnostic.example.json",
+      "bytes": 52628,
+      "sha256": "e36cbb5bbee509bdd1004e2a43d50df3125fca97fa6366ed77feda13c5831d67"
+    },
+    {
+      "path": "examples/replay-standard.example.json",
+      "bytes": 51432,
+      "sha256": "a335bc21640cdd12782efbccbfadf27969dbe15d58d240b0dcb9649c647e8f25"
+    },
+    {
+      "path": "schemas/combat-event.schema.json",
+      "bytes": 359,
+      "sha256": "0d17b605569bd29615e0b0083263e50123c48e33bb3c4c51cba18990c6586d63"
+    },
+    {
+      "path": "schemas/combat-presentation.schema.json",
+      "bytes": 7619,
+      "sha256": "38a632076a45e3d961514cb538299379576a6a59b3ec01366890eb87654f9ef8"
+    },
+    {
+      "path": "schemas/combat-rejection.schema.json",
+      "bytes": 2834,
+      "sha256": "fb00dfa9c58d784a89b2e876ebb31c83fc3054da959bce57400b3a54a649eafc"
+    },
+    {
+      "path": "schemas/combat-replay.schema.json",
+      "bytes": 81194,
+      "sha256": "e5748d730a4e5f03ffcd5ddf1f646e298e61fe56501d42c59126acc3ebfdb0e1"
+    }
+  ]
+}

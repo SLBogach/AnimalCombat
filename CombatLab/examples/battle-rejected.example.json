@@ -1,0 +1,20 @@
+{
+  "schema_version": "combat.rejection/0.1",
+  "request_id": "request-schema-fixture-rejected-0001",
+  "battle_id": null,
+  "engine_version": "battle.core/0.1.0",
+  "config_hash": "sha256:67bddcb24153f71b05c947d185d47363e726143b3eadfaa588a4ad645f4e3064",
+  "rejected_at_utc": "2026-07-29T12:00:01Z",
+  "errors": [
+    {
+      "code": "UnknownStableId",
+      "path": "/input/fighters/1/special_action_ids/0",
+      "entity_id": "kangaroo_unknown_special",
+      "message_key": "battle_rejected_unknown_stable_id",
+      "details": {
+        "expected_namespace": "action"
+      }
+    }
+  ],
+  "extensions": {}
+}

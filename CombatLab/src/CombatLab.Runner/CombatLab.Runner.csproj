@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CombatLab.Runner</RootNamespace>
+    <AssemblyName>CombatLab.Runner</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Battle.Contracts\Battle.Contracts.csproj" />
+    <ProjectReference Include="..\Battle.Core\Battle.Core.csproj" />
+    <ProjectReference Include="..\Battle.Config\Battle.Config.csproj" />
+    <ProjectReference Include="..\Battle.Replay\Battle.Replay.csproj" />
+  </ItemGroup>
+</Project>

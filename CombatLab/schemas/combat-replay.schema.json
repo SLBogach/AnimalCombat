@@ -1,0 +1,3602 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/combat/replay/0.1/combat-replay.schema.json",
+  "title": "Combat Replay Schema v0.1",
+  "description": "Canonical deterministic 1v1 combat replay. Numeric simulation values are integers; uint64 seeds and RNG indices are decimal strings.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "combat.replay/0.1"
+    },
+    "replay_id": {
+      "$ref": "#/$defs/external_id"
+    },
+    "battle_id": {
+      "$ref": "#/$defs/external_id"
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "diagnostic"
+      ]
+    },
+    "engine": {
+      "$ref": "#/$defs/engine_ref"
+    },
+    "config": {
+      "$ref": "#/$defs/config_ref"
+    },
+    "input": {
+      "$ref": "#/$defs/battle_input"
+    },
+    "summary": {
+      "$ref": "#/$defs/battle_summary"
+    },
+    "keyframes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/public_keyframe"
+      },
+      "minItems": 1,
+      "maxItems": 10000
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      },
+      "minItems": 2,
+      "maxItems": 200000
+    },
+    "diagnostics": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/diagnostics"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "integrity": {
+      "$ref": "#/$defs/replay_integrity"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "extensions": {
+      "$ref": "#/$defs/extensions"
+    }
+  },
+  "required": [
+    "schema_version",
+    "replay_id",
+    "battle_id",
+    "profile",
+    "engine",
+    "config",
+    "input",
+    "summary",
+    "keyframes",
+    "events",
+    "diagnostics",
+    "integrity",
+    "metadata",
+    "extensions"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "standard"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "diagnostics": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "diagnostic"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "diagnostics": {
+            "$ref": "#/$defs/diagnostics"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "stable_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+    },
+    "external_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "u64_string": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$"
+    },
+    "event_id": {
+      "type": "string",
+      "pattern": "^evt-[0-9]{10}$"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^dec-fighter_[ab]-[0-9]{6}$"
+    },
+    "fighter_id": {
+      "type": "string",
+      "enum": [
+        "fighter_a",
+        "fighter_b"
+      ]
+    },
+    "reason_code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]{0,63}$"
+    },
+    "fighter_state": {
+      "type": "string",
+      "enum": [
+        "Idle",
+        "DecisionReady",
+        "Approach",
+        "Retreat",
+        "AttackPrepare",
+        "AttackActive",
+        "Recovery",
+        "Block",
+        "Dodge",
+        "DodgeRecovery",
+        "CounterWindow",
+        "Stunned",
+        "KnockedDown",
+        "Grabbing",
+        "Grabbed",
+        "Defeated"
+      ]
+    },
+    "action_phase": {
+      "type": "string",
+      "enum": [
+        "Startup",
+        "Active",
+        "Recovery",
+        "CancelWindow",
+        "CommitLock",
+        "Hold",
+        "Throw",
+        "GetUp"
+      ]
+    },
+    "effect_frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "effect_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "stacks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255
+        },
+        "ticks_remaining": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expiry_boundary": {
+          "type": "string",
+          "enum": [
+            "ExpireBeforeTick",
+            "ExpireAfterTick"
+          ]
+        }
+      },
+      "required": [
+        "effect_id",
+        "stacks",
+        "ticks_remaining",
+        "expiry_boundary"
+      ]
+    },
+    "resource_frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resource_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "resource_id",
+        "value",
+        "max"
+      ]
+    },
+    "fighter_frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fighter_id": {
+          "$ref": "#/$defs/fighter_id"
+        },
+        "position": {
+          "type": "integer"
+        },
+        "facing": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Right"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/fighter_state"
+        },
+        "state_ticks_remaining": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stable_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action_phase": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/action_phase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "health": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_health": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "energy": {
+          "type": "integer"
+        },
+        "max_energy": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unique_resource": {
+          "$ref": "#/$defs/resource_frame"
+        },
+        "stagger": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stagger_threshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect_frame"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "fighter_id",
+        "position",
+        "facing",
+        "state",
+        "state_ticks_remaining",
+        "action_id",
+        "action_phase",
+        "health",
+        "max_health",
+        "energy",
+        "max_energy",
+        "unique_resource",
+        "stagger",
+        "stagger_threshold",
+        "effects"
+      ]
+    },
+    "frame_pair": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_frame"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_frame"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "actor",
+        "target"
+      ]
+    },
+    "rng_draw": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stream": {
+          "type": "string",
+          "enum": [
+            "Decision",
+            "Resolution"
+          ]
+        },
+        "index": {
+          "$ref": "#/$defs/u64_string"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "NextInt",
+            "TieBreak",
+            "ChanceCheck"
+          ]
+        },
+        "range_min_inclusive": {
+          "type": "integer"
+        },
+        "range_max_exclusive": {
+          "type": "integer"
+        },
+        "raw_u32": {
+          "$ref": "#/$defs/u64_string"
+        },
+        "result": {
+          "type": "integer"
+        },
+        "normalized_fp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "stream",
+        "index",
+        "operation",
+        "range_min_inclusive",
+        "range_max_exclusive",
+        "raw_u32",
+        "result",
+        "normalized_fp"
+      ]
+    },
+    "event_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prev_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "event_digest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": [
+        "prev_digest",
+        "event_digest"
+      ]
+    },
+    "modifier_trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/reason_code"
+        },
+        "multiplier_fp": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "code",
+        "multiplier_fp"
+      ]
+    },
+    "public_keyframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "after_sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scope": {
+          "const": "public_playback"
+        },
+        "fighters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_frame"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "active_grab_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/external_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state_digest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": [
+        "tick",
+        "after_sequence",
+        "scope",
+        "fighters",
+        "active_grab_id",
+        "state_digest"
+      ]
+    },
+    "extension_value": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "maxLength": 4096
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/extension_value"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 128,
+          "additionalProperties": {
+            "$ref": "#/$defs/extension_value"
+          }
+        }
+      ]
+    },
+    "extensions": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_.-]{1,63}/[A-Za-z0-9_.-]{1,64}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/extension_value"
+      }
+    },
+    "battle_started_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "input_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "initial_frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_frame"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "initiative_order": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_id"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "initiative_tie_break": {
+          "type": "string",
+          "enum": [
+            "StatThenSeededHash",
+            "SeededHash"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "input_digest",
+        "initial_frames",
+        "initiative_order",
+        "initiative_tie_break"
+      ]
+    },
+    "decision_made_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "chosen_action_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "legal_action_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stable_id"
+          },
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "chosen_weight": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weight_sum": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selection_mode": {
+          "type": "string",
+          "enum": [
+            "WeightedRng",
+            "OnlyLegalAction",
+            "ZeroWeightFallback",
+            "HardOpportunity"
+          ]
+        },
+        "dominant_modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/modifier_trace"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "chosen_action_id",
+        "legal_action_ids",
+        "candidate_count",
+        "chosen_weight",
+        "weight_sum",
+        "selection_mode",
+        "dominant_modifiers"
+      ]
+    },
+    "action_committed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "target_fighter_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "energy_cost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resource_cost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "startup_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recovery_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cooldown_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "commit_direction": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Right",
+            "None"
+          ]
+        },
+        "target_position_at_commit": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "target_fighter_id",
+        "energy_cost",
+        "resource_cost",
+        "startup_ticks",
+        "active_ticks",
+        "recovery_ticks",
+        "cooldown_ticks",
+        "commit_direction",
+        "target_position_at_commit"
+      ]
+    },
+    "action_phase_changed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "from_phase": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/action_phase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_phase": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/action_phase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phase_ticks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "from_phase",
+        "to_phase",
+        "phase_ticks"
+      ]
+    },
+    "action_cancelled_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "cancelled_phase": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/action_phase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cancel_reason": {
+          "$ref": "#/$defs/reason_code"
+        },
+        "surviving_intent_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/external_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "cancelled_phase",
+        "cancel_reason",
+        "surviving_intent_ids"
+      ]
+    },
+    "move_started_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "from_position": {
+          "type": "integer"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Right"
+          ]
+        },
+        "speed_per_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "movement_kind": {
+          "type": "string",
+          "enum": [
+            "Voluntary",
+            "Dodge",
+            "Approach",
+            "Retreat"
+          ]
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reason_code"
+          },
+          "minItems": 0,
+          "maxItems": 16,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "from_position",
+        "direction",
+        "speed_per_tick",
+        "movement_kind",
+        "stop_conditions"
+      ]
+    },
+    "position_changed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "from_position": {
+          "type": "integer"
+        },
+        "to_position": {
+          "type": "integer"
+        },
+        "requested_delta": {
+          "type": "integer"
+        },
+        "actual_delta": {
+          "type": "integer"
+        },
+        "blocked_by_wall": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "movement_kind": {
+          "type": "string",
+          "enum": [
+            "Voluntary",
+            "Forced",
+            "Dodge",
+            "Separation",
+            "Swap"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "from_position",
+        "to_position",
+        "requested_delta",
+        "actual_delta",
+        "blocked_by_wall",
+        "movement_kind"
+      ]
+    },
+    "move_ended_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "from_position": {
+          "type": "integer"
+        },
+        "to_position": {
+          "type": "integer"
+        },
+        "stop_reason": {
+          "$ref": "#/$defs/reason_code"
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "from_position",
+        "to_position",
+        "stop_reason"
+      ]
+    },
+    "attack_prepared_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "telegraph_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "impact_ticks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "direction_locked": {
+          "type": "boolean"
+        },
+        "target_fighter_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "telegraph_tick",
+        "impact_ticks",
+        "direction_locked",
+        "target_fighter_id"
+      ]
+    },
+    "conflict_resolved_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "conflict_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "intent_a_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "intent_b_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "category_a": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "category_b": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "priority_a": {
+          "type": "integer"
+        },
+        "priority_b": {
+          "type": "integer"
+        },
+        "winner_intent_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/external_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "type": "string",
+          "enum": [
+            "AWin",
+            "BWin",
+            "Trade",
+            "BothCancelled"
+          ]
+        },
+        "tie_break_method": {
+          "type": "string",
+          "enum": [
+            "Priority",
+            "Initiative",
+            "SeededHash",
+            "NotNeeded"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "conflict_id",
+        "intent_a_id",
+        "intent_b_id",
+        "category_a",
+        "category_b",
+        "priority_a",
+        "priority_b",
+        "winner_intent_id",
+        "result",
+        "tie_break_method"
+      ]
+    },
+    "attack_hit_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "impact_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "hit_group_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "gap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_range_min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_range_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_direction": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Right"
+          ]
+        },
+        "attack_tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stable_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "impact_id",
+        "hit_group_id",
+        "gap",
+        "hit_range_min",
+        "hit_range_max",
+        "hit_direction",
+        "attack_tags"
+      ]
+    },
+    "attack_missed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "impact_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "hit_group_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "miss_reason": {
+          "type": "string",
+          "enum": [
+            "OutOfRange",
+            "InvalidTarget",
+            "WrongDirection",
+            "HitGroupConsumed",
+            "DefeatedTarget"
+          ]
+        },
+        "gap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_range_min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_range_max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "impact_id",
+        "hit_group_id",
+        "miss_reason",
+        "gap",
+        "hit_range_min",
+        "hit_range_max"
+      ]
+    },
+    "blocked_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "impact_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "defense_action_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "chance_fp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "damage_reduction_fp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "guard_break": {
+          "type": "boolean"
+        },
+        "cancelled_intent_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/external_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "impact_id",
+        "defense_action_id",
+        "chance_fp",
+        "damage_reduction_fp",
+        "guard_break",
+        "cancelled_intent_ids"
+      ]
+    },
+    "dodged_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "impact_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "defense_action_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "chance_fp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "exit_position": {
+          "type": "integer"
+        },
+        "cancelled_intent_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/external_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "impact_id",
+        "defense_action_id",
+        "chance_fp",
+        "exit_position",
+        "cancelled_intent_ids"
+      ]
+    },
+    "countered_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "impact_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "counter_action_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "matched_tag": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "cancelled_intent_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/external_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "impact_id",
+        "counter_action_id",
+        "matched_tag",
+        "cancelled_intent_ids"
+      ]
+    },
+    "damage_breakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "power_term": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "raw": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "after_armor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "after_block": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "final": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "overkill": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "power_term",
+        "raw",
+        "after_armor",
+        "after_block",
+        "final",
+        "minimum",
+        "cap",
+        "overkill"
+      ]
+    },
+    "damage_applied_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "impact_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "damage_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "breakdown": {
+          "$ref": "#/$defs/damage_breakdown"
+        },
+        "hp_before": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hp_after": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "damage_tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stable_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "lethal": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "impact_id",
+        "damage_id",
+        "breakdown",
+        "hp_before",
+        "hp_after",
+        "damage_tags",
+        "lethal"
+      ]
+    },
+    "resource_changed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "resource_kind": {
+          "type": "string",
+          "enum": [
+            "Energy",
+            "UniqueResource",
+            "Stagger"
+          ]
+        },
+        "resource_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stable_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before": {
+          "type": "integer"
+        },
+        "delta": {
+          "type": "integer"
+        },
+        "after": {
+          "type": "integer"
+        },
+        "minimum": {
+          "type": "integer"
+        },
+        "maximum": {
+          "type": "integer"
+        },
+        "clamp_reason": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "Minimum",
+                "Maximum",
+                "Defeated",
+                "NoChange"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "resource_kind",
+        "resource_id",
+        "before",
+        "delta",
+        "after",
+        "minimum",
+        "maximum",
+        "clamp_reason"
+      ]
+    },
+    "effect_added_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "stacks_before": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stacks_after": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "duration_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expiry_boundary": {
+          "type": "string",
+          "enum": [
+            "ExpireBeforeTick",
+            "ExpireAfterTick"
+          ]
+        },
+        "stack_policy": {
+          "type": "string",
+          "enum": [
+            "Reject",
+            "Refresh",
+            "Replace",
+            "StrongestWins",
+            "AddStacks"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "stacks_before",
+        "stacks_after",
+        "duration_ticks",
+        "expiry_boundary",
+        "stack_policy"
+      ]
+    },
+    "effect_removed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "stacks_before": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stacks_after": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "remove_reason": {
+          "type": "string",
+          "enum": [
+            "ExpiredBeforeTick",
+            "ExpiredAfterTick",
+            "Replaced",
+            "Dispelled",
+            "Consumed",
+            "BattleEnded"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "stacks_before",
+        "stacks_after",
+        "remove_reason"
+      ]
+    },
+    "state_changed_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "old_state": {
+          "$ref": "#/$defs/fighter_state"
+        },
+        "new_state": {
+          "$ref": "#/$defs/fighter_state"
+        },
+        "duration_ticks": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "control_ratio_fp": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fatigue_multiplier_fp": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "immunity_result": {
+          "type": "string",
+          "enum": [
+            "NotChecked",
+            "Allowed",
+            "Prevented"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "old_state",
+        "new_state",
+        "duration_ticks",
+        "control_ratio_fp",
+        "fatigue_multiplier_fp",
+        "immunity_result"
+      ]
+    },
+    "knockback_applied_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "from_position": {
+          "type": "integer"
+        },
+        "to_position": {
+          "type": "integer"
+        },
+        "requested_move": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actual_move": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked_by_wall": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "from_position",
+        "to_position",
+        "requested_move",
+        "actual_move",
+        "blocked_by_wall"
+      ]
+    },
+    "wall_impact_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "wall_side": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Right"
+          ]
+        },
+        "blocked_distance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "threshold_met": {
+          "type": "boolean"
+        },
+        "wall_damage": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wall_stagger": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "wall_side",
+        "blocked_distance",
+        "threshold_met",
+        "wall_damage",
+        "wall_stagger"
+      ]
+    },
+    "grab_started_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "grab_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "grabber_id": {
+          "$ref": "#/$defs/fighter_id"
+        },
+        "grabbed_id": {
+          "$ref": "#/$defs/fighter_id"
+        },
+        "hold_max_ticks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "priority_result": {
+          "type": "string",
+          "enum": [
+            "Uncontested",
+            "Priority",
+            "Initiative",
+            "SeededTieBreak"
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "grab_id",
+        "grabber_id",
+        "grabbed_id",
+        "hold_max_ticks",
+        "priority_result"
+      ]
+    },
+    "grab_ended_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "grab_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "end_reason": {
+          "type": "string",
+          "enum": [
+            "Throw",
+            "Release",
+            "Escape",
+            "Interrupted",
+            "GrabberDefeated",
+            "TargetDefeated",
+            "MaxHoldReached"
+          ]
+        },
+        "throw_action_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stable_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grabber_position": {
+          "type": "integer"
+        },
+        "grabbed_position": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "grab_id",
+        "end_reason",
+        "throw_action_id",
+        "grabber_position",
+        "grabbed_position"
+      ]
+    },
+    "finisher_triggered_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "predicted_lethal_event_id": {
+          "$ref": "#/$defs/event_id"
+        },
+        "marker_kind": {
+          "type": "string",
+          "enum": [
+            "PredictedLethalImpact",
+            "SignatureFinish",
+            "DoubleKORisk"
+          ]
+        },
+        "confidence": {
+          "const": "GuaranteedByCurrentIntent"
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "predicted_lethal_event_id",
+        "marker_kind",
+        "confidence"
+      ]
+    },
+    "fighter_defeated_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "defeated_fighter_id": {
+          "$ref": "#/$defs/fighter_id"
+        },
+        "lethal_source_event_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/event_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "simultaneous_group_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/external_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "final_health": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "defeated_fighter_id",
+        "lethal_source_event_id",
+        "simultaneous_group_id",
+        "final_health"
+      ]
+    },
+    "timeout_reached_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "fighter_a_health": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fighter_a_max_health": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fighter_b_health": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fighter_b_max_health": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "left_cross_product": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "right_cross_product": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "fighter_a_health",
+        "fighter_a_max_health",
+        "fighter_b_health",
+        "fighter_b_max_health",
+        "left_cross_product",
+        "right_cross_product"
+      ]
+    },
+    "draw_declared_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "draw_reason": {
+          "type": "string",
+          "enum": [
+            "DoubleKO",
+            "TimeoutEqualHealthFraction"
+          ]
+        },
+        "participant_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_id"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "simultaneous_group_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/external_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "draw_reason",
+        "participant_ids",
+        "simultaneous_group_id"
+      ]
+    },
+    "battle_ended_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "FighterAWin",
+            "FighterBWin",
+            "Draw",
+            "Invalid"
+          ]
+        },
+        "winner_fighter_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "end_reason": {
+          "type": "string",
+          "enum": [
+            "Defeat",
+            "DoubleKO",
+            "TimeoutHealthFraction",
+            "TimeoutEqualHealthFraction",
+            "BattleInvalid"
+          ]
+        },
+        "end_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pivotal_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "final_frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_frame"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "related_event_ids",
+        "outcome",
+        "winner_fighter_id",
+        "end_reason",
+        "end_tick",
+        "duration_ticks",
+        "pivotal_event_ids",
+        "final_frames"
+      ]
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "combat.event/0.1"
+        },
+        "engine_version": {
+          "$ref": "#/$defs/external_id"
+        },
+        "config_hash": {
+          "$ref": "#/$defs/digest"
+        },
+        "battle_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9999999999
+        },
+        "event_id": {
+          "$ref": "#/$defs/event_id"
+        },
+        "source_event_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/event_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "BattleStarted",
+            "DecisionMade",
+            "ActionCommitted",
+            "ActionPhaseChanged",
+            "ActionCancelled",
+            "MoveStarted",
+            "PositionChanged",
+            "MoveEnded",
+            "AttackPrepared",
+            "ConflictResolved",
+            "AttackHit",
+            "AttackMissed",
+            "Blocked",
+            "Dodged",
+            "Countered",
+            "DamageApplied",
+            "ResourceChanged",
+            "EffectAdded",
+            "EffectRemoved",
+            "StateChanged",
+            "KnockbackApplied",
+            "WallImpact",
+            "GrabStarted",
+            "GrabEnded",
+            "FinisherTriggered",
+            "FighterDefeated",
+            "TimeoutReached",
+            "DrawDeclared",
+            "BattleEnded"
+          ]
+        },
+        "actor_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stable_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effect_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stable_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/decision_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution_group_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/external_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reason_code"
+          },
+          "minItems": 0,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "rng": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/rng_draw"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before": {
+          "$ref": "#/$defs/frame_pair"
+        },
+        "after": {
+          "$ref": "#/$defs/frame_pair"
+        },
+        "payload": {
+          "type": "object"
+        },
+        "integrity": {
+          "$ref": "#/$defs/event_integrity"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "schema_version",
+        "engine_version",
+        "config_hash",
+        "battle_id",
+        "tick",
+        "sequence",
+        "event_id",
+        "source_event_id",
+        "event_type",
+        "actor_id",
+        "target_id",
+        "action_id",
+        "effect_id",
+        "decision_id",
+        "resolution_group_id",
+        "reason_codes",
+        "rng",
+        "before",
+        "after",
+        "payload",
+        "integrity",
+        "extensions"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "BattleStarted"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "type": "null"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/battle_started_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "DecisionMade"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/decision_made_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "ActionCommitted"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/action_committed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "ActionPhaseChanged"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/action_phase_changed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "ActionCancelled"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/action_cancelled_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "MoveStarted"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/move_started_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "PositionChanged"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/position_changed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "MoveEnded"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/move_ended_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "AttackPrepared"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/attack_prepared_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "ConflictResolved"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/conflict_resolved_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "AttackHit"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/attack_hit_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "AttackMissed"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/attack_missed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "Blocked"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/blocked_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "Dodged"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/dodged_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "Countered"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/countered_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "DamageApplied"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/damage_applied_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "ResourceChanged"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/resource_changed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "EffectAdded"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/effect_added_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "EffectRemoved"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/fighter_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "payload": {
+                "$ref": "#/$defs/effect_removed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "StateChanged"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/state_changed_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "KnockbackApplied"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/knockback_applied_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "WallImpact"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/wall_impact_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "GrabStarted"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/grab_started_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "GrabEnded"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/grab_ended_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "FinisherTriggered"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "payload": {
+                "$ref": "#/$defs/finisher_triggered_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "FighterDefeated"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "$ref": "#/$defs/fighter_id"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/fighter_defeated_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "TimeoutReached"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "type": "null"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/timeout_reached_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "DrawDeclared"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "type": "null"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/draw_declared_payload"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "BattleEnded"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actor_id": {
+                "type": "null"
+              },
+              "target_id": {
+                "type": "null"
+              },
+              "payload": {
+                "$ref": "#/$defs/battle_ended_payload"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "gear_selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "offense": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "defense": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "utility": {
+          "$ref": "#/$defs/stable_id"
+        }
+      },
+      "required": [
+        "offense",
+        "defense",
+        "utility"
+      ]
+    },
+    "fighter_build": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fighter_id": {
+          "$ref": "#/$defs/fighter_id"
+        },
+        "side": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B"
+          ]
+        },
+        "animal_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "build_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stable_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "special_action_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stable_id"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "passive_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "gear": {
+          "$ref": "#/$defs/gear_selection"
+        },
+        "tactic_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "initial_frame": {
+          "$ref": "#/$defs/fighter_frame"
+        }
+      },
+      "required": [
+        "fighter_id",
+        "side",
+        "animal_id",
+        "build_id",
+        "special_action_ids",
+        "passive_id",
+        "gear",
+        "tactic_id",
+        "initial_frame"
+      ]
+    },
+    "arena_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "arena_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "min_position": {
+          "type": "integer"
+        },
+        "max_position": {
+          "type": "integer"
+        },
+        "start_position_a": {
+          "type": "integer"
+        },
+        "start_position_b": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "arena_id",
+        "min_position",
+        "max_position",
+        "start_position_a",
+        "start_position_b"
+      ]
+    },
+    "battle_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "master_seed": {
+          "$ref": "#/$defs/u64_string"
+        },
+        "mode_rules_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "arena": {
+          "$ref": "#/$defs/arena_input"
+        },
+        "fighters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_build"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "master_seed",
+        "mode_rules_id",
+        "arena",
+        "fighters"
+      ]
+    },
+    "engine_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine_version": {
+          "$ref": "#/$defs/external_id"
+        },
+        "rng_version": {
+          "$ref": "#/$defs/external_id"
+        },
+        "ordering_version": {
+          "$ref": "#/$defs/external_id"
+        }
+      },
+      "required": [
+        "engine_version",
+        "rng_version",
+        "ordering_version"
+      ]
+    },
+    "config_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "balance_schema_version": {
+          "$ref": "#/$defs/external_id"
+        },
+        "config_version": {
+          "$ref": "#/$defs/external_id"
+        },
+        "config_hash": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "required": [
+        "balance_schema_version",
+        "config_version",
+        "config_hash"
+      ]
+    },
+    "battle_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "FighterAWin",
+            "FighterBWin",
+            "Draw",
+            "Invalid"
+          ]
+        },
+        "winner_fighter_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/fighter_id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "end_reason": {
+          "type": "string",
+          "enum": [
+            "Defeat",
+            "DoubleKO",
+            "TimeoutHealthFraction",
+            "TimeoutEqualHealthFraction",
+            "BattleInvalid"
+          ]
+        },
+        "end_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_ticks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "pivotal_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event_id"
+          },
+          "minItems": 0,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "final_frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fighter_frame"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "outcome",
+        "winner_fighter_id",
+        "end_reason",
+        "end_tick",
+        "duration_ticks",
+        "event_count",
+        "pivotal_event_ids",
+        "final_frames"
+      ]
+    },
+    "candidate_diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "legal": {
+          "type": "boolean"
+        },
+        "first_rejection_code": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reason_code"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "base_weight": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/modifier_trace"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        },
+        "final_weight": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "action_id",
+        "legal",
+        "first_rejection_code",
+        "base_weight",
+        "modifiers",
+        "final_weight"
+      ]
+    },
+    "decision_diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "$ref": "#/$defs/decision_id"
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actor_id": {
+          "$ref": "#/$defs/fighter_id"
+        },
+        "snapshot_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidate_diagnostic"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "decision_id",
+        "tick",
+        "sequence",
+        "actor_id",
+        "snapshot_digest",
+        "candidates"
+      ]
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/decision_diagnostic"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "$ref": "#/$defs/reason_code"
+              },
+              "tick": {
+                "oneOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "event_id": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/event_id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "details": {
+                "$ref": "#/$defs/extensions"
+              }
+            },
+            "required": [
+              "code",
+              "tick",
+              "event_id",
+              "details"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 10000
+        }
+      },
+      "required": [
+        "decisions",
+        "warnings"
+      ]
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "Ed25519"
+          ]
+        },
+        "key_id": {
+          "$ref": "#/$defs/external_id"
+        },
+        "signature_base64url": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{80,128}$"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "signature_base64url"
+      ]
+    },
+    "replay_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "canonicalization": {
+          "const": "combat-canonical-json/1"
+        },
+        "hash_algorithm": {
+          "const": "sha256"
+        },
+        "input_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "final_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "signature": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/signature"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "canonicalization",
+        "hash_algorithm",
+        "input_digest",
+        "final_digest",
+        "event_count",
+        "signature"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "created_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "producer": {
+          "$ref": "#/$defs/external_id"
+        },
+        "fixture": {
+          "type": "boolean"
+        },
+        "notes": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "created_at_utc",
+        "producer",
+        "fixture",
+        "notes",
+        "extensions"
+      ]
+    }
+  }
+}

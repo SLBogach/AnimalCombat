@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/combat/presentation/0.1/combat-presentation.schema.json",
+  "title": "Combat Presentation Timeline Schema v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "combat.presentation/0.1"
+    },
+    "presentation_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+    },
+    "battle_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+    },
+    "source_replay_schema_version": {
+      "const": "combat.replay/0.1"
+    },
+    "source_final_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "tick_ms": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "presentation_seed": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$"
+    },
+    "timeline_duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cue_id": {
+            "type": "string",
+            "pattern": "^cue-[0-9]{6}$"
+          },
+          "cue_type": {
+            "type": "string",
+            "enum": [
+              "PlayAnimation",
+              "MoveTween",
+              "Vfx",
+              "Audio",
+              "Camera",
+              "TimeScale",
+              "Hud",
+              "CombatText",
+              "Result"
+            ]
+          },
+          "cue_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "at_tick": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "offset_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "actor_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fighter_a",
+                  "fighter_b"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "target_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fighter_a",
+                  "fighter_b"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^evt-[0-9]{10}$"
+            },
+            "minItems": 1,
+            "maxItems": 16,
+            "uniqueItems": true
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": -1000,
+            "maximum": 1000
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "parameters": {
+            "type": "object",
+            "maxProperties": 64,
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "maxItems": 64,
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "cue_id",
+          "cue_type",
+          "cue_key",
+          "at_tick",
+          "offset_ms",
+          "duration_ms",
+          "actor_id",
+          "target_id",
+          "source_event_ids",
+          "priority",
+          "blocking",
+          "parameters"
+        ]
+      },
+      "maxItems": 200000
+    },
+    "markers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "marker_id": {
+            "type": "string",
+            "pattern": "^marker-[0-9]{6}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Chapter",
+              "Pivotal",
+              "Finisher",
+              "SlowMotion",
+              "Outcome"
+            ]
+          },
+          "at_tick": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^evt-[0-9]{10}$"
+            },
+            "minItems": 1,
+            "maxItems": 16,
+            "uniqueItems": true
+          },
+          "label_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "importance": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "marker_id",
+          "kind",
+          "at_tick",
+          "source_event_ids",
+          "label_key",
+          "importance"
+        ]
+      },
+      "maxItems": 10000
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "canonicalization": {
+          "const": "combat-canonical-json/1"
+        },
+        "hash_algorithm": {
+          "const": "sha256"
+        },
+        "presentation_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "signature": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "algorithm": {
+                  "const": "Ed25519"
+                },
+                "key_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+                },
+                "signature_base64url": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{80,128}$"
+                }
+              },
+              "required": [
+                "algorithm",
+                "key_id",
+                "signature_base64url"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "canonicalization",
+        "hash_algorithm",
+        "presentation_digest",
+        "signature"
+      ]
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_.-]{1,63}/[A-Za-z0-9_.-]{1,64}$"
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "presentation_version",
+    "battle_id",
+    "source_replay_schema_version",
+    "source_final_digest",
+    "tick_ms",
+    "presentation_seed",
+    "timeline_duration_ms",
+    "cues",
+    "markers",
+    "integrity",
+    "extensions"
+  ]
+}

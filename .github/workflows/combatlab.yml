@@ -44,3 +44,24 @@ jobs:
 
       - name: Test
         run: dotnet test CombatLab.sln --configuration Release --no-build --no-restore
+
+      - name: Collect WP-02 coverage
+        run: >-
+          dotnet test tests/Battle.Core.UnitTests/Battle.Core.UnitTests.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+          --collect:"XPlat Code Coverage"
+          --settings coverage.runsettings
+          --results-directory TestResults/Coverage
+
+      - name: Enforce WP-02 branch coverage
+        shell: pwsh
+        run: ./scripts/verify-wp02-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
+
+      - name: Publish coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: combatlab-coverage-${{ matrix.os }}
+          path: CombatLab/TestResults/Coverage/**/coverage.cobertura.xml

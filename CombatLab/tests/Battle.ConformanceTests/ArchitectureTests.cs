@@ -128,6 +128,7 @@ public sealed class ArchitectureTests
         Assert.Equal("enable", buildProps.Descendants("Nullable").Single().Value);
         Assert.Equal("true", buildProps.Descendants("TreatWarningsAsErrors").Single().Value);
         Assert.Equal("true", buildProps.Descendants("Deterministic").Single().Value);
+        Assert.Equal("true", buildProps.Descendants("CheckForOverflowUnderflow").Single().Value);
         Assert.Equal("true", buildProps.Descendants("RestorePackagesWithLockFile").Single().Value);
     }
 

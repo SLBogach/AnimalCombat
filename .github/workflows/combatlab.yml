@@ -45,6 +45,10 @@ jobs:
       - name: Build
         run: dotnet build CombatLab.sln --configuration ${{ matrix.configuration }} --no-restore
 
+      - name: Verify WP-04 generated balance artifacts
+        shell: pwsh
+        run: ./scripts/verify-wp04-generated.ps1 -Configuration ${{ matrix.configuration }}
+
       - name: Test
         run: >-
           dotnet test CombatLab.sln

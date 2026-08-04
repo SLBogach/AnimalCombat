@@ -99,6 +99,12 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "battle.config": {
+        "type": "Project",
+        "dependencies": {
+          "Battle.Contracts": "[1.0.0, )"
+        }
+      },
       "battle.contracts": {
         "type": "Project"
       },

@@ -1,0 +1,1453 @@
+{
+  "$id": "https://combatlab.local/schemas/balance/v0.1/combat.balance.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actions": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "action_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "action_priority": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "active_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "animal_id": {
+            "enum": [
+              "all",
+              "bear",
+              "gorilla",
+              "kangaroo"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "base_damage": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "base_knockback": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "base_stagger": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "base_stun_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "base_weight": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "block_base_chance_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "block_reduction_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "blockable": {
+            "type": "boolean"
+          },
+          "category": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "chip_min": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "clash_priority": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "cooldown_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "dodge_base_chance_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "dodgeable": {
+            "type": "boolean"
+          },
+          "energy_cost": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "grab_priority": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "hard_opportunity_misses": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "hit_count": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "hit_range_max": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "hit_range_min": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "hit_schedule": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "interrupt_profile": {
+            "enum": [
+              "Armored",
+              "Cancelable",
+              "Committed",
+              "UninterruptibleImpact",
+              "Unstoppable"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "knockback_max": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "knockback_min": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_consecutive_uses": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "min_damage": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "move_distance": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "movement_mode": {
+            "enum": [
+              "Adaptive",
+              "Approach",
+              "Follow",
+              "None",
+              "Pull",
+              "Push",
+              "Retreat",
+              "Swap"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "opportunity_cap_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "power_ratio_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "preferred_range_max": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "preferred_range_min": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "recovery_base_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "recovery_max_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "recovery_min_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "resolution_priority": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "resource_cost": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "slot_type": {
+            "enum": [
+              "Basic",
+              "Special",
+              "System"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "startup_base_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "startup_max_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "startup_min_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "tags": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "track_target": {
+            "type": "boolean"
+          },
+          "undodgeable": {
+            "type": "boolean"
+          },
+          "wall_damage_max": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "wall_damage_min": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "wall_damage_per_unit_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "wall_impact": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "action_id",
+          "action_priority",
+          "active_ticks",
+          "animal_id",
+          "base_damage",
+          "base_knockback",
+          "base_stagger",
+          "base_stun_ticks",
+          "base_weight",
+          "block_base_chance_fp",
+          "block_reduction_fp",
+          "blockable",
+          "category",
+          "chip_min",
+          "clash_priority",
+          "cooldown_ticks",
+          "dodge_base_chance_fp",
+          "dodgeable",
+          "energy_cost",
+          "grab_priority",
+          "hard_opportunity_misses",
+          "hit_count",
+          "hit_range_max",
+          "hit_range_min",
+          "hit_schedule",
+          "interrupt_profile",
+          "knockback_max",
+          "knockback_min",
+          "max_consecutive_uses",
+          "min_damage",
+          "move_distance",
+          "movement_mode",
+          "opportunity_cap_fp",
+          "power_ratio_fp",
+          "preferred_range_max",
+          "preferred_range_min",
+          "recovery_base_ticks",
+          "recovery_max_ticks",
+          "recovery_min_ticks",
+          "resolution_priority",
+          "resource_cost",
+          "slot_type",
+          "startup_base_ticks",
+          "startup_max_ticks",
+          "startup_min_ticks",
+          "tags",
+          "track_target",
+          "undodgeable",
+          "wall_damage_max",
+          "wall_damage_min",
+          "wall_damage_per_unit_fp",
+          "wall_impact"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4096,
+      "type": "array"
+    },
+    "effects": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "compare_key": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "duration_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "effect_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "expiry_boundary": {
+            "enum": [
+              "ExpireAfterTick",
+              "ExpireBeforeTick"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "internal_cooldown_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "lookup_profile": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "max_activations_per_battle": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_activations_per_tick": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "modifier_stat1": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "modifier_stat2": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "operation1": {
+            "enum": [
+              "Add",
+              "Multiply",
+              "Override"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "operation2": {
+            "enum": [
+              "Add",
+              "Multiply",
+              "Override"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "stack_cap": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "stack_group": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "stack_policy": {
+            "enum": [
+              "AddStacks",
+              "Refresh",
+              "Reject",
+              "Replace",
+              "StrongestWins"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "tags": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "value1": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "value2": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "compare_key",
+          "duration_ticks",
+          "effect_id",
+          "expiry_boundary",
+          "internal_cooldown_ticks",
+          "max_activations_per_battle",
+          "max_activations_per_tick",
+          "modifier_stat1",
+          "operation1",
+          "stack_cap",
+          "stack_group",
+          "stack_policy",
+          "tags",
+          "value1"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4096,
+      "type": "array"
+    },
+    "fighters": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "action_speed": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "animal_id": {
+            "enum": [
+              "bear",
+              "gorilla",
+              "kangaroo"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "armor": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "collision_radius": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "control_power": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "control_resistance": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "energy_regen": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "evasion": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "guard": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "guard_break": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "initiative": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "mass": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_energy": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_health": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_resource": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "move_speed": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "power": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "precision": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "resource_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "stagger_threshold": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "start_resource": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action_speed",
+          "animal_id",
+          "armor",
+          "collision_radius",
+          "control_power",
+          "control_resistance",
+          "energy_regen",
+          "evasion",
+          "guard",
+          "guard_break",
+          "initiative",
+          "mass",
+          "max_energy",
+          "max_health",
+          "max_resource",
+          "move_speed",
+          "power",
+          "precision",
+          "resource_id",
+          "stagger_threshold",
+          "start_resource"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4096,
+      "type": "array"
+    },
+    "gear": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "gear_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "normalized_value": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "operation1": {
+            "enum": [
+              "Add",
+              "Multiply",
+              "Override"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "operation2": {
+            "enum": [
+              "Add",
+              "Multiply",
+              "Override"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "slot": {
+            "enum": [
+              "Defense",
+              "Offense",
+              "Utility"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "stat1": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "stat2": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "tags": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "value1": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "value2": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "gear_id",
+          "normalized_value",
+          "operation1",
+          "slot",
+          "stat1",
+          "tags",
+          "value1"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4096,
+      "type": "array"
+    },
+    "passives": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "animal_id": {
+            "enum": [
+              "bear",
+              "gorilla",
+              "kangaroo"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "conditions": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "duration_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "effect_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "internal_cooldown_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_activations_per_battle": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "max_activations_per_tick": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "modifier_stat1": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "modifier_stat2": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "operation1": {
+            "enum": [
+              "Add",
+              "Multiply",
+              "Override"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "operation2": {
+            "enum": [
+              "Add",
+              "Multiply",
+              "Override"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "passive_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "resource_gain": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "stack_cap": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "tags": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "trigger": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "value1": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "value2": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "weight_multiplier_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "animal_id",
+          "conditions",
+          "duration_ticks",
+          "internal_cooldown_ticks",
+          "max_activations_per_battle",
+          "max_activations_per_tick",
+          "modifier_stat1",
+          "modifier_stat2",
+          "operation1",
+          "operation2",
+          "passive_id",
+          "resource_gain",
+          "stack_cap",
+          "tags",
+          "trigger",
+          "value1",
+          "value2",
+          "weight_multiplier_fp"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4096,
+      "type": "array"
+    },
+    "settings": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis.benchmark_armor": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "battle.time_limit_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.low_health_rage_multiplier_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.low_health_threshold_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.rage_per_blocked_heavy": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.rage_per_damage_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.rage_per_heavy": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.rage_tier_1": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.rage_tier_2": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.bear.rage_tier_3": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.disengage_grace_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.disengage_loss_per_tick": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_per_block": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_per_grab": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_per_shove": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_per_wall_tick": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_tier_1": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_tier_2": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.grip_tier_3": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.hard_control_loss": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.gorilla.wall_tick_interval": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.break_loss": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.decay_grace_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.dodge_bonus": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.idle_decay_per_tick": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.rhythm_bonus": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.tempo_per_unit_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.tempo_tier_1": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.tempo_tier_2": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "fighter.kangaroo.tempo_tier_3": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.ai.default_perception_delay_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.ai.hard_opportunity_misses": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.ai.opportunity_cap_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.ai.opportunity_growth_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.ai.repeat_same_action_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.ai.repeat_same_category_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.arena.max_position": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.arena.min_position": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.arena.start_position_a": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.arena.start_position_b": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.arena.wall_zone_size": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.control_k": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.fatigue_decay_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.fatigue_threshold": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.force_k": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.grab_lockout_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.immunity_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.max_hold_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.stun_max_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.stun_min_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.control.wakeup_immunity_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.armor_k": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.block_max": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.block_min": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.block_slope": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.cap": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.dodge_max": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.dodge_min": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.dodge_slope": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.floor": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.speed_baseline": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.speed_max": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.speed_min": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.damage.speed_slope": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.config_version": {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        "global.sim.decision_weight_max": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.fp_scale": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.multiplier_max": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.multiplier_min": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.ordering_version": {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        "global.sim.probability_max": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.probability_min": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.rng_version": {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        "global.sim.schema_version": {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        "global.sim.tick_ms": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.active.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.block.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.dodge.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.grabbed.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.idle.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.knocked_down.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.prepare.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.recovery.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "state.stunned.energy_regen_fp": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "analysis.benchmark_armor",
+        "battle.time_limit_ticks",
+        "fighter.bear.low_health_rage_multiplier_fp",
+        "fighter.bear.low_health_threshold_fp",
+        "fighter.bear.rage_per_blocked_heavy",
+        "fighter.bear.rage_per_damage_fp",
+        "fighter.bear.rage_per_heavy",
+        "fighter.bear.rage_tier_1",
+        "fighter.bear.rage_tier_2",
+        "fighter.bear.rage_tier_3",
+        "fighter.gorilla.disengage_grace_ticks",
+        "fighter.gorilla.disengage_loss_per_tick",
+        "fighter.gorilla.grip_per_block",
+        "fighter.gorilla.grip_per_grab",
+        "fighter.gorilla.grip_per_shove",
+        "fighter.gorilla.grip_per_wall_tick",
+        "fighter.gorilla.grip_tier_1",
+        "fighter.gorilla.grip_tier_2",
+        "fighter.gorilla.grip_tier_3",
+        "fighter.gorilla.hard_control_loss",
+        "fighter.gorilla.wall_tick_interval",
+        "fighter.kangaroo.break_loss",
+        "fighter.kangaroo.decay_grace_ticks",
+        "fighter.kangaroo.dodge_bonus",
+        "fighter.kangaroo.idle_decay_per_tick",
+        "fighter.kangaroo.rhythm_bonus",
+        "fighter.kangaroo.tempo_per_unit_fp",
+        "fighter.kangaroo.tempo_tier_1",
+        "fighter.kangaroo.tempo_tier_2",
+        "fighter.kangaroo.tempo_tier_3",
+        "global.ai.default_perception_delay_ticks",
+        "global.ai.hard_opportunity_misses",
+        "global.ai.opportunity_cap_fp",
+        "global.ai.opportunity_growth_fp",
+        "global.ai.repeat_same_action_fp",
+        "global.ai.repeat_same_category_fp",
+        "global.arena.max_position",
+        "global.arena.min_position",
+        "global.arena.start_position_a",
+        "global.arena.start_position_b",
+        "global.arena.wall_zone_size",
+        "global.control.control_k",
+        "global.control.fatigue_decay_ticks",
+        "global.control.fatigue_threshold",
+        "global.control.force_k",
+        "global.control.grab_lockout_ticks",
+        "global.control.immunity_ticks",
+        "global.control.max_hold_ticks",
+        "global.control.stun_max_ticks",
+        "global.control.stun_min_ticks",
+        "global.control.wakeup_immunity_ticks",
+        "global.damage.armor_k",
+        "global.damage.block_max",
+        "global.damage.block_min",
+        "global.damage.block_slope",
+        "global.damage.cap",
+        "global.damage.dodge_max",
+        "global.damage.dodge_min",
+        "global.damage.dodge_slope",
+        "global.damage.floor",
+        "global.damage.speed_baseline",
+        "global.damage.speed_max",
+        "global.damage.speed_min",
+        "global.damage.speed_slope",
+        "global.sim.config_version",
+        "global.sim.decision_weight_max",
+        "global.sim.fp_scale",
+        "global.sim.multiplier_max",
+        "global.sim.multiplier_min",
+        "global.sim.ordering_version",
+        "global.sim.probability_max",
+        "global.sim.probability_min",
+        "global.sim.rng_version",
+        "global.sim.schema_version",
+        "global.sim.tick_ms",
+        "state.active.energy_regen_fp",
+        "state.block.energy_regen_fp",
+        "state.dodge.energy_regen_fp",
+        "state.grabbed.energy_regen_fp",
+        "state.idle.energy_regen_fp",
+        "state.knocked_down.energy_regen_fp",
+        "state.prepare.energy_regen_fp",
+        "state.recovery.energy_regen_fp",
+        "state.stunned.energy_regen_fp"
+      ],
+      "type": "object"
+    },
+    "tactics": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "approach_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "block_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "counter_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "dodge_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "grab_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "heavy_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "light_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "low_hpfp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "perception_delay_ticks": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "repeat_penalty_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "resource_generator_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "resource_spender_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "retreat_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "self_wall_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "signature_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "tactic_id": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "target_recovery_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          },
+          "target_wall_fp": {
+            "maximum": 1000000000,
+            "minimum": -1000000000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "approach_fp",
+          "block_fp",
+          "counter_fp",
+          "dodge_fp",
+          "grab_fp",
+          "heavy_fp",
+          "light_fp",
+          "low_hpfp",
+          "perception_delay_ticks",
+          "repeat_penalty_fp",
+          "resource_generator_fp",
+          "resource_spender_fp",
+          "retreat_fp",
+          "self_wall_fp",
+          "signature_fp",
+          "tactic_id",
+          "target_recovery_fp",
+          "target_wall_fp"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4096,
+      "type": "array"
+    }
+  },
+  "required": [
+    "actions",
+    "effects",
+    "fighters",
+    "gear",
+    "passives",
+    "settings",
+    "tactics"
+  ],
+  "title": "Combat Lab balance configuration v0.1",
+  "type": "object"
+}

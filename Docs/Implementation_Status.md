@@ -59,9 +59,28 @@ Scope и pass/fail находятся в [WP-06_Brief.md](./WP-06_Brief.md) и [
 
 Оба golden digest остались без drift после регенерации balance artifact.
 
-## Следующий этап
+## Подготовленный следующий этап
 
-**WP-07 Movement — запланирован; реализация не начата.**
+**WP-07 Movement — `READY FOR IMPLEMENTATION`; production-код не начат.**
+
+Scope, связанные source sections, тринадцать закрытых проектных/DATA вопросов и план реализации зафиксированы в [WP-07 Brief](./WP-07_Brief.md). Exact blocking acceptance matrix находится в [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md).
+
+Подготовка WP-07 зафиксировала:
+
+1. body-aware 1D geometry, radius-adjusted wall bounds, surface gap и preserved side order;
+2. inclusive neutral band `1500..1600` для единственного system candidate `Retreat / Wait / Approach` без Decision RNG;
+3. phase-start pair snapshot, proportional largest-remainder allocation и atomic movement/separation;
+4. frozen movement segment, phase-4/phase-6 ownership и canonical movement event chain;
+5. exact golden `approach_band_l3`, wall/separation fixtures, regression, replay, determinism, coverage и architecture gates;
+6. обязательный Engine SemVer bump `battle.core/0.1.0 → battle.core/0.2.0`, при неизменных event/replay schema и `ordering_version`.
+
+`OPEN-WP07-13 — CLOSED`: утверждён defer общего stat clamp и DATA/schema migration до WP-10. WP-07 использует checked `base + gear` без clamp, проверяет positive derived speed в Core pre-start и не вводит runtime default. Workbook, `combat.balance/0.1`, config version/hash не меняются.
+
+Checked-in historical `wait_equal_l1@battle.core/0.1.0` сейчас отсутствует: golden генерируется тестом в памяти. Поэтому до Engine bump реализация обязана создать новый immutable `CombatLab/fixtures/replay/v0.1/wait-equal-l1.engine-0.1.0.json`, проверить уже известные input/final digests и pin file SHA-256. Golden для `battle.core/0.2.0` затем создаётся отдельным artifact; существующие файлы не перезаписываются.
+
+## Следующее действие
+
+Начать реализацию по [плану Brief](./WP-07_Brief.md#план-реализации): сначала материализовать historical wait fixture до Engine bump, затем реализовать Movement, пройти blocking matrix и только после этого установить `COMPLETED`.
 
 ## Ограничения
 

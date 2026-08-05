@@ -62,3 +62,27 @@
 - Canonical config hash: `sha256:0e7ef9d85f4062308799c0da6969cefc2ab2239b1b0f8ff4534447f66e37976f`; source workbook SHA-256: `sha256:bfd8a1d70ac82d5f830a981be078ebe60772a765553d842f73f1fb6b85d54fe2`.
 - WP-06 имеет статус `COMPLETED`: artifact gate закрыт, полная acceptance matrix и Release build/test green.
 - Golden `wait_equal_l1` зафиксирован как input `sha256:0edc1dbc1d8d2a09c38debed5626fba5637f7304a38df258342d1d959edc8ba2`, final `sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6`; после регенерации drift отсутствует.
+
+## WP-07 Movement
+
+### Закрытые решения и DATA proposal
+
+- `OPEN-WP07-01 — CLOSED`: [WP-07 Brief](./WP-07_Brief.md) задаёт scope, а [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — обязательный exact pass/fail. Все blockers закрыты; этап `READY FOR IMPLEMENTATION`, но не `COMPLETED`.
+- `OPEN-WP07-02 — CLOSED`: canonical fixed-point key — `global.sim.fp_scale`; `global.sim.math_scale` из TDD §7.1 считается терминологической ошибкой. Runtime alias/default запрещён.
+- `OPEN-WP07-03 — CLOSED`: position является центром тела. Legal bounds равны `[arena.min + collision_radius, arena.max - collision_radius]`; initial A-left/B-right order и non-overlap обязательны. Separation distance выводится из суммы radii, новый DATA key не вводится.
+- `OPEN-WP07-04 — CLOSED`: neutral surface-gap band включителен и равен `[sys_approach.preferred_range_max, sys_retreat.preferred_range_min]`, сейчас `1500..1600`. Ниже выбирается Retreat при наличии outward headroom, внутри — Wait, выше — Approach. Это даёт ровно один positive candidate и не вводит weighted WP-08 semantics.
+- `OPEN-WP07-05 — CLOSED`: derived `MoveSpeed` — distance units per active tick, после modifier pipeline и с FP identity state multiplier. Speed замораживается на старте segment; `tick_ms` и floating point в формулу не входят. По закрытому `OPEN-WP07-13` отсутствующий stat clamp не заменяется default.
+- `OPEN-WP07-06 — CLOSED`: оба movement request рассчитываются из одного phase-start snapshot. Target budget распределяется пропорционально speed capacity методом largest remainder; exact remainder tie разрешает immutable WP-06 `InitiativeOrder`, без Side/FighterId/iteration-order и без нового RNG draw.
+- `OPEN-WP07-07 — CLOSED`: pair result применяется атомарно. Overlap устраняется minimum rollback, пропорциональным inward displacement, создавшему penetration; stationary actor не сдвигается, remainder разрешает `InitiativeOrder`, crossing запрещён. Separation payload использует signed `requested_delta=actual_delta=to-from`, wall/action/decision null semantics по Test Plan.
+- `OPEN-WP07-08 — CLOSED`: direction и target position замораживаются на commit. `TrackTarget` обновляет только live gap stop predicate; facing пересчитывается после полного movement/separation batch.
+- `OPEN-WP07-09 — CLOSED`: phase 6 исполняет movement, выпускает `MoveEnded` и ставит internal completion marker. Только phase 4 следующего tick выполняет `Active→Recovery`, а после recovery emit `Recovery→null` и очищает action перед новой decision phase; 12-фазный порядок и `ordering_version` не меняются.
+- `OPEN-WP07-10 — CLOSED`: post-commit WP-07 lifecycle/movement events actor-only: `target_id` и target frames null, RNG и resolution group null. Stop codes и их порядок: `WallReached`, `PreferredRangeReached`, `SegmentExpired`. Phase-4 и phase-6 drafts внутри своей event class упорядочиваются по `InitiativeOrder`; существующий WP-06 порядок Decision/Commit A→B сохраняется. Exact source/related/reason/frame oracle находится в Test Plan §9.3.
+- `OPEN-WP07-11 — CLOSED`: `requested_delta` является signed target-limited attempt, `actual_delta = to_position - from_position`, а `blocked_by_wall` содержит только wall-clipped magnitude. Только authoritative nonzero mutation является position progress.
+- `OPEN-WP07-12 — CLOSED`: WP-07 реализует voluntary movement и pure separation. WP-08 выбирает/commit combat actions; WP-09 исполняет attack/Dodge/MoveSelf, forced movement, damage/stagger/WallImpact; WP-10 владеет effects/modifiers, WP-11 — fighter passive/resource reactions. Existing event/replay contracts и `ordering_version` не меняются, но TDD §2.2 требует Engine SemVer bump `battle.core/0.1.0 → battle.core/0.2.0`. До bump текущий runtime-generated WP-06 wait материализуется новым immutable historical fixture и получает file SHA-256; current-engine golden создаётся отдельно. Existing файлы не перезаписываются.
+- `OPEN-WP07-13 — CLOSED / DEFER APPROVED`: общий stat-clamp и DATA/schema migration утверждённо отложены до WP-10. В WP-07 отсутствующие `stat.move_speed.min/max` не заменяются default: используется checked base+gear pipeline без clamp, non-positive derived speed отклоняется в Core pre-start, а Workbook, `combat.balance/0.1`, config version/hash не меняются. WP-10 обязан закрыть полный stat-clamp до movement effects/modifiers.
+
+### Статус этапа
+
+- `OPEN-WP07-01..13` закрыты; проектных/DATA blockers нет. WP-07 имеет статус `READY FOR IMPLEMENTATION`.
+- Production-код и тесты WP-07 ещё не реализованы; golden hashes/digests ещё не закреплены.
+- `UnityClient` остаётся вне scope.

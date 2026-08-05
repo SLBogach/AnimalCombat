@@ -19,6 +19,7 @@ internal static class ReplaySemanticValidator
         ValidateLifecycle(events, issues);
         ValidateInput(replay, events, issues);
         ValidateEvents(replay, events, issues);
+        MovementReplaySemanticValidator.Validate(events, issues);
         ValidateSummary(replay, events, issues);
         ValidateKeyframes(replay, events, issues);
     }

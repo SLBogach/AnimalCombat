@@ -107,6 +107,7 @@ public static class ReplayVerificationCodes
     public const string RoleMismatch = "semantic.role";
     public const string FrameMismatch = "semantic.frame";
     public const string CausalityInvalid = "semantic.causality";
+    public const string MovementInvalid = "semantic.movement";
     public const string RngSequenceInvalid = "semantic.rng_sequence";
     public const string SummaryMismatch = "semantic.summary";
     public const string KeyframeMismatch = "semantic.keyframe";

@@ -1,6 +1,6 @@
 # WP-07 Movement
 
-> Статус: `READY FOR IMPLEMENTATION`; production-код WP-07 ещё не реализован. `OPEN-WP07-13` закрыт утверждённым defer stat clamp до WP-10.
+> Статус: `IMPLEMENTED / LOCAL ACCEPTANCE PASS; CI PENDING`. Все blocking cases реализованы, а локально исполнимые проверки прошли на Windows; финальный `COMPLETED` ожидает фактический green прогон Release matrix на Windows/Linux. `OPEN-WP07-13` закрыт утверждённым defer stat clamp до WP-10.
 >
 > Exact pass/fail: [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md).
 
@@ -88,7 +88,7 @@ Product Vision не задаёт movement-формул или wire-семант�
 
 | OPEN | Решение |
 |---|---|
-| `OPEN-WP07-01` | Этот Brief и Test Plan WP-07 являются scope/pass-fail gate. Все blockers закрыты, поэтому этап имеет статус `READY FOR IMPLEMENTATION`, но не `COMPLETED`. |
+| `OPEN-WP07-01` | Этот Brief и Test Plan WP-07 являются scope/pass-fail gate. Matrix реализована и локально green; этап остаётся не `COMPLETED` только до фактического Windows/Linux CI pass. |
 | `OPEN-WP07-02` | Canonical scale key — `global.sim.fp_scale`. `global.sim.math_scale` в TDD §7.1 считается терминологической ошибкой; alias/default запрещены. CDS shorthand `arena.*` отображается на `global.arena.*`. |
 | `OPEN-WP07-03` | Legal center bounds: `[arena.min + radius, arena.max - radius]`. Initial bodies обязаны помещаться, сохранять A-left/B-right order и не пересекаться. Minimum center distance — сумма radii; отдельного separation key нет. |
 | `OPEN-WP07-04` | Neutral surface-gap band — `[sys_approach.preferred_range_max, sys_retreat.preferred_range_min]`, сейчас `[1500,1600]`. Retreat legal при `gap < 1500`, Approach — при `gap > 1600`, Wait — на inclusive band или когда нужное движение не имеет headroom. Это исключает positive-weight overlap и oscillation до WP-08. |
@@ -99,10 +99,10 @@ Product Vision не задаёт movement-формул или wire-семант�
 | `OPEN-WP07-09` | Movement segment начинается в первый Active tick. Phase 6 может emit `MoveEnded` и поставить internal completion marker, но Action transition выполняет только phase 4 следующего тика. Порядок 12 фаз и `ordering_version` не меняются. |
 | `OPEN-WP07-10` | Event chain: `ActionCommitted → ActionPhaseChanged(Startup→Active) → MoveStarted → PositionChanged* → MoveEnded → ActionPhaseChanged(Active→Recovery) → ActionPhaseChanged(Recovery→null)`. Все post-commit WP-07 events actor-only: `target_id` и target frames null; committed target доступен через source chain. RNG и `resolution_group_id` null. Stop reason определяется для каждого actor: `WallReached`, если request обрезан стеной; иначе `PreferredRangeReached`, если pair достиг band; иначе `SegmentExpired` на последнем active tick. |
 | `OPEN-WP07-11` | `PositionChanged.requested_delta` — signed target-limited attempted delta; `actual_delta = to_position - from_position`; `blocked_by_wall` содержит только wall-clipped magnitude. Range allocation и separation не маскируются как wall block. Actual nonzero movement является progress; marker/zero-delta event сам по себе position progress не создаёт. |
-| `OPEN-WP07-12` | WP-07 подключает только voluntary movement и pure separation. Existing payloads, event/replay schema и `ordering_version` достаточны и не меняются. Но результат Core для того же ранее допустимого input меняется, поэтому TDD §2.2 требует bump `engine_version` с `battle.core/0.1.0` до `battle.core/0.2.0`. До bump текущий runtime-generated `wait_equal_l1` обязан быть материализован новым immutable `CombatLab/fixtures/replay/v0.1/wait-equal-l1.engine-0.1.0.json` с уже закреплёнными input/final digests и file SHA-256; такого файла сейчас нет. Current-engine golden создаётся отдельно. Forced-movement combat integration остаётся WP-09. |
+| `OPEN-WP07-12` | WP-07 подключает только voluntary movement и pure separation. Existing payloads, event/replay schema и `ordering_version` достаточны и не меняются. Engine повышен с `battle.core/0.1.0` до `battle.core/0.2.0`. До bump сохранён immutable `wait-equal-l1.engine-0.1.0.json` (file SHA-256 `4d35559d0cd879c627328b490cb7bd99e946ef45ceb537bac1c753c8e517f292`); current-engine `wait-equal-l1.engine-0.2.0.json` создан отдельно (file SHA-256 `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`). Forced-movement combat integration остаётся WP-09. |
 | `OPEN-WP07-13` | **CLOSED — DEFER APPROVED.** CDS требует clamp `MoveSpeed` по отсутствующим `stat.move_speed.min/max`. Для WP-07 общий stat-clamp и DATA/schema migration утверждённо отложены до WP-10: используется checked `base + gear` pipeline без clamp, а до `journal.Begin` требуется positive derived speed. Checks остаются Core applicability validation; `combat.balance/0.1`, config version/hash и Workbook не меняются. Runtime default запрещён. WP-10 обязан закрыть полный stat-clamp до подключения movement effects/modifiers. |
 
-`OPEN-WP07-01..13` закрыты. Проектных/DATA blockers для начала реализации нет; exact acceptance закреплён в Test Plan WP-07.
+`OPEN-WP07-01..13` закрыты и реализованы. Проектных/DATA blockers нет; exact acceptance закреплён в Test Plan WP-07. Локальные gates green, внешний Linux CI ещё не исполнялся для незакоммиченных изменений.
 
 ## Геометрия
 
@@ -250,7 +250,7 @@ Expected invalid data возвращает sorted `BattleResult.Rejected` без
 
 ## Reference fixtures
 
-Главный planned golden — `approach_band_l3`:
+Главный pinned golden — `approach_band_l3`:
 
 - fighter A: bear + `gear_utility_sprint_soles`, start center `4000`, radius `520`, derived speed `82`;
 - fighter B: kangaroo + `gear_utility_sprint_soles`, start center `6555`, radius `430`, derived speed `147`;
@@ -259,7 +259,10 @@ Expected invalid data возвращает sorted `BattleResult.Rejected` без
 - final centers `4002` и `6552`, gap `1600`;
 - `battle.time_limit_ticks=3`, full-health timeout — Draw;
 - exact 18-event oracle задан в Test Plan;
-- input/final digest вычисляются первой conforming реализацией, затем pin byte-for-byte отдельным approved documentation update.
+- fixture config hash: `sha256:6abd6c81701abacdb394fe637e450ae357719e5caf49ef17ccb269573e2ee7b4`;
+- input digest: `sha256:dae170bccf84b44e6c0c173692e6198c45ec0e0ae1484bf9c7dd989cad4a0b20`;
+- final digest: `sha256:956b15fd915222f8b404823dfab070c6bc2f6e1852309d1ef12dc988954cfe93`;
+- fixture file SHA-256: `7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873`.
 
 Дополнительные fixtures покрывают retreat к inner boundary, one-sided movement у стены, separation even/odd deficit, mirror/InitiativeOrder, segment completion и no-progress request.
 
@@ -267,45 +270,46 @@ Exact wall fixture `retreat_wall_l3`: starts `521/2966`, initial gap `1495`; A �
 
 Separation не достижим из production `Approach/Retreat/Wait` при исправной target-band clamp. Поэтому его exact acceptance использует immutable resolver input, а не test-only production selection: centers `4000/5100`, radii `500/500`, active inward requests `+100/-100`, provisional `4100/5000`, correction `-50/+50`, final `4050/5050`. Production integration этого seam начинается только вместе с action/forced movement в WP-09.
 
-## Предполагаемые изменения реализации
+## Реализованные изменения
 
-Код пока не изменяется. На этапе реализации ожидаются:
+Реализация включает:
 
-- `Battle.Core/Movement`: `ArenaGeometry`, movement descriptors/intents, proportional allocator, pair resolver, separation resolver и `MovementSystem`;
+- `Battle.Core/Movement`: `ArenaGeometry`, proportional allocator, pair resolver и separation resolver;
 - расширение runtime fighter/setup/snapshot: radius, effective move speed, movement segment и completion marker;
 - generalization system action definitions и WP-07 availability;
 - подключение phase 6 и movement-aware phase 4 в `TickCoordinator`;
 - Core pre-start applicability validation без изменения `combat.balance/0.1` по утверждённому defer `OPEN-WP07-13`;
 - movement-specific replay semantic checks;
-- pre-migration materialization исторического `wait_equal_l1@battle.core/0.1.0` в новый immutable fixture без перезаписи существующих файлов;
-- approved `ContractVersions.Engine` migration `battle.core/0.1.0 → battle.core/0.2.0` без изменения event/replay/ordering versions;
+- pre-migration materialization исторического `wait_equal_l1@battle.core/0.1.0` в новый immutable fixture без перезаписи существующих файлов и отдельный current-engine wait fixture;
+- `ContractVersions.Engine` migration `battle.core/0.1.0 → battle.core/0.2.0` без изменения event/replay/ordering versions;
 - unit, conformance, integration, golden, target-determinism и coverage tests;
-- CI gate `verify-wp07-coverage.ps1` и расширение target probe.
+- CI gates `verify-wp07-coverage.ps1`, pinned target probe и Windows/Linux Release matrix.
 
 Public movement payloads/event enums и replay JSON Schema уже достаточны. Их shape/version не меняется без отдельно обнаруженного blocking conflict.
 
-## План реализации
+## Выполненный план реализации
 
-1. **Approved DATA policy.** Защитить утверждённый defer `OPEN-WP07-13`: без stat clamp/default, без Workbook/schema migration, с checked positive derived speed до journal Begin.
-2. **Pre-migration archive.** Пока Engine ещё `battle.core/0.1.0`, материализовать новый historical wait fixture, проверить известные input/final digests, pin file SHA-256 и запретить его последующую перезапись.
-3. **Version/geometry foundation.** Поднять Engine до `battle.core/0.2.0`, добавить pure checked geometry и Core pre-start negative cases.
-4. **Runtime movement model.** Сохранить derived radius/speed, загрузить three system actions, реализовать neutral-band availability и frozen commit descriptor.
-5. **Phase 6 vertical slice.** Реализовать atomic pair allocation, wall clamp, separation, facing и полный phase-4 lifecycle до Recovery→DecisionReady.
-6. **Replay projection.** Emit exact canonical movement chain, усилить semantic verifier и round-trip/tamper fixtures.
-7. **Acceptance/gates.** Закрепить `approach_band_l3`, проверить immutable historical fixtures, отдельно rebaseline current-engine wait, repeated/profile/target parity и 100% critical branch coverage.
-8. **Documentation closure.** Только после green gates перевести WP-07 из `READY` в `COMPLETED` и зафиксировать golden digests.
+1. **Approved DATA policy — выполнено.** Defer `OPEN-WP07-13` защищён без stat clamp/default и без Workbook/schema migration.
+2. **Pre-migration archive — выполнено.** Historical wait `0.1.0` создан до Engine bump и SHA-pinned.
+3. **Version/geometry foundation — выполнено.** Engine `0.2.0`, pure checked geometry и negative cases реализованы.
+4. **Runtime movement model — выполнено.** Derived radius/speed, system actions, neutral-band availability и frozen descriptor реализованы.
+5. **Phase 6 vertical slice — выполнено.** Atomic allocation, wall clamp, separation, facing и lifecycle реализованы.
+6. **Replay projection — выполнено.** Canonical chain, strict semantic verifier, round-trip и tamper tests green.
+7. **Acceptance/gates — локально выполнено.** 528 automated tests green, target parity совпадает с pinned fixture, critical coverage 100%, Battle.Core line gate ≥85%.
+8. **Documentation closure — выполнено до статуса CI pending.** Golden digests закреплены; `COMPLETED` разрешён только после внешнего Windows/Linux CI pass.
 
 ## Definition of Done WP-07
 
-- [ ] Утверждённый defer `OPEN-WP07-13` реализован без runtime default и без незаявленного DATA/schema drift.
-- [ ] Все blocking cases Test Plan WP-07 green без skip/flaky retry.
-- [ ] Body-aware bounds, gap, neutral band, simultaneous planning и separation реализованы без float/Unity Physics.
-- [ ] `sys_approach`/`sys_retreat` исполняют config timings/ranges/speed и не потребляют RNG.
-- [ ] Movement chain проходит schema/semantic/integrity verification и profile parity.
-- [ ] До Engine bump создан и SHA-pinned новый immutable historical wait fixture `battle.core/0.1.0`; existing WP-05 fixtures byte-identical, а current-engine `wait_equal_l1` rebaseline закреплён отдельно для `battle.core/0.2.0`.
-- [ ] Golden `approach_band_l3` закреплён exact events и digests для `battle.core/0.2.0`.
-- [ ] Critical movement/geometry/transition branches имеют 100% coverage; Battle.Core line gate не ниже 85%.
-- [ ] Windows/Linux и `netstandard2.1`/`net10.0` canonical result совпадает.
-- [ ] `dotnet restore --locked-mode`, Release build/test и WP-04 generated verification green.
-- [ ] `UnityClient` не изменён.
-- [ ] `Implementation_Status.md` переведён в `COMPLETED` только после всех проверок.
+- [x] Утверждённый defer `OPEN-WP07-13` реализован без runtime default и без незаявленного DATA/schema drift.
+- [x] Все локально исполнимые blocking cases Test Plan WP-07 green без skip/flaky retry.
+- [x] Body-aware bounds, gap, neutral band, simultaneous planning и separation реализованы без float/Unity Physics.
+- [x] `sys_approach`/`sys_retreat` исполняют config timings/ranges/speed и не потребляют RNG.
+- [x] Movement chain проходит schema/semantic/integrity verification и profile parity.
+- [x] До Engine bump создан и SHA-pinned immutable historical wait fixture `battle.core/0.1.0`; existing WP-05 fixtures не изменены, current-engine wait закреплён отдельно.
+- [x] Golden `approach_band_l3` закреплён exact events и digests для `battle.core/0.2.0`.
+- [x] Critical movement/geometry/transition branches имеют 100% coverage; Battle.Core line gate не ниже 85%.
+- [ ] Фактический GitHub Actions Windows/Linux Release matrix green.
+- [x] `netstandard2.1`/`net10.0` локально byte-equal и совпадают с pinned fixture; Windows/Linux matrix настроена, но Linux job ещё не исполнялась.
+- [x] `dotnet restore --locked-mode`, Release build/test и WP-04 generated verification green.
+- [x] `UnityClient` не изменён.
+- [x] `Implementation_Status.md` обновлён честным статусом `LOCAL PASS; CI PENDING`, без преждевременного `COMPLETED`.

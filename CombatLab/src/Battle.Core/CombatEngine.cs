@@ -21,12 +21,12 @@ public sealed class CombatEngine
     public CombatEngine()
         : this(
             NullTickCoordinatorObserver.Instance,
-            Wp06SystemActionAvailability.Instance)
+            Wp07SystemActionAvailability.Instance)
     {
     }
 
     internal CombatEngine(ITickCoordinatorObserver observer)
-        : this(observer, Wp06SystemActionAvailability.Instance)
+        : this(observer, Wp07SystemActionAvailability.Instance)
     {
     }
 

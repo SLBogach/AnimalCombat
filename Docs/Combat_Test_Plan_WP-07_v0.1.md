@@ -1,6 +1,6 @@
 # Combat Test Plan WP-07 v0.1 — Movement
 
-> Статус: `APPROVED FOR IMPLEMENTATION`; WP-07 production-код ещё не реализован. `OPEN-WP07-13` закрыт утверждённым defer stat clamp до WP-10.
+> Статус: `IMPLEMENTED / LOCAL ACCEPTANCE PASS; CI PENDING`. Все локально исполнимые blocking cases green; финальный `COMPLETED` ожидает фактический Windows/Linux Release CI pass. `OPEN-WP07-13` закрыт утверждённым defer stat clamp до WP-10.
 >
 > Этот документ является exact pass/fail-матрицей WP-07 и закрывает `OPEN-WP07-01..13` только для 1D geometry, system approach/retreat и separation.
 
@@ -17,7 +17,7 @@ Test Plan задаёт blocking acceptance для:
 - movement events, frames, causality и replay verification;
 - determinism, safety, regression и architecture gates.
 
-Статус `APPROVED FOR IMPLEMENTATION` означает, что pass/fail и DATA policy достаточно точны для начала кода. Он не означает, что WP-07 уже завершён.
+Статус `LOCAL ACCEPTANCE PASS; CI PENDING` означает, что код и matrix исполнены локально, но этап ещё не объявлен завершённым без внешнего Linux/Windows CI evidence.
 
 ## 2. Источники и precedence
 
@@ -45,7 +45,7 @@ Source order: CDS combat semantics → balance DATA/Stable IDs → Replay wire/i
 | `OPEN-WP07-09` | Phase 6 emit MoveEnded + completion marker; только phase 4 следующего tick переводит Active→Recovery. Phase order/version не меняется. |
 | `OPEN-WP07-10` | Все post-commit WP-07 lifecycle/movement events actor-only, с null target ID/frames и no RNG/group; exact stop codes: `WallReached`, `PreferredRangeReached`, `SegmentExpired`. Recovery expiry emit отдельный `ActionPhaseChanged(Recovery→null, 0)`. |
 | `OPEN-WP07-11` | requested delta target-limited и signed; actual equals to−from; wall field содержит только wall clip. Only actual authoritative mutation counts as position progress. |
-| `OPEN-WP07-12` | Voluntary movement only. Forced movement execution/events остаются WP-09; event/replay schemas и ordering version не меняются. Core behavior change требует `engine_version=battle.core/0.2.0`. Перед bump runtime-generated WP-06 wait обязан быть сохранён новым immutable historical fixture; current-engine fixtures создаются отдельно. |
+| `OPEN-WP07-12` | Voluntary movement only. Forced movement execution/events остаются WP-09; event/replay schemas и ordering version не меняются. Core behavior change использует `engine_version=battle.core/0.2.0`. До bump runtime-generated WP-06 wait сохранён новым immutable historical fixture; current-engine fixtures созданы отдельно. |
 | `OPEN-WP07-13` | **CLOSED — DEFER APPROVED:** отсутствующие CDS keys `stat.move_speed.min/max` не заменяются default. Общий stat clamp/DATA migration отложен до WP-10; WP-07 использует checked base+gear pipeline без clamp и rejects non-positive derived speed в Core pre-start, сохраняя `combat.balance/0.1`, config/hash и Workbook. |
 
 ## 4. Fixed DATA и fixture rules
@@ -68,7 +68,7 @@ sys_wait     weight=150 range=0..10000 startup/active/recovery=0/3/0
 
 `gear_utility_sprint_soles` добавляет `MoveSpeed +12`. Поэтому golden build Bear/Kangaroo имеет derived speeds `82/147`.
 
-WP-07 implementation меняет `ContractVersions.Engine` с `battle.core/0.1.0` на `battle.core/0.2.0`. `combat.event/0.1`, `combat.replay/0.1`, `tick-pipeline/1`, `pcg32/1` и canonical config hash сохраняются по утверждённому defer `OPEN-WP07-13`.
+WP-07 implementation изменила `ContractVersions.Engine` с `battle.core/0.1.0` на `battle.core/0.2.0`. `combat.event/0.1`, `combat.replay/0.1`, `tick-pipeline/1`, `pcg32/1` и canonical config hash сохранены по утверждённому defer `OPEN-WP07-13`.
 
 Canonical DATA сейчас не содержит требуемых CDS `stat.move_speed.min/max`. Утверждённая WP-07 policy запрещает numeric default и Workbook/generated edits: derived `base + gear` проверяется на checked overflow и `> 0` в Core pre-start. Полная stat-clamp/DATA migration закреплена за WP-10.
 
@@ -76,9 +76,9 @@ Canonical DATA сейчас не содержит требуемых CDS `stat.m
 
 Каждый integration/golden candidate строится из generated canonical JSON, изменяет только явно перечисленные test settings/starts, заново компилируется штатным compiler и получает собственный canonical config hash. Использовать hash базового config после overrides запрещено.
 
-До изменения `ContractVersions.Engine` текущий generator обязан один раз создать новый `CombatLab/fixtures/replay/v0.1/wait-equal-l1.engine-0.1.0.json`. Сейчас такого checked-in файла нет. Gate требует известные input/final digests `sha256:0edc1dbc1d8d2a09c38debed5626fba5637f7304a38df258342d1d959edc8ba2` / `sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6`, green ReplayVerifier и pinned file SHA-256. После pin файл read-only по policy и не перезаписывается.
+До изменения `ContractVersions.Engine` создан `CombatLab/fixtures/replay/v0.1/wait-equal-l1.engine-0.1.0.json`: config `sha256:500d36691cf516b690826bde359c4fa299c4e289ce40382f53095464b8fa8493`, input `sha256:0edc1dbc1d8d2a09c38debed5626fba5637f7304a38df258342d1d959edc8ba2`, final `sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6`, file SHA-256 `4d35559d0cd879c627328b490cb7bd99e946ef45ceb537bac1c753c8e517f292`, `8` events. ReplayVerifier green; файл immutable по policy.
 
-Все новые engine-run fixtures затем используют `battle.core/0.2.0`. Current-engine wait создаётся отдельно как `CombatLab/fixtures/replay/v0.1/wait-equal-l1.engine-0.2.0.json`.
+Current-engine wait создан отдельно как `CombatLab/fixtures/replay/v0.1/wait-equal-l1.engine-0.2.0.json`: тот же fixture config, input `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`, final `sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b`, file SHA-256 `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`, `8` events.
 
 No test-only runtime default, bypass semantic validation или direct mutation authoritative state после `BattleStarted` не допускается.
 
@@ -325,7 +325,7 @@ reason = [Initialization,OnlyLegalAction,OnlyLegalAction,ActionSelected,ActionSe
 
 Final frames: centers `4002/6552`, facing Right/Left, state/action phase `Recovery`, action `sys_approach`, remaining `1`; HP/energy/resources unchanged. Decision/Resolution RNG indices остаются `0`.
 
-Fixture config hash, input digest и final digest не задаются заранее. Первая conforming implementation обязана вычислить их штатным pipeline, доказать repeated/profile/target parity и pin literals в этом разделе отдельным approved update. После pin любой drift требует version/decision review.
+Pinned `approach_band_l3`: fixture config `sha256:6abd6c81701abacdb394fe637e450ae357719e5caf49ef17ccb269573e2ee7b4`, input `sha256:dae170bccf84b44e6c0c173692e6198c45ec0e0ae1484bf9c7dd989cad4a0b20`, final `sha256:956b15fd915222f8b404823dfab070c6bc2f6e1852309d1ef12dc988954cfe93`, file SHA-256 `7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873`. После pin любой drift требует version/decision review.
 
 ## 10. Additional exact fixtures
 
@@ -371,16 +371,16 @@ provisional = A:4100, B:5000
 penetration = 100
 rollback = A:-50, B:+50
 final = A:4050, B:5050
-descriptor_a = action:fixture_inward_a, decision:dec-fixture-a-000001, move_started:evt-0000000101
-descriptor_b = action:fixture_inward_b, decision:dec-fixture-b-000001, move_started:evt-0000000100
+descriptor_a = action:fixture_inward_a, decision:dec-fighter_a-000001, move_started:evt-0000000101
+descriptor_b = action:fixture_inward_b, decision:dec-fighter_b-000001, move_started:evt-0000000100
 ```
 
 Exact draft order/payload, где emitter назначает `vB=evt-0000000102`, `vA=evt-0000000103`:
 
 | Order | Draft | Exact payload/source |
 |---:|---|---|
-| 0 | Voluntary B | `5100→5000`, requested/actual `-100/-100`, wall `0`, source/related `evt-0000000100/[evt-0000000100]`, reason `VoluntaryMovement`, action/decision `fixture_inward_b/dec-fixture-b-000001`. |
-| 1 | Voluntary A | `4000→4100`, requested/actual `+100/+100`, wall `0`, source/related `evt-0000000101/[evt-0000000101]`, reason `VoluntaryMovement`, action/decision `fixture_inward_a/dec-fixture-a-000001`. |
+| 0 | Voluntary B | `5100→5000`, requested/actual `-100/-100`, wall `0`, source/related `evt-0000000100/[evt-0000000100]`, reason `VoluntaryMovement`, action/decision `fixture_inward_b/dec-fighter_b-000001`. |
+| 1 | Voluntary A | `4000→4100`, requested/actual `+100/+100`, wall `0`, source/related `evt-0000000101/[evt-0000000101]`, reason `VoluntaryMovement`, action/decision `fixture_inward_a/dec-fighter_a-000001`. |
 | 2 | Separation B | `5000→5050`, requested/actual `+50/+50`, wall `0`, source `vB`, related `[vB,vA]` ordinal, reason `SeparationCorrection`, action/decision null. |
 | 3 | Separation A | `4100→4050`, requested/actual `-50/-50`, wall `0`, source `vA`, related `[vB,vA]` ordinal, reason `SeparationCorrection`, action/decision null. |
 
@@ -475,9 +475,9 @@ Replay alone не содержит derived collision radius, поэтому body
 | `WP07-TRACE-002` | `retreat_band_l3` | Exact mirrored 18-event semantics §10. |
 | `WP07-TRACE-003` | Wall stop | Exact `retreat_wall_l3` §10.2; no WallImpact/damage/stagger/Resolution RNG. |
 | `WP07-TRACE-004` | Separation resolver | Exact four submutations §10.3 and final non-overlap. |
-| `WP07-REG-001` | Pre-migration WP-06 archive | До Engine bump материализован новый `wait-equal-l1.engine-0.1.0.json`; оба известных digest совпадают, ReplayVerifier green, file SHA-256 pinned; после pin bytes immutable. |
+| `WP07-REG-001` | Pre-migration WP-06 archive | `wait-equal-l1.engine-0.1.0.json`: input `0edc…8ba2`, final `d06e…9ea6`, file SHA-256 `4d35…f292`, `8` events; ReplayVerifier green, bytes immutable. |
 | `WP07-REG-002` | WP-05 replay | Existing fixture/digests unchanged. |
-| `WP07-REG-003` | Current-engine wait | Separate `wait-equal-l1.engine-0.2.0.json`: same eight event meanings/state/RNG as WP-06, new approved input/final digests and file SHA-256 pinned. |
+| `WP07-REG-003` | Current-engine wait | `wait-equal-l1.engine-0.2.0.json`: same eight event meanings/state/RNG, input `89f3…8e2`, final `9567…373b`, file SHA-256 `ee56…2409`. |
 | `WP07-SAFE-001` | Watchdog | Actual movement/lifecycle obey existing stamp; marker-only event is not position progress. |
 | `WP07-SAFE-002` | Event cap | Movement-heavy trace never exceeds cap and preserves terminal slot. |
 
@@ -530,6 +530,19 @@ dotnet test CombatLab.sln --configuration Release --no-build
 ```
 
 Coverage run обязан пройти WP-02, WP-03, WP-06 и новый WP-07 gate на одном fresh report.
+
+Локальный execution result от `2026-08-05` (Windows):
+
+- locked restore — green;
+- Release build обоих shared targets — green, `0` warnings / `0` errors;
+- tests — `369` unit + `133` conformance + `26` integration = `528` passed, `0` failed/skipped; performance project пока не содержит тестов;
+- WP-04 generated artifact — reproducible, canonical config hash `sha256:0e7ef9d85f4062308799c0da6969cefc2ab2239b1b0f8ff4534447f66e37976f`;
+- WP-06 target determinism — green;
+- WP-07 `netstandard2.1`/`net10.0` outputs побайтово совпадают друг с другом и pinned `approach_band_l3`;
+- один fresh coverage report: WP-02/WP-03/WP-06/WP-07 critical gates `100%`, Battle.Core line gate `>=85%`;
+- `UnityClient`, balance JSON/schema/manifest и existing WP-05 fixtures не изменены.
+
+GitHub Actions настроен запускать WP-07 target/coverage gates в Release на `windows-latest` и `ubuntu-latest`. Поскольку git commit/push запрещён текущей задачей, эти незакоммиченные изменения ещё не могли пройти внешний Linux job; поэтому WP-07 пока не получает статус `COMPLETED`.
 
 WP-07 переводится в `COMPLETED` только когда:
 

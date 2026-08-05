@@ -1,6 +1,7 @@
 using Battle.Core;
 using Battle.Core.Decisions;
 using Battle.Core.Engine;
+using Battle.Core.Initialization;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 
@@ -99,7 +100,7 @@ public sealed class SystemActionSelectorTests
             BattleState state,
             TickSnapshot snapshot,
             FighterId actorId,
-            SystemActionDefinition systemWait) =>
+            RuntimeBattleSettings settings) =>
             Array.Empty<SystemActionCandidate>();
     }
 }

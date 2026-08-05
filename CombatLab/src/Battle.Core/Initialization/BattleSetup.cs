@@ -12,7 +12,35 @@ internal sealed record RuntimeBattleSettings(
     int MaximumZeroProgressTicks,
     int FixedPointScale,
     ArenaSnapshot Arena,
-    SystemActionDefinition SystemWait);
+    SystemActionDefinition SystemApproach,
+    SystemActionDefinition SystemRetreat,
+    SystemActionDefinition SystemWait,
+    IReadOnlyList<StableId> AllowedSystemActionIds,
+    IReadOnlyList<FighterId> InitiativeOrder)
+{
+    internal SystemActionDefinition GetSystemAction(StableId actionId)
+    {
+        if (actionId == SystemApproach.Id)
+        {
+            return SystemApproach;
+        }
+
+        if (actionId == SystemRetreat.Id)
+        {
+            return SystemRetreat;
+        }
+
+        if (actionId == SystemWait.Id)
+        {
+            return SystemWait;
+        }
+
+        throw new EngineInvariantException(
+            EngineFailureCodes.NoLegalSystemAction,
+            TickPhase.Decisions.ToString(),
+            $"Unsupported system action '{actionId}'.");
+    }
+}
 
 internal sealed record BattleSetup(
     BattleState State,

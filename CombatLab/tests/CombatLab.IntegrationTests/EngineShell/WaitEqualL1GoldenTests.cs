@@ -19,10 +19,10 @@ public sealed class WaitEqualL1GoldenTests
         Assert.Equal(EngineShellFixture.ReplayId, run.Result.ReplayId);
         Assert.Equal(run.Journal.FinalDigest, run.Result.FinalDigest);
         Assert.Equal(
-            "sha256:0edc1dbc1d8d2a09c38debed5626fba5637f7304a38df258342d1d959edc8ba2",
+            "sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2",
             run.Journal.InputDigest!.Value.Value);
         Assert.Equal(
-            "sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6",
+            "sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b",
             run.Journal.FinalDigest!.Value.Value);
         var start = run.Journal.Start
             ?? throw new InvalidOperationException("Completed journal did not retain its start receipt.");

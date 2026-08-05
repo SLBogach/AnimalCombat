@@ -115,6 +115,49 @@ public sealed class SafetyAndTerminalTests
     }
 
     [Fact]
+    public void WP07_SAFE_001_PositionMutationResetsWatchdogButZeroDeltaEventDoesNot()
+    {
+        var state = EngineTestFixture.CreateSetup().State;
+        var initial = ProgressStamp.Capture(state);
+        var movementWatchdog = new ZeroProgressWatchdog(2);
+        movementWatchdog.Observe(initial, initial);
+
+        state.FighterA.ApplyPosition(checked(state.FighterA.Position + 1));
+        var moved = ProgressStamp.Capture(state);
+        movementWatchdog.Observe(initial, moved);
+
+        Assert.NotEqual(initial, moved);
+        Assert.Equal(0, movementWatchdog.Counter);
+
+        var frame = state.FighterA.ToFrame();
+        var emitter = new CombatEventEmitter(
+            EngineTestFixture.CreateRequest(),
+            EngineTestFixture.CreateConfig(),
+            new RecordingJournal(),
+            maximumEvents: 4);
+        _ = emitter.Emit(
+            0,
+            new PositionChangedPayload(
+                Array.Empty<EventId>(),
+                frame.Position,
+                frame.Position,
+                0,
+                0,
+                0,
+                PositionChangeKind.Voluntary),
+            actorId: FighterId.FighterA,
+            before: new FramePair(frame, null),
+            after: new FramePair(frame, null));
+        var afterMarker = ProgressStamp.Capture(state);
+
+        Assert.Equal(moved, afterMarker);
+        var markerWatchdog = new ZeroProgressWatchdog(1);
+        var failure = Assert.Throws<EngineInvariantException>(() =>
+            markerWatchdog.Observe(moved, afterMarker));
+        Assert.Equal("ZeroProgress", failure.Code.Value);
+    }
+
+    [Fact]
     public void WP06_TERM_001_EmitterRejectsCanonicalEventsAfterBattleEnded()
     {
         var request = EngineTestFixture.CreateRequest();

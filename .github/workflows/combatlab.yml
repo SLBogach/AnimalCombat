@@ -50,6 +50,11 @@ jobs:
         shell: pwsh
         run: ./scripts/verify-wp06-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
 
+      - name: Verify WP-07 target determinism
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp07-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
+
       - name: Verify WP-04 generated balance artifacts
         shell: pwsh
         run: ./scripts/verify-wp04-generated.ps1 -Configuration ${{ matrix.configuration }}
@@ -86,6 +91,11 @@ jobs:
         if: matrix.configuration == 'Release'
         shell: pwsh
         run: ./scripts/verify-wp06-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
+
+      - name: Enforce WP-07 coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp07-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
 
       - name: Publish coverage
         if: always() && matrix.configuration == 'Release'

@@ -61,13 +61,13 @@
 - `BLOCK-WP06-01 — CLOSED`: source workbook и generated balance artifacts штатно регенерированы и содержат оба обязательных technical settings; validation завершилась с `0 errors / 0 warnings`.
 - Canonical config hash: `sha256:0e7ef9d85f4062308799c0da6969cefc2ab2239b1b0f8ff4534447f66e37976f`; source workbook SHA-256: `sha256:bfd8a1d70ac82d5f830a981be078ebe60772a765553d842f73f1fb6b85d54fe2`.
 - WP-06 имеет статус `COMPLETED`: artifact gate закрыт, полная acceptance matrix и Release build/test green.
-- Golden `wait_equal_l1` зафиксирован как input `sha256:0edc1dbc1d8d2a09c38debed5626fba5637f7304a38df258342d1d959edc8ba2`, final `sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6`; после регенерации drift отсутствует.
+- Historical golden `wait_equal_l1@battle.core/0.1.0` зафиксирован как input `sha256:0edc1dbc1d8d2a09c38debed5626fba5637f7304a38df258342d1d959edc8ba2`, final `sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6`, file SHA-256 `4d35559d0cd879c627328b490cb7bd99e946ef45ceb537bac1c753c8e517f292`; bytes immutable.
 
 ## WP-07 Movement
 
-### Закрытые решения и DATA proposal
+### Закрытые и реализованные решения
 
-- `OPEN-WP07-01 — CLOSED`: [WP-07 Brief](./WP-07_Brief.md) задаёт scope, а [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — обязательный exact pass/fail. Все blockers закрыты; этап `READY FOR IMPLEMENTATION`, но не `COMPLETED`.
+- `OPEN-WP07-01 — CLOSED`: [WP-07 Brief](./WP-07_Brief.md) задаёт scope, а [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — обязательный exact pass/fail. Matrix реализована и локально green; `COMPLETED` ожидает внешний Windows/Linux CI pass.
 - `OPEN-WP07-02 — CLOSED`: canonical fixed-point key — `global.sim.fp_scale`; `global.sim.math_scale` из TDD §7.1 считается терминологической ошибкой. Runtime alias/default запрещён.
 - `OPEN-WP07-03 — CLOSED`: position является центром тела. Legal bounds равны `[arena.min + collision_radius, arena.max - collision_radius]`; initial A-left/B-right order и non-overlap обязательны. Separation distance выводится из суммы radii, новый DATA key не вводится.
 - `OPEN-WP07-04 — CLOSED`: neutral surface-gap band включителен и равен `[sys_approach.preferred_range_max, sys_retreat.preferred_range_min]`, сейчас `1500..1600`. Ниже выбирается Retreat при наличии outward headroom, внутри — Wait, выше — Approach. Это даёт ровно один positive candidate и не вводит weighted WP-08 semantics.
@@ -78,11 +78,13 @@
 - `OPEN-WP07-09 — CLOSED`: phase 6 исполняет movement, выпускает `MoveEnded` и ставит internal completion marker. Только phase 4 следующего tick выполняет `Active→Recovery`, а после recovery emit `Recovery→null` и очищает action перед новой decision phase; 12-фазный порядок и `ordering_version` не меняются.
 - `OPEN-WP07-10 — CLOSED`: post-commit WP-07 lifecycle/movement events actor-only: `target_id` и target frames null, RNG и resolution group null. Stop codes и их порядок: `WallReached`, `PreferredRangeReached`, `SegmentExpired`. Phase-4 и phase-6 drafts внутри своей event class упорядочиваются по `InitiativeOrder`; существующий WP-06 порядок Decision/Commit A→B сохраняется. Exact source/related/reason/frame oracle находится в Test Plan §9.3.
 - `OPEN-WP07-11 — CLOSED`: `requested_delta` является signed target-limited attempt, `actual_delta = to_position - from_position`, а `blocked_by_wall` содержит только wall-clipped magnitude. Только authoritative nonzero mutation является position progress.
-- `OPEN-WP07-12 — CLOSED`: WP-07 реализует voluntary movement и pure separation. WP-08 выбирает/commit combat actions; WP-09 исполняет attack/Dodge/MoveSelf, forced movement, damage/stagger/WallImpact; WP-10 владеет effects/modifiers, WP-11 — fighter passive/resource reactions. Existing event/replay contracts и `ordering_version` не меняются, но TDD §2.2 требует Engine SemVer bump `battle.core/0.1.0 → battle.core/0.2.0`. До bump текущий runtime-generated WP-06 wait материализуется новым immutable historical fixture и получает file SHA-256; current-engine golden создаётся отдельно. Existing файлы не перезаписываются.
+- `OPEN-WP07-12 — CLOSED`: WP-07 реализует voluntary movement и pure separation. WP-08 выбирает/commit combat actions; WP-09 исполняет attack/Dodge/MoveSelf, forced movement, damage/stagger/WallImpact; WP-10 владеет effects/modifiers, WP-11 — fighter passive/resource reactions. Event/replay contracts и `ordering_version` не изменены; Engine повышен `battle.core/0.1.0 → battle.core/0.2.0`. До bump создан immutable historical wait `0.1.0` (file SHA `4d35…f292`), отдельно созданы current wait `0.2.0` (`ee56…2409`) и movement golden (`7117…4873`). Existing файлы не перезаписывались.
 - `OPEN-WP07-13 — CLOSED / DEFER APPROVED`: общий stat-clamp и DATA/schema migration утверждённо отложены до WP-10. В WP-07 отсутствующие `stat.move_speed.min/max` не заменяются default: используется checked base+gear pipeline без clamp, non-positive derived speed отклоняется в Core pre-start, а Workbook, `combat.balance/0.1`, config version/hash не меняются. WP-10 обязан закрыть полный stat-clamp до movement effects/modifiers.
 
 ### Статус этапа
 
-- `OPEN-WP07-01..13` закрыты; проектных/DATA blockers нет. WP-07 имеет статус `READY FOR IMPLEMENTATION`.
-- Production-код и тесты WP-07 ещё не реализованы; golden hashes/digests ещё не закреплены.
-- `UnityClient` остаётся вне scope.
+- `OPEN-WP07-01..13` закрыты и реализованы; проектных/DATA blockers нет.
+- WP-07 имеет статус `IMPLEMENTED / LOCAL ACCEPTANCE PASS; CI PENDING`: `528` local Release tests green, target/coverage/generated gates green.
+- Current wait pins: input `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`, final `sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b`, file `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`.
+- Movement pins: config `sha256:6abd6c81701abacdb394fe637e450ae357719e5caf49ef17ccb269573e2ee7b4`, input `sha256:dae170bccf84b44e6c0c173692e6198c45ec0e0ae1484bf9c7dd989cad4a0b20`, final `sha256:956b15fd915222f8b404823dfab070c6bc2f6e1852309d1ef12dc988954cfe93`, file `7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873`.
+- `UnityClient` остаётся вне scope и не изменён. Финальный `COMPLETED` допускается после фактического Windows/Linux CI pass.

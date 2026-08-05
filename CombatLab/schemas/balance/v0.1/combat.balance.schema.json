@@ -1148,6 +1148,16 @@
           "minimum": -1000000000,
           "type": "integer"
         },
+        "global.sim.max_events_per_battle": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
+        "global.sim.max_zero_progress_ticks": {
+          "maximum": 1000000000,
+          "minimum": -1000000000,
+          "type": "integer"
+        },
         "global.sim.multiplier_max": {
           "maximum": 1000000000,
           "minimum": -1000000000,
@@ -1299,6 +1309,8 @@
         "global.sim.config_version",
         "global.sim.decision_weight_max",
         "global.sim.fp_scale",
+        "global.sim.max_events_per_battle",
+        "global.sim.max_zero_progress_ticks",
         "global.sim.multiplier_max",
         "global.sim.multiplier_min",
         "global.sim.ordering_version",

@@ -5,7 +5,6 @@ using Battle.Contracts.Ports;
 using Battle.Contracts.Replay;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
-using IntegrityCalculator = Battle.Replay.Integrity.ReplayIntegrity;
 
 namespace Battle.Replay.Journal;
 
@@ -16,7 +15,7 @@ namespace Battle.Replay.Journal;
 /// </summary>
 public sealed class CanonicalReplayJournal : ICombatEventJournal
 {
-    private readonly Sha256Digest _inputDigest;
+    private readonly JournalIntegrityChain _integrity;
     private readonly List<JournaledCombatEvent> _events = new();
     private ArtifactVersion? _schemaVersion;
     private ArtifactVersion? _engineVersion;
@@ -24,12 +23,12 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
     private ExternalId? _battleId;
     private bool _battleEnded;
 
-    public CanonicalReplayJournal(Sha256Digest inputDigest)
-        : this(inputDigest, JournalProfile.StandardReplay)
+    public CanonicalReplayJournal(ExternalId replayId)
+        : this(replayId, JournalProfile.StandardReplay)
     {
     }
 
-    public CanonicalReplayJournal(Sha256Digest inputDigest, JournalProfile profile)
+    public CanonicalReplayJournal(ExternalId replayId, JournalProfile profile)
     {
         if (profile is not JournalProfile.StandardReplay and not JournalProfile.DiagnosticReplay)
         {
@@ -38,11 +37,21 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
                 "Canonical replay journal supports StandardReplay and DiagnosticReplay profiles only.");
         }
 
-        _inputDigest = inputDigest;
+        _integrity = new JournalIntegrityChain(replayId);
         Profile = profile;
     }
 
     public JournalProfile Profile { get; }
+
+    public bool PublishesReplay => true;
+
+    public ExternalId ReplayId => _integrity.ReplayId;
+
+    public CombatJournalStart? Start => _integrity.Start;
+
+    public Sha256Digest? InputDigest => _integrity.InputDigest;
+
+    public ReadOnlyMemory<byte> InputProjection => _integrity.InputProjection;
 
     public IReadOnlyList<JournaledCombatEvent> Events =>
         new ReadOnlyCollection<JournaledCombatEvent>(_events.ToList());
@@ -52,6 +61,16 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
     public Sha256Digest? FinalDigest { get; private set; }
 
     public bool IsCompleted { get; private set; }
+
+    public JournalBeginResult Begin(in CombatJournalStart start)
+    {
+        if (IsCompleted || _events.Count != 0)
+        {
+            throw new InvalidOperationException("Cannot begin a journal after event processing.");
+        }
+
+        return _integrity.Begin(start);
+    }
 
     public CombatEventIdentity Append(in CombatEventDraft draft)
     {
@@ -70,22 +89,18 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
             throw new InvalidOperationException("No canonical events may follow BattleEnded.");
         }
 
+        _integrity.ValidateDraft(draft, _events.Count);
         ValidateIdentityAndOrder(draft);
         ValidateRolesAndFrames(draft);
         ValidateCausality(draft);
         ValidateLifecyclePayload(draft);
 
-        var previousDigest = _events.Count == 0
-            ? _inputDigest
-            : _events[^1].EventDigest;
-        var projectionJson = EventDraftJsonWriter.Write(draft, previousDigest, null);
-        var eventDigest = IntegrityCalculator.ComputeEventDigest(projectionJson);
-        var canonicalJson = EventDraftJsonWriter.Write(draft, previousDigest, eventDigest);
+        var integrity = _integrity.AppendValidated(draft);
         var journaled = new JournaledCombatEvent(
             draft,
-            previousDigest,
-            eventDigest,
-            canonicalJson);
+            integrity.PreviousDigest,
+            integrity.EventDigest,
+            integrity.CanonicalJson);
 
         if (_events.Count == 0)
         {
@@ -100,7 +115,7 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
         return journaled.Identity;
     }
 
-    public void Complete(in BattleSummary summary)
+    public JournalCompletion Complete(in BattleSummary summary)
     {
         if (summary is null)
         {
@@ -147,8 +162,9 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
         ValidateFinisherPredictions();
 
         Summary = summary;
-        FinalDigest = finalEvent.EventDigest;
+        FinalDigest = _integrity.Complete();
         IsCompleted = true;
+        return new JournalCompletion(FinalDigest.Value, ReplayId);
     }
 
     private void ValidateIdentityAndOrder(CombatEventDraft draft)
@@ -238,7 +254,7 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
         {
             var started = draft.Payload as BattleStartedPayload
                 ?? throw new InvalidOperationException("BattleStarted must use BattleStartedPayload.");
-            if (started.InputDigest != _inputDigest)
+            if (started.InputDigest != _integrity.InputDigest)
             {
                 throw new InvalidOperationException(
                     "BattleStarted input digest must equal the journal input digest.");

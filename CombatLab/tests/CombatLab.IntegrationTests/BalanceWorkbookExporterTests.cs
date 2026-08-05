@@ -48,6 +48,7 @@ public sealed class BalanceWorkbookExporterTests
             Assert.Contains("recalculation returned 'ERROR'", issue.Message, StringComparison.Ordinal);
             Assert.Contains(result.Issues, item =>
                 item.Code == "source.validation_error" && item.Path == expectedValidationPath);
+            Assert.DoesNotContain(result.Issues, item => item.Code == "source.validation_formula");
         }
         finally
         {
@@ -73,9 +74,23 @@ public sealed class BalanceWorkbookExporterTests
         var changedCell = document
             .Descendants(SpreadsheetNamespace + "c")
             .Single(cell => string.Equals((string?)cell.Attribute("r"), cellReference, StringComparison.Ordinal));
-        var value = changedCell.Element(SpreadsheetNamespace + "v")
-            ?? throw new InvalidDataException($"Cell {cellReference} has no stored value.");
-        value.Value = changedValue;
+        if (string.Equals((string?)changedCell.Attribute("t"), "s", StringComparison.Ordinal) ||
+            string.Equals((string?)changedCell.Attribute("t"), "inlineStr", StringComparison.Ordinal))
+        {
+            changedCell.SetAttributeValue("t", "inlineStr");
+            changedCell.Element(SpreadsheetNamespace + "v")?.Remove();
+            changedCell.Element(SpreadsheetNamespace + "is")?.Remove();
+            changedCell.Add(
+                new XElement(
+                    SpreadsheetNamespace + "is",
+                    new XElement(SpreadsheetNamespace + "t", changedValue)));
+        }
+        else
+        {
+            var value = changedCell.Element(SpreadsheetNamespace + "v")
+                ?? throw new InvalidDataException($"Cell {cellReference} has no stored value.");
+            value.Value = changedValue;
+        }
 
         entry.Delete();
         var replacement = archive.CreateEntry(worksheetPart, CompressionLevel.Optimal);

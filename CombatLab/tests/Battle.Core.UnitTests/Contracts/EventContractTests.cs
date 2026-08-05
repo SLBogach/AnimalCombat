@@ -1,6 +1,7 @@
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Ports;
+using Battle.Contracts.Replay;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
 using System.Runtime.CompilerServices;
@@ -201,13 +202,18 @@ public sealed class EventContractTests
     public void JournalPort_AcceptsDraftAndSummaryByReadonlyReference()
     {
         var journal = new RecordingJournal();
+        var start = ContractFixtures.CreateJournalStart();
         var draft = CreateDraft(Array.Empty<ReasonCode>());
         var summary = ContractFixtures.CreateSummary();
 
+        var begin = journal.Begin(in start);
         var identity = journal.Append(in draft);
-        journal.Complete(in summary);
+        var completion = journal.Complete(in summary);
 
+        Assert.Equal(ContractFixtures.Digest, begin.InputDigest);
         Assert.Equal(draft.EventId, identity.EventId);
+        Assert.Equal(ContractFixtures.Digest, completion.FinalDigest);
+        Assert.Null(completion.PublishedReplayId);
         Assert.Same(summary, journal.Summary);
     }
 
@@ -248,12 +254,16 @@ public sealed class EventContractTests
     {
         public BattleSummary? Summary { get; private set; }
 
+        public JournalBeginResult Begin(in CombatJournalStart start) =>
+            new(ContractFixtures.Digest);
+
         public CombatEventIdentity Append(in CombatEventDraft draft) =>
             new(draft.EventId, draft.Sequence);
 
-        public void Complete(in BattleSummary summary)
+        public JournalCompletion Complete(in BattleSummary summary)
         {
             Summary = summary;
+            return new JournalCompletion(ContractFixtures.Digest, null);
         }
     }
 }

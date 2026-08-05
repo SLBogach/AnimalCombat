@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO.Compression;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -47,6 +48,7 @@ internal sealed class OpenXmlWorkbookReader : IDisposable
         }
 
         var document = LoadPart(partName);
+        var sharedFormulaMasters = ReadSharedFormulaMasters(document);
         var cells = new Dictionary<string, WorkbookCell>(StringComparer.OrdinalIgnoreCase);
         var maximumRow = 0;
 
@@ -61,7 +63,7 @@ internal sealed class OpenXmlWorkbookReader : IDisposable
             reference = NormalizeCellReference(reference);
             maximumRow = Math.Max(maximumRow, GetRowNumber(reference));
             var type = (string?)element.Attribute("t");
-            var formula = element.Element(SpreadsheetNamespace + "f")?.Value;
+            var formula = DecodeFormula(element, reference, sharedFormulaMasters);
             var rawValue = element.Element(SpreadsheetNamespace + "v")?.Value;
             var value = DecodeValue(element, type, rawValue);
             cells.Add(reference, new WorkbookCell(reference, value, formula));
@@ -147,6 +149,244 @@ internal sealed class OpenXmlWorkbookReader : IDisposable
         }
 
         return new string(buffer[position..]);
+    }
+
+    private static IReadOnlyDictionary<string, SharedFormulaMaster> ReadSharedFormulaMasters(
+        XDocument document)
+    {
+        var result = new Dictionary<string, SharedFormulaMaster>(StringComparer.Ordinal);
+        foreach (var cell in document.Descendants(SpreadsheetNamespace + "c"))
+        {
+            var formula = cell.Element(SpreadsheetNamespace + "f");
+            if (formula is null ||
+                !string.Equals((string?)formula.Attribute("t"), "shared", StringComparison.Ordinal) ||
+                formula.Value.Length == 0)
+            {
+                continue;
+            }
+
+            var sharedIndex = (string?)formula.Attribute("si");
+            var reference = (string?)cell.Attribute("r");
+            if (string.IsNullOrWhiteSpace(sharedIndex) || string.IsNullOrWhiteSpace(reference))
+            {
+                throw new InvalidDataException("A shared-formula master is missing its index or cell reference.");
+            }
+
+            var master = new SharedFormulaMaster(
+                NormalizeCellReference(reference),
+                formula.Value);
+            if (!result.TryAdd(sharedIndex, master))
+            {
+                throw new InvalidDataException($"Shared-formula index '{sharedIndex}' has more than one master.");
+            }
+        }
+
+        return result;
+    }
+
+    private static string? DecodeFormula(
+        XElement cell,
+        string reference,
+        IReadOnlyDictionary<string, SharedFormulaMaster> sharedFormulaMasters)
+    {
+        var formula = cell.Element(SpreadsheetNamespace + "f");
+        if (formula is null ||
+            !string.Equals((string?)formula.Attribute("t"), "shared", StringComparison.Ordinal) ||
+            formula.Value.Length > 0)
+        {
+            return formula?.Value;
+        }
+
+        var sharedIndex = (string?)formula.Attribute("si");
+        if (string.IsNullOrWhiteSpace(sharedIndex) ||
+            !sharedFormulaMasters.TryGetValue(sharedIndex, out var master))
+        {
+            throw new InvalidDataException(
+                $"Shared-formula cell '{reference}' has no resolvable master.");
+        }
+
+        return TranslateSharedFormula(master.Formula, master.Reference, reference);
+    }
+
+    private static string TranslateSharedFormula(
+        string formula,
+        string masterReference,
+        string targetReference)
+    {
+        var masterColumn = ColumnIndex(GetColumnName(masterReference));
+        var targetColumn = ColumnIndex(GetColumnName(targetReference));
+        var columnOffset = targetColumn - masterColumn;
+        var rowOffset = GetRowNumber(targetReference) - GetRowNumber(masterReference);
+        var translated = new StringBuilder(formula.Length);
+
+        for (var index = 0; index < formula.Length;)
+        {
+            if (formula[index] == '"')
+            {
+                CopyQuotedToken(formula, translated, ref index, '"');
+                continue;
+            }
+
+            if (formula[index] == '\'')
+            {
+                CopyQuotedToken(formula, translated, ref index, '\'');
+                continue;
+            }
+
+            if (TryTranslateCellReference(
+                    formula,
+                    ref index,
+                    columnOffset,
+                    rowOffset,
+                    translated))
+            {
+                continue;
+            }
+
+            translated.Append(formula[index]);
+            index++;
+        }
+
+        return translated.ToString();
+    }
+
+    private static void CopyQuotedToken(
+        string formula,
+        StringBuilder target,
+        ref int index,
+        char quote)
+    {
+        target.Append(formula[index++]);
+        while (index < formula.Length)
+        {
+            var current = formula[index++];
+            target.Append(current);
+            if (current != quote)
+            {
+                continue;
+            }
+
+            if (index < formula.Length && formula[index] == quote)
+            {
+                target.Append(formula[index++]);
+                continue;
+            }
+
+            return;
+        }
+    }
+
+    private static bool TryTranslateCellReference(
+        string formula,
+        ref int index,
+        int columnOffset,
+        int rowOffset,
+        StringBuilder target)
+    {
+        var start = index;
+        if (start > 0 && IsReferenceIdentifierCharacter(formula[start - 1]))
+        {
+            return false;
+        }
+
+        var cursor = start;
+        var absoluteColumn = cursor < formula.Length && formula[cursor] == '$';
+        if (absoluteColumn)
+        {
+            cursor++;
+        }
+
+        var columnStart = cursor;
+        while (cursor < formula.Length && char.IsAsciiLetter(formula[cursor]))
+        {
+            cursor++;
+        }
+
+        var columnLength = cursor - columnStart;
+        if (columnLength is < 1 or > 3)
+        {
+            return false;
+        }
+
+        var absoluteRow = cursor < formula.Length && formula[cursor] == '$';
+        if (absoluteRow)
+        {
+            cursor++;
+        }
+
+        var rowStart = cursor;
+        while (cursor < formula.Length && char.IsAsciiDigit(formula[cursor]))
+        {
+            cursor++;
+        }
+
+        if (rowStart == cursor ||
+            (cursor < formula.Length &&
+             (IsReferenceIdentifierCharacter(formula[cursor]) || formula[cursor] == '!')))
+        {
+            return false;
+        }
+
+        var lookahead = cursor;
+        while (lookahead < formula.Length && char.IsWhiteSpace(formula[lookahead]))
+        {
+            lookahead++;
+        }
+
+        if (lookahead < formula.Length && formula[lookahead] == '(')
+        {
+            return false;
+        }
+
+        var columnText = formula[columnStart..(columnStart + columnLength)];
+        var column = ColumnIndex(columnText);
+        if (column > 16_384 ||
+            !int.TryParse(
+                formula.AsSpan(rowStart, cursor - rowStart),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out var row) ||
+            row > 1_048_576)
+        {
+            return false;
+        }
+
+        var translatedColumn = absoluteColumn ? column : column + columnOffset;
+        var translatedRow = absoluteRow ? row : row + rowOffset;
+        if (translatedColumn is < 1 or > 16_384 || translatedRow is < 1 or > 1_048_576)
+        {
+            throw new InvalidDataException(
+                $"Shared formula translation from '{formula}' produced an out-of-range cell reference.");
+        }
+
+        if (absoluteColumn)
+        {
+            target.Append('$');
+        }
+
+        target.Append(ColumnName(translatedColumn));
+        if (absoluteRow)
+        {
+            target.Append('$');
+        }
+
+        target.Append(translatedRow.ToString(CultureInfo.InvariantCulture));
+        index = cursor;
+        return true;
+    }
+
+    private static bool IsReferenceIdentifierCharacter(char value) =>
+        char.IsAsciiLetterOrDigit(value) || value is '_' or '.' or '\\';
+
+    private static int ColumnIndex(string column)
+    {
+        var result = 0;
+        foreach (var character in column)
+        {
+            result = checked((result * 26) + (char.ToUpperInvariant(character) - 'A' + 1));
+        }
+
+        return result;
     }
 
     private IReadOnlyList<string> ReadSharedStrings()
@@ -272,6 +512,8 @@ internal sealed class OpenXmlWorkbookReader : IDisposable
         return string.Join('/', segments.Reverse());
     }
 }
+
+internal sealed record SharedFormulaMaster(string Reference, string Formula);
 
 internal sealed class WorkbookSheet
 {

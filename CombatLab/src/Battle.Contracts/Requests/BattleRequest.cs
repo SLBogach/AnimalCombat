@@ -6,13 +6,24 @@ namespace Battle.Contracts.Requests;
 public sealed class BattleRequest
 {
     public BattleRequest(
+        ExternalId battleId,
         ArtifactVersion engineVersion,
         Sha256Digest configHash,
-        ArtifactVersion modeRulesVersion,
+        ModeRulesSnapshot modeRules,
         ulong masterSeed,
         FighterBuildSnapshot buildA,
         FighterBuildSnapshot buildB)
     {
+        if (string.IsNullOrEmpty(battleId.Value))
+        {
+            throw new ArgumentException("A battle ID is required.", nameof(battleId));
+        }
+
+        if (modeRules is null)
+        {
+            throw new ArgumentNullException(nameof(modeRules));
+        }
+
         if (buildA is null)
         {
             throw new ArgumentNullException(nameof(buildA));
@@ -33,19 +44,22 @@ public sealed class BattleRequest
             throw new ArgumentException("Build B must occupy side B.", nameof(buildB));
         }
 
+        BattleId = battleId;
         EngineVersion = engineVersion;
         ConfigHash = configHash;
-        ModeRulesVersion = modeRulesVersion;
+        ModeRules = modeRules;
         MasterSeed = masterSeed;
         BuildA = buildA;
         BuildB = buildB;
     }
 
+    public ExternalId BattleId { get; }
+
     public ArtifactVersion EngineVersion { get; }
 
     public Sha256Digest ConfigHash { get; }
 
-    public ArtifactVersion ModeRulesVersion { get; }
+    public ModeRulesSnapshot ModeRules { get; }
 
     public ulong MasterSeed { get; }
 

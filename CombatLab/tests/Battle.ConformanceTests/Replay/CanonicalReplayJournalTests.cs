@@ -1,8 +1,11 @@
 using System.Text;
 using System.Text.Json;
+using Battle.Contracts.Config;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
+using Battle.Contracts.Ports;
 using Battle.Contracts.Replay;
+using Battle.Contracts.Requests;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
 using Battle.Replay.Journal;
@@ -11,13 +14,12 @@ namespace Battle.ConformanceTests.Replay;
 
 public sealed class CanonicalReplayJournalTests
 {
-    private static readonly Sha256Digest InputDigest = new(
-        "sha256:1111111111111111111111111111111111111111111111111111111111111111");
-
     private static readonly Sha256Digest ConfigHash = new(
         "sha256:2222222222222222222222222222222222222222222222222222222222222222");
 
     private static readonly ExternalId BattleId = new("battle-journal-test-0001");
+
+    private static readonly ExternalId ReplayId = new("replay-journal-test-0001");
 
     public static TheoryData<CombatEventPayload, string, int> RepresentativePayloadMappings => new()
     {
@@ -92,13 +94,15 @@ public sealed class CanonicalReplayJournalTests
         var endIdentity = journal.Append(
             CreateEndedDraft(sequence: 1, tick: 3, summary, EventId.FromSequence(0)));
 
-        journal.Complete(in summary);
+        var completion = journal.Complete(in summary);
 
         Assert.Equal(EventId.FromSequence(1), endIdentity.EventId);
         Assert.Equal(1, endIdentity.Sequence);
         Assert.True(journal.IsCompleted);
+        Assert.Equal(journal.FinalDigest, completion.FinalDigest);
+        Assert.Equal(ReplayId, completion.PublishedReplayId);
         Assert.Equal(journal.Events[1].EventDigest, journal.FinalDigest);
-        Assert.Equal(InputDigest, journal.Events[0].PreviousDigest);
+        Assert.Equal(journal.InputDigest, journal.Events[0].PreviousDigest);
         Assert.Equal(journal.Events[0].EventDigest, journal.Events[1].PreviousDigest);
         Assert.Equal(EventId.FromSequence(0), journal.Events[0].Identity.EventId);
         Assert.Equal(EventId.FromSequence(1), journal.Events[1].Identity.EventId);
@@ -109,7 +113,7 @@ public sealed class CanonicalReplayJournalTests
             Assert.Equal(0, first.RootElement.GetProperty("sequence").GetInt64());
             Assert.Equal("evt-0000000000", first.RootElement.GetProperty("event_id").GetString());
             Assert.Equal(
-                InputDigest.Value,
+                journal.InputDigest!.Value.Value,
                 first.RootElement.GetProperty("integrity").GetProperty("prev_digest").GetString());
             Assert.Equal(
                 journal.Events[0].EventDigest.Value,
@@ -141,7 +145,7 @@ public sealed class CanonicalReplayJournalTests
     [Fact]
     public void Append_RejectsWrongFirstEvent()
     {
-        var journal = new CanonicalReplayJournal(InputDigest);
+        var journal = CreateBegunCanonicalJournal();
         var summary = CreateSummary(eventCount: 2, endTick: 0);
 
         Assert.Throws<InvalidOperationException>(
@@ -403,9 +407,12 @@ public sealed class CanonicalReplayJournalTests
     [Fact]
     public void StandardAndDiagnosticJournals_ProduceTheSameCanonicalChain()
     {
-        var standard = new CanonicalReplayJournal(InputDigest, JournalProfile.StandardReplay);
-        var diagnostic = new CanonicalReplayJournal(InputDigest, JournalProfile.DiagnosticReplay);
-        var started = CreateStartedDraft();
+        var standard = new CanonicalReplayJournal(ReplayId, JournalProfile.StandardReplay);
+        var diagnostic = new CanonicalReplayJournal(ReplayId, JournalProfile.DiagnosticReplay);
+        var start = CreateJournalStart();
+        var standardBegin = standard.Begin(in start);
+        var diagnosticBegin = diagnostic.Begin(in start);
+        var started = CreateStartedDraft(standardBegin.InputDigest);
         var summary = CreateSummary(eventCount: 2, endTick: 1);
         var ended = CreateEndedDraft(1, 1, summary, EventId.FromSequence(0));
 
@@ -418,6 +425,7 @@ public sealed class CanonicalReplayJournalTests
 
         Assert.Equal(JournalProfile.StandardReplay, standard.Profile);
         Assert.Equal(JournalProfile.DiagnosticReplay, diagnostic.Profile);
+        Assert.Equal(standardBegin, diagnosticBegin);
         Assert.Equal(standard.FinalDigest, diagnostic.FinalDigest);
         Assert.Equal(
             standard.Events.Select(item => item.EventDigest),
@@ -425,10 +433,71 @@ public sealed class CanonicalReplayJournalTests
     }
 
     [Fact]
+    public void AllJournalProfiles_ProduceTheSameStreamingIntegrityChain()
+    {
+        ICombatEventJournal[] journals =
+        {
+            new CanonicalReplayJournal(ReplayId, JournalProfile.StandardReplay),
+            new CanonicalReplayJournal(ReplayId, JournalProfile.DiagnosticReplay),
+            new SummaryOnlyEventJournal(ReplayId),
+            new FailureCaptureEventJournal(ReplayId, capacity: 4),
+        };
+        var start = CreateJournalStart();
+        var beginReceipts = new JournalBeginResult[journals.Length];
+        for (var index = 0; index < journals.Length; index++)
+        {
+            beginReceipts[index] = journals[index].Begin(in start);
+        }
+        var started = CreateStartedDraft(beginReceipts[0].InputDigest);
+        var summary = CreateSummary(eventCount: 2, endTick: 1);
+        var ended = CreateEndedDraft(1, 1, summary, EventId.FromSequence(0));
+
+        foreach (var journal in journals)
+        {
+            journal.Append(in started);
+            journal.Append(in ended);
+        }
+
+        var completions = new JournalCompletion[journals.Length];
+        for (var index = 0; index < journals.Length; index++)
+        {
+            completions[index] = journals[index].Complete(in summary);
+        }
+
+        Assert.All(beginReceipts, receipt => Assert.Equal(beginReceipts[0], receipt));
+        Assert.All(
+            completions,
+            completion => Assert.Equal(completions[0].FinalDigest, completion.FinalDigest));
+        Assert.Equal(ReplayId, completions[0].PublishedReplayId);
+        Assert.Equal(ReplayId, completions[1].PublishedReplayId);
+        Assert.Null(completions[2].PublishedReplayId);
+        Assert.Null(completions[3].PublishedReplayId);
+    }
+
+    [Fact]
+    public void JournalLifecycle_RequiresExactlyOneBeginBeforeAppend()
+    {
+        var journal = new CanonicalReplayJournal(ReplayId);
+        var start = CreateJournalStart();
+        var unpreparedStarted = CreateStartedDraft(ConfigHash);
+
+        Assert.Throws<InvalidOperationException>(() => journal.Append(in unpreparedStarted));
+
+        var begin = journal.Begin(in start);
+        Assert.Throws<InvalidOperationException>(() => journal.Begin(in start));
+
+        var started = CreateStartedDraft(begin.InputDigest);
+        journal.Append(in started);
+        Assert.Throws<InvalidOperationException>(() => journal.Begin(in start));
+    }
+
+    [Fact]
     public void SummaryOnly_CountsDraftsAndRngWithoutPublishingReplay()
     {
-        var journal = new SummaryOnlyEventJournal();
-        var started = CreateStartedDraft();
+        var journal = new SummaryOnlyEventJournal(ReplayId);
+        var start = CreateJournalStart();
+        var begin = journal.Begin(in start);
+        var started = CreateStartedDraft(begin.InputDigest);
         journal.Append(in started);
 
         var frames = CreateFrames(FighterId.FighterA, FighterId.FighterB);
@@ -463,7 +532,7 @@ public sealed class CanonicalReplayJournalTests
         var summary = CreateSummary(eventCount: 3, endTick: 1);
         var ended = CreateEndedDraft(2, 1, summary, EventId.FromSequence(1));
         journal.Append(in ended);
-        journal.Complete(in summary);
+        var completion = journal.Complete(in summary);
 
         Assert.Equal(JournalProfile.SummaryOnly, journal.Profile);
         Assert.False(journal.PublishesReplay);
@@ -472,13 +541,17 @@ public sealed class CanonicalReplayJournalTests
         Assert.Equal(1, journal.EventTypeCounts[CombatEventType.DecisionMade]);
         Assert.Equal(1, journal.RngDrawCounts[RngStream.Decision]);
         Assert.Same(summary, journal.Summary);
+        Assert.Equal(journal.FinalDigest, completion.FinalDigest);
+        Assert.Null(completion.PublishedReplayId);
     }
 
     [Fact]
     public void FailureCapture_KeepsOnlyBoundedDiagnosticTail()
     {
-        var journal = new FailureCaptureEventJournal(capacity: 2);
-        var started = CreateStartedDraft();
+        var journal = new FailureCaptureEventJournal(ReplayId, capacity: 2);
+        var start = CreateJournalStart();
+        var begin = journal.Begin(in start);
+        var started = CreateStartedDraft(begin.InputDigest);
         journal.Append(in started);
         var movement = CreateDraft(
             1,
@@ -491,7 +564,7 @@ public sealed class CanonicalReplayJournalTests
         var summary = CreateSummary(eventCount: 3, endTick: 2);
         var ended = CreateEndedDraft(2, 2, summary, EventId.FromSequence(1));
         journal.Append(in ended);
-        journal.Complete(in summary);
+        var completion = journal.Complete(in summary);
 
         Assert.Equal(JournalProfile.FailureCapture, journal.Profile);
         Assert.False(journal.PublishesReplay);
@@ -499,18 +572,29 @@ public sealed class CanonicalReplayJournalTests
         Assert.Equal(
             new[] { EventId.FromSequence(1), EventId.FromSequence(2) },
             journal.CapturedDrafts.Select(draft => draft.EventId));
+        Assert.Equal(journal.FinalDigest, completion.FinalDigest);
+        Assert.Null(completion.PublishedReplayId);
     }
 
     private static CanonicalReplayJournal CreateStartedJournal()
     {
-        var journal = new CanonicalReplayJournal(InputDigest);
-        var started = CreateStartedDraft();
+        var journal = CreateBegunCanonicalJournal();
+        var started = CreateStartedDraft(journal.InputDigest!.Value);
         var identity = journal.Append(in started);
         Assert.Equal(new CombatEventIdentity(EventId.FromSequence(0), 0), identity);
         return journal;
     }
 
-    private static CombatEventDraft CreateStartedDraft()
+    private static CanonicalReplayJournal CreateBegunCanonicalJournal()
+    {
+        var journal = new CanonicalReplayJournal(ReplayId);
+        var start = CreateJournalStart();
+        var begin = journal.Begin(in start);
+        Assert.Equal(journal.InputDigest, begin.InputDigest);
+        return journal;
+    }
+
+    private static CombatEventDraft CreateStartedDraft(Sha256Digest inputDigest)
     {
         var frameA = CreateFrame(FighterId.FighterA);
         var frameB = CreateFrame(FighterId.FighterB);
@@ -519,7 +603,7 @@ public sealed class CanonicalReplayJournalTests
             0,
             new BattleStartedPayload(
                 Array.Empty<EventId>(),
-                InputDigest,
+                inputDigest,
                 new[] { frameA, frameB },
                 new[] { FighterId.FighterA, FighterId.FighterB },
                 InitiativeTieBreak.StatThenSeededHash),
@@ -527,6 +611,49 @@ public sealed class CanonicalReplayJournalTests
             null,
             before: new FramePair(null, null),
             after: new FramePair(null, null));
+    }
+
+    private static CombatJournalStart CreateJournalStart() =>
+        new(
+            BattleId,
+            ContractVersions.Engine,
+            ContractVersions.Rng,
+            ContractVersions.Ordering,
+            new ConfigReference(
+                ContractVersions.BalanceSchema,
+                new ArtifactVersion("v0.1"),
+                ConfigHash),
+            new BattleInputSnapshot(
+                42UL,
+                new StableId("mode_open_v01"),
+                new ArenaSnapshot(new StableId("combat_lab_arena"), 0, 10_000, 100, 200)),
+            new CombatJournalFighterStart(
+                CreateBuild(FighterSide.A),
+                CreateFrame(FighterId.FighterA)),
+            new CombatJournalFighterStart(
+                CreateBuild(FighterSide.B),
+                CreateFrame(FighterId.FighterB)));
+
+    private static FighterBuildSnapshot CreateBuild(FighterSide side)
+    {
+        var fighterId = side == FighterSide.A ? FighterId.FighterA : FighterId.FighterB;
+        var suffix = side == FighterSide.A ? "a" : "b";
+        return new FighterBuildSnapshot(
+            fighterId,
+            side,
+            new StableId("animal_" + suffix),
+            new StableId("build_" + suffix),
+            new[]
+            {
+                new StableId("special_" + suffix + "_one"),
+                new StableId("special_" + suffix + "_two"),
+            },
+            new StableId("passive_" + suffix),
+            new GearSelection(
+                new StableId("gear_" + suffix + "_offense"),
+                new StableId("gear_" + suffix + "_defense"),
+                new StableId("gear_" + suffix + "_utility")),
+            new StableId("tactic_" + suffix));
     }
 
     private static CombatEventDraft CreateEndedDraft(

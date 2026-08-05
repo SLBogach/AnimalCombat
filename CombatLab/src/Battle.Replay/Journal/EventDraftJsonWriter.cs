@@ -92,6 +92,23 @@ internal static class EventDraftJsonWriter
         return CanonicalJsonWriter.Canonicalize(buffer.WrittenMemory);
     }
 
+    internal static byte[] WriteFrame(FighterFrame frame)
+    {
+        if (frame is null)
+        {
+            throw new ArgumentNullException(nameof(frame));
+        }
+
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            WriteValue(writer, frame, typeof(FighterFrame));
+            writer.Flush();
+        }
+
+        return CanonicalJsonWriter.Canonicalize(buffer.WrittenMemory);
+    }
+
     private static void WritePayload(Utf8JsonWriter writer, CombatEventPayload payload)
     {
         writer.WriteStartObject();

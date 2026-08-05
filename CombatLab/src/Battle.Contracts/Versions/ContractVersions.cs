@@ -10,6 +10,8 @@ public static class ContractVersions
 
     public static ArtifactVersion Ordering { get; } = new("tick-pipeline/1");
 
+    public static ArtifactVersion ModeRules { get; } = new("mode.rules/0.1");
+
     public static ArtifactVersion Replay { get; } = new("combat.replay/0.1");
 
     public static ArtifactVersion Event { get; } = new("combat.event/0.1");

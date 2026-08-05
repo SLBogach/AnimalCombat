@@ -13,6 +13,10 @@ if (-not $temporaryRoot.StartsWith($temporaryParent, [System.StringComparison]::
 }
 
 New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
+$schemaPath = Join-Path `
+    $combatLabRoot `
+    "schemas/balance/v0.1/combat.balance.schema.json"
+$expectedSchemaHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $schemaPath).Hash
 
 try {
     dotnet run `
@@ -51,15 +55,9 @@ try {
         throw "Generated artifact is stale: combat.balance.v0.1.manifest.json"
     }
 
-    Push-Location $combatLabRoot
-    try {
-        git diff --exit-code -- schemas/balance/v0.1/combat.balance.schema.json
-        if ($LASTEXITCODE -ne 0) {
-            throw "Generated balance schema is stale."
-        }
-    }
-    finally {
-        Pop-Location
+    $actualSchemaHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $schemaPath).Hash
+    if ($expectedSchemaHash -cne $actualSchemaHash) {
+        throw "Generated balance schema is stale."
     }
 }
 finally {

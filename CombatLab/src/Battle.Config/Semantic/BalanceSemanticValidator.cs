@@ -77,6 +77,18 @@ internal static class BalanceSemanticValidator
         ValidatePositive(settings, "global.damage.armor_k", ConfigValidationCodes.ZeroDivisor, issues);
         ValidatePositive(settings, "global.sim.tick_ms", ConfigValidationCodes.NumericOutOfRange, issues);
         ValidatePositive(settings, "battle.time_limit_ticks", ConfigValidationCodes.InvalidDuration, issues);
+        ValidateSettingRange(
+            settings,
+            BalanceV01Schema.MaximumEventsPerBattleSetting,
+            4,
+            200_000,
+            issues);
+        ValidateSettingRange(
+            settings,
+            BalanceV01Schema.MaximumZeroProgressTicksSetting,
+            1,
+            int.MaxValue,
+            issues);
 
         ValidateOrdered(settings, "global.sim.probability_min", "global.sim.probability_max", issues);
         ValidateOrdered(settings, "global.sim.multiplier_min", "global.sim.multiplier_max", issues);
@@ -324,6 +336,23 @@ internal static class BalanceSemanticValidator
             minimum > maximum)
         {
             Add(issues, ConfigValidationCodes.NumericOutOfRange, "$.settings", $"'{minimumKey}' must not exceed '{maximumKey}'.");
+        }
+    }
+
+    private static void ValidateSettingRange(
+        IReadOnlyDictionary<string, ConfigValue> settings,
+        string key,
+        long minimum,
+        long maximum,
+        ICollection<ConfigValidationIssue> issues)
+    {
+        if (TryInteger(settings, key, out var value) && (value < minimum || value > maximum))
+        {
+            Add(
+                issues,
+                ConfigValidationCodes.NumericOutOfRange,
+                "$.settings." + key,
+                $"The value must remain inside [{minimum}, {maximum}].");
         }
     }
 

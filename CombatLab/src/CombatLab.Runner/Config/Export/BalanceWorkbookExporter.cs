@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Battle.Contracts.Versions;
 
 namespace CombatLab.Runner.Config.Export;
@@ -555,7 +556,11 @@ public sealed class BalanceWorkbookExporter
                 trimmed = trimmed[1..];
             }
 
-            return trimmed;
+            return Regex.Replace(
+                trimmed,
+                @"'([A-Za-z_][A-Za-z0-9_.]*)'!",
+                "$1!",
+                RegexOptions.CultureInvariant);
         }
 
         return string.Equals(Normalize(actual), Normalize(expected), StringComparison.Ordinal);

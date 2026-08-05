@@ -2093,3 +2093,5 @@ sort_order,namespace,object_id,property_path,value_type,unit,source_sheet,source
 2092,matchup_test,gorilla_vs_gorilla,expected_edge,string,,Expected Matchups,M14,1,0,Источник Expected Matchups.Expected Edge
 2093,matchup_test,gorilla_vs_gorilla,control_build_a,string,,Expected Matchups,N14,1,0,Источник Expected Matchups.Control Build A
 2094,matchup_test,gorilla_vs_gorilla,control_build_b,string,,Expected Matchups,O14,1,0,Источник Expected Matchups.Control Build B
+2095,global,root,global.sim.max_events_per_battle,int,events,Global Config,D90,1,1,Максимум событий боя
+2096,global,root,global.sim.max_zero_progress_ticks,int,ticks,Global Config,D91,1,1,Порог тиков без прогресса

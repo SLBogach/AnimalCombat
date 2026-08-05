@@ -3,6 +3,7 @@ using Battle.Contracts.Ids;
 using Battle.Contracts.Ports;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
+using System.Runtime.CompilerServices;
 
 namespace Battle.Core.UnitTests.Contracts;
 
@@ -45,6 +46,41 @@ public sealed class EventContractTests
         };
 
         Assert.Equal(expected, Enum.GetNames<CombatEventType>());
+    }
+
+    [Fact]
+    public void EventCatalog_HasExactlyOneSealedTypedPayloadPerEventType()
+    {
+        var payloadTypes = typeof(CombatEventPayload)
+            .Assembly
+            .GetTypes()
+            .Where(type =>
+                type.IsClass &&
+                !type.IsAbstract &&
+                typeof(CombatEventPayload).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.Equal(Enum.GetValues<CombatEventType>().Length, payloadTypes.Length);
+        Assert.All(payloadTypes, type => Assert.True(type.IsSealed, type.FullName));
+        Assert.All(
+            payloadTypes,
+            type => Assert.True(
+                typeof(IRelatedCombatEventPayload).IsAssignableFrom(type),
+                type.FullName));
+
+        var eventTypes = payloadTypes
+            .Select(type =>
+            {
+                var payload = (CombatEventPayload)RuntimeHelpers.GetUninitializedObject(type);
+                return payload.EventType;
+            })
+            .ToArray();
+
+        foreach (var eventType in Enum.GetValues<CombatEventType>())
+        {
+            Assert.Single(eventTypes, actual => actual == eventType);
+            Assert.Contains(payloadTypes, type => type.Name == eventType + "Payload");
+        }
     }
 
     [Fact]
@@ -142,6 +178,23 @@ public sealed class EventContractTests
 
         Assert.Equal(FighterId.FighterA, payload.InitiativeOrder[0]);
         Assert.Equal(FighterId.FighterB, payload.InitiativeOrder[1]);
+    }
+
+    [Fact]
+    public void BattleEndedPayload_DefensivelyCopiesRelatedEventIds()
+    {
+        var related = new List<EventId> { EventId.FromSequence(1) };
+        var payload = new BattleEndedPayload(related, ContractFixtures.CreateSummary());
+
+        related.Clear();
+
+        Assert.Equal(CombatEventType.BattleEnded, payload.EventType);
+        Assert.Equal(EventId.FromSequence(1), Assert.Single(payload.RelatedEventIds));
+        Assert.Empty(new BattleEndedPayload(ContractFixtures.CreateSummary()).RelatedEventIds);
+        Assert.Throws<ArgumentException>(
+            () => new BattleEndedPayload(
+                new[] { EventId.FromSequence(1), EventId.FromSequence(1) },
+                ContractFixtures.CreateSummary()));
     }
 
     [Fact]

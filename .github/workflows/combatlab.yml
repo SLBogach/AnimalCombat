@@ -3,10 +3,12 @@ name: CombatLab
 on:
   push:
     paths:
+      - ".gitattributes"
       - "CombatLab/**"
       - ".github/workflows/combatlab.yml"
   pull_request:
     paths:
+      - ".gitattributes"
       - "CombatLab/**"
       - ".github/workflows/combatlab.yml"
 

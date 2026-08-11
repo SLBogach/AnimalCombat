@@ -1,0 +1,2 @@
+# Canonical generated CSV artifacts are compared byte-for-byte in CI.
+CombatLab/config/generated/*.csv text eol=lf

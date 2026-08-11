@@ -3,16 +3,18 @@ name: CombatLab
 on:
   push:
     paths:
+      - ".gitattributes"
       - "CombatLab/**"
       - ".github/workflows/combatlab.yml"
   pull_request:
     paths:
+      - ".gitattributes"
       - "CombatLab/**"
       - ".github/workflows/combatlab.yml"
 
 jobs:
   build-and-test:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} / ${{ matrix.configuration }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -20,6 +22,9 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
+        configuration:
+          - Debug
+          - Release
 
     defaults:
       run:
@@ -40,7 +45,63 @@ jobs:
         run: dotnet restore CombatLab.sln --locked-mode
 
       - name: Build
-        run: dotnet build CombatLab.sln --configuration Release --no-restore
+        run: dotnet build CombatLab.sln --configuration ${{ matrix.configuration }} --no-restore
+
+      - name: Verify WP-06 target determinism
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp06-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
+
+      - name: Verify WP-07 target determinism
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp07-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
+
+      - name: Verify WP-04 generated balance artifacts
+        shell: pwsh
+        run: ./scripts/verify-wp04-generated.ps1 -Configuration ${{ matrix.configuration }}
 
       - name: Test
-        run: dotnet test CombatLab.sln --configuration Release --no-build --no-restore
+        run: >-
+          dotnet test CombatLab.sln
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+
+      - name: Collect Battle.Core coverage
+        if: matrix.configuration == 'Release'
+        run: >-
+          dotnet test tests/Battle.Core.UnitTests/Battle.Core.UnitTests.csproj
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+          --collect:"XPlat Code Coverage"
+          --settings coverage.runsettings
+          --results-directory TestResults/Coverage
+
+      - name: Enforce WP-02 branch coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp02-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
+
+      - name: Enforce WP-03 branch coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp03-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
+
+      - name: Enforce WP-06 branch coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp06-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
+
+      - name: Enforce WP-07 coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: ./scripts/verify-wp07-coverage.ps1 -ResultsDirectory ./TestResults/Coverage
+
+      - name: Publish coverage
+        if: always() && matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: combatlab-coverage-${{ matrix.os }}
+          path: CombatLab/TestResults/Coverage/**/coverage.cobertura.xml

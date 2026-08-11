@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Battle.Config\Battle.Config.csproj" />
     <ProjectReference Include="..\..\src\Battle.Contracts\Battle.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Battle.Replay\Battle.Replay.csproj" />
   </ItemGroup>

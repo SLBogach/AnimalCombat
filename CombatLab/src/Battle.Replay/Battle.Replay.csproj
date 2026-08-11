@@ -8,4 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Battle.Contracts\Battle.Contracts.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
 </Project>

@@ -1,8 +1,10 @@
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Ports;
+using Battle.Contracts.Replay;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
+using System.Runtime.CompilerServices;
 
 namespace Battle.Core.UnitTests.Contracts;
 
@@ -45,6 +47,41 @@ public sealed class EventContractTests
         };
 
         Assert.Equal(expected, Enum.GetNames<CombatEventType>());
+    }
+
+    [Fact]
+    public void EventCatalog_HasExactlyOneSealedTypedPayloadPerEventType()
+    {
+        var payloadTypes = typeof(CombatEventPayload)
+            .Assembly
+            .GetTypes()
+            .Where(type =>
+                type.IsClass &&
+                !type.IsAbstract &&
+                typeof(CombatEventPayload).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.Equal(Enum.GetValues<CombatEventType>().Length, payloadTypes.Length);
+        Assert.All(payloadTypes, type => Assert.True(type.IsSealed, type.FullName));
+        Assert.All(
+            payloadTypes,
+            type => Assert.True(
+                typeof(IRelatedCombatEventPayload).IsAssignableFrom(type),
+                type.FullName));
+
+        var eventTypes = payloadTypes
+            .Select(type =>
+            {
+                var payload = (CombatEventPayload)RuntimeHelpers.GetUninitializedObject(type);
+                return payload.EventType;
+            })
+            .ToArray();
+
+        foreach (var eventType in Enum.GetValues<CombatEventType>())
+        {
+            Assert.Single(eventTypes, actual => actual == eventType);
+            Assert.Contains(payloadTypes, type => type.Name == eventType + "Payload");
+        }
     }
 
     [Fact]
@@ -145,16 +182,38 @@ public sealed class EventContractTests
     }
 
     [Fact]
+    public void BattleEndedPayload_DefensivelyCopiesRelatedEventIds()
+    {
+        var related = new List<EventId> { EventId.FromSequence(1) };
+        var payload = new BattleEndedPayload(related, ContractFixtures.CreateSummary());
+
+        related.Clear();
+
+        Assert.Equal(CombatEventType.BattleEnded, payload.EventType);
+        Assert.Equal(EventId.FromSequence(1), Assert.Single(payload.RelatedEventIds));
+        Assert.Empty(new BattleEndedPayload(ContractFixtures.CreateSummary()).RelatedEventIds);
+        Assert.Throws<ArgumentException>(
+            () => new BattleEndedPayload(
+                new[] { EventId.FromSequence(1), EventId.FromSequence(1) },
+                ContractFixtures.CreateSummary()));
+    }
+
+    [Fact]
     public void JournalPort_AcceptsDraftAndSummaryByReadonlyReference()
     {
         var journal = new RecordingJournal();
+        var start = ContractFixtures.CreateJournalStart();
         var draft = CreateDraft(Array.Empty<ReasonCode>());
         var summary = ContractFixtures.CreateSummary();
 
+        var begin = journal.Begin(in start);
         var identity = journal.Append(in draft);
-        journal.Complete(in summary);
+        var completion = journal.Complete(in summary);
 
+        Assert.Equal(ContractFixtures.Digest, begin.InputDigest);
         Assert.Equal(draft.EventId, identity.EventId);
+        Assert.Equal(ContractFixtures.Digest, completion.FinalDigest);
+        Assert.Null(completion.PublishedReplayId);
         Assert.Same(summary, journal.Summary);
     }
 
@@ -195,12 +254,16 @@ public sealed class EventContractTests
     {
         public BattleSummary? Summary { get; private set; }
 
+        public JournalBeginResult Begin(in CombatJournalStart start) =>
+            new(ContractFixtures.Digest);
+
         public CombatEventIdentity Append(in CombatEventDraft draft) =>
             new(draft.EventId, draft.Sequence);
 
-        public void Complete(in BattleSummary summary)
+        public JournalCompletion Complete(in BattleSummary summary)
         {
             Summary = summary;
+            return new JournalCompletion(ContractFixtures.Digest, null);
         }
     }
 }

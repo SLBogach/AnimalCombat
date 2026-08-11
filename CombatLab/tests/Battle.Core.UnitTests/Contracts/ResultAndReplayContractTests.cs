@@ -1,3 +1,4 @@
+using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Replay;
 using Battle.Contracts.Results;
@@ -84,5 +85,37 @@ public sealed class ResultAndReplayContractTests
 
         Assert.Equal(first, second);
         Assert.Equal("case-0001", first.CaseId);
+    }
+
+    [Fact]
+    public void CombatJournalStart_PreservesTypedInputAndStrictFighterSlots()
+    {
+        var start = ContractFixtures.CreateJournalStart();
+
+        Assert.Equal(new ExternalId("battle-contract-0001"), start.BattleId);
+        Assert.Equal(42UL, start.Input.MasterSeed);
+        Assert.Equal(new StableId("mode_open_v01"), start.Input.ModeRulesId);
+        Assert.Equal(FighterId.FighterA, start.FighterA.InitialFrame.FighterId);
+        Assert.Equal(FighterId.FighterB, start.FighterB.InitialFrame.FighterId);
+
+        Assert.Throws<ArgumentException>(
+            () => new CombatJournalStart(
+                start.BattleId,
+                start.EngineVersion,
+                start.RngVersion,
+                start.OrderingVersion,
+                start.Config,
+                start.Input,
+                start.FighterB,
+                start.FighterA));
+    }
+
+    [Fact]
+    public void ArenaSnapshot_RejectsInvalidBoundsAndStarts()
+    {
+        Assert.Throws<ArgumentException>(
+            () => new ArenaSnapshot(new StableId("arena"), 10, 10, 10, 10));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new ArenaSnapshot(new StableId("arena"), 0, 100, -1, 50));
     }
 }

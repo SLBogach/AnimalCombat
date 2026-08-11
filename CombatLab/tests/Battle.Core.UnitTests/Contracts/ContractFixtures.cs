@@ -1,5 +1,7 @@
+using Battle.Contracts.Config;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
+using Battle.Contracts.Replay;
 using Battle.Contracts.Requests;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
@@ -35,12 +37,60 @@ internal static class ContractFixtures
 
     public static BattleRequest CreateRequest() =>
         new(
+            new ExternalId("battle-contract-0001"),
             ContractVersions.Engine,
             Digest,
-            new ArtifactVersion("mode.rules/0.1"),
+            CreateModeRules(),
             42UL,
             CreateBuild(FighterSide.A),
             CreateBuild(FighterSide.B));
+
+    public static ModeRulesSnapshot CreateModeRules() =>
+        new(
+            new StableId("mode_open_v01"),
+            ContractVersions.ModeRules,
+            NormalizationMode.None,
+            new[] { new StableId("animal_b"), new StableId("animal_a") },
+            new[]
+            {
+                new StableId("special_b_two"),
+                new StableId("special_a_two"),
+                new StableId("sys_wait"),
+                new StableId("special_b_one"),
+                new StableId("special_a_one"),
+            },
+            new[] { new StableId("passive_b"), new StableId("passive_a") },
+            new[]
+            {
+                new StableId("gear_b_utility"),
+                new StableId("gear_a_utility"),
+                new StableId("gear_b_offense"),
+                new StableId("gear_a_offense"),
+                new StableId("gear_b_defense"),
+                new StableId("gear_a_defense"),
+            },
+            new[] { new StableId("tactic_b"), new StableId("tactic_a") });
+
+    public static CombatJournalStart CreateJournalStart() =>
+        new(
+            new ExternalId("battle-contract-0001"),
+            ContractVersions.Engine,
+            ContractVersions.Rng,
+            ContractVersions.Ordering,
+            new ConfigReference(
+                ContractVersions.BalanceSchema,
+                new ArtifactVersion("v0.1"),
+                Digest),
+            new BattleInputSnapshot(
+                42UL,
+                new StableId("mode_open_v01"),
+                new ArenaSnapshot(new StableId("arena"), -100, 100, -10, 10)),
+            new CombatJournalFighterStart(
+                CreateBuild(FighterSide.A),
+                CreateFrame(FighterId.FighterA)),
+            new CombatJournalFighterStart(
+                CreateBuild(FighterSide.B),
+                CreateFrame(FighterId.FighterB)));
 
     public static FighterFrame CreateFrame(FighterId fighterId) =>
         new(

@@ -1,10 +1,11 @@
 namespace CombatLab.Cli;
 
+using CombatLab.Runner.Config;
+
 internal static class Program
 {
     public static int Main(string[] args)
     {
-        _ = args;
-        return 0;
+        return ConfigCommand.Execute(args, Console.Out, Console.Error, Directory.GetCurrentDirectory());
     }
 }

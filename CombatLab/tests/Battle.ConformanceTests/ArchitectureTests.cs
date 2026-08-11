@@ -57,7 +57,7 @@ public sealed class ArchitectureTests
                 .Descendants("ProjectReference")
                 .Select(element => element.Attribute("Include")?.Value)
                 .Where(path => !string.IsNullOrWhiteSpace(path))
-                .Select(path => Path.GetFileNameWithoutExtension(path!))
+                .Select(path => Path.GetFileNameWithoutExtension(path!.Replace('\\', '/')))
                 .OrderBy(name => name, StringComparer.Ordinal)
                 .ToArray();
             var expectedReferences = expectedProject.Value
@@ -99,8 +99,15 @@ public sealed class ArchitectureTests
     public void JournalPort_ExposesExactMethodShape()
     {
         var journalType = typeof(Battle.Contracts.Ports.ICombatEventJournal);
+        var begin = journalType.GetMethod("Begin", BindingFlags.Instance | BindingFlags.Public);
         var append = journalType.GetMethod("Append", BindingFlags.Instance | BindingFlags.Public);
         var complete = journalType.GetMethod("Complete", BindingFlags.Instance | BindingFlags.Public);
+
+        Assert.NotNull(begin);
+        Assert.Equal(typeof(Battle.Contracts.Ports.JournalBeginResult), begin.ReturnType);
+        Assert.Equal(
+            typeof(Battle.Contracts.Replay.CombatJournalStart).MakeByRefType(),
+            Assert.Single(begin.GetParameters()).ParameterType);
 
         Assert.NotNull(append);
         Assert.Equal(typeof(Battle.Contracts.Events.CombatEventIdentity), append.ReturnType);
@@ -109,7 +116,7 @@ public sealed class ArchitectureTests
             Assert.Single(append.GetParameters()).ParameterType);
 
         Assert.NotNull(complete);
-        Assert.Equal(typeof(void), complete.ReturnType);
+        Assert.Equal(typeof(Battle.Contracts.Ports.JournalCompletion), complete.ReturnType);
         Assert.Equal(
             typeof(Battle.Contracts.Results.BattleSummary).MakeByRefType(),
             Assert.Single(complete.GetParameters()).ParameterType);
@@ -128,6 +135,7 @@ public sealed class ArchitectureTests
         Assert.Equal("enable", buildProps.Descendants("Nullable").Single().Value);
         Assert.Equal("true", buildProps.Descendants("TreatWarningsAsErrors").Single().Value);
         Assert.Equal("true", buildProps.Descendants("Deterministic").Single().Value);
+        Assert.Equal("true", buildProps.Descendants("CheckForOverflowUnderflow").Single().Value);
         Assert.Equal("true", buildProps.Descendants("RestorePackagesWithLockFile").Single().Value);
     }
 

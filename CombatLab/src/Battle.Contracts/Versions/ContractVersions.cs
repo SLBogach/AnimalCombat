@@ -2,13 +2,15 @@ namespace Battle.Contracts.Versions;
 
 public static class ContractVersions
 {
-    public static ArtifactVersion Engine { get; } = new("battle.core/0.1.0");
+    public static ArtifactVersion Engine { get; } = new("battle.core/0.2.0");
 
     public static ArtifactVersion BalanceSchema { get; } = new("combat.balance/0.1");
 
     public static ArtifactVersion Rng { get; } = new("pcg32/1");
 
     public static ArtifactVersion Ordering { get; } = new("tick-pipeline/1");
+
+    public static ArtifactVersion ModeRules { get; } = new("mode.rules/0.1");
 
     public static ArtifactVersion Replay { get; } = new("combat.replay/0.1");
 

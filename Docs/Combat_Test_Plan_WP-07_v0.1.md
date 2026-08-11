@@ -1,6 +1,6 @@
 # Combat Test Plan WP-07 v0.1 — Movement
 
-> Статус: `IMPLEMENTED / LOCAL ACCEPTANCE PASS; CI PENDING`. Все локально исполнимые blocking cases green; финальный `COMPLETED` ожидает фактический Windows/Linux Release CI pass. `OPEN-WP07-13` закрыт утверждённым defer stat clamp до WP-10.
+> Статус: `EXECUTED / PASSED`; WP-07 — `COMPLETED`. Все blocking cases и фактическая GitHub Actions Windows/Linux matrix green. `OPEN-WP07-13` закрыт утверждённым defer stat clamp до WP-10.
 >
 > Этот документ является exact pass/fail-матрицей WP-07 и закрывает `OPEN-WP07-01..13` только для 1D geometry, system approach/retreat и separation.
 
@@ -17,7 +17,7 @@ Test Plan задаёт blocking acceptance для:
 - movement events, frames, causality и replay verification;
 - determinism, safety, regression и architecture gates.
 
-Статус `LOCAL ACCEPTANCE PASS; CI PENDING` означает, что код и matrix исполнены локально, но этап ещё не объявлен завершённым без внешнего Linux/Windows CI evidence.
+Статус `COMPLETED` означает, что exact matrix исполнена локально и подтверждена внешней GitHub Actions Debug/Release matrix на Linux/Windows.
 
 ## 2. Источники и precedence
 
@@ -542,18 +542,21 @@ Coverage run обязан пройти WP-02, WP-03, WP-06 и новый WP-07 g
 - один fresh coverage report: WP-02/WP-03/WP-06/WP-07 critical gates `100%`, Battle.Core line gate `>=85%`;
 - `UnityClient`, balance JSON/schema/manifest и existing WP-05 fixtures не изменены.
 
-GitHub Actions настроен запускать WP-07 target/coverage gates в Release на `windows-latest` и `ubuntu-latest`. Поскольку git commit/push запрещён текущей задачей, эти незакоммиченные изменения ещё не могли пройти внешний Linux job; поэтому WP-07 пока не получает статус `COMPLETED`.
+GitHub Actions execution от `2026-08-11` для code head `2248ac9` прошёл на `windows-latest` и `ubuntu-latest`: Debug и Release — все четыре jobs green. Release jobs подтвердили WP-04 generated artifacts, WP-06/WP-07 target determinism, полный test suite и coverage gates на обеих OS.
 
-WP-07 переводится в `COMPLETED` только когда:
+WP-07 переведён в `COMPLETED` после выполнения всех условий:
 
 - утверждённый defer `OPEN-WP07-13` реализован без runtime default и незаявленного DATA/schema drift;
 - вся §13 green;
 - Release build/test green;
+- GitHub Actions Windows/Linux Debug/Release matrix green — `4/4` jobs;
 - golden hashes/digests pinned после independent rerun;
 - existing WP-05 fixtures не drift; pre-migration WP-06 wait archive создан/pinned до bump и не меняется; current-engine wait добавлен отдельно;
 - config/schema/manifest остаются актуальными;
 - `UnityClient` не изменён;
 - `Implementation_Status.md`, Brief, Test Plan, Decisions и Index обновлены итоговыми фактами.
+
+Все условия выполнены; остаточное обязательство `OPEN-WP07-13` остаётся утверждённым scope WP-10 и не блокирует завершение WP-07.
 
 ## 15. Не входит
 

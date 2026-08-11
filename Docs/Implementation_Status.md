@@ -9,10 +9,11 @@
 - WP-04 Configuration pipeline
 - WP-05 Replay
 - WP-06 Engine shell
+- WP-07 Movement
 
 WP-05 завершил typed event journal, canonical JSON, SHA-256 event chain и replay verifier. Его требования сохранены в [WP-05_Brief.md](./WP-05_Brief.md).
 
-## Последний завершённый этап
+## Завершённый WP-06 Engine shell
 
 **WP-06 Engine shell — `COMPLETED`.**
 
@@ -68,9 +69,9 @@ Current Engine `battle.core/0.2.0`:
 
 Оба artifacts дают `Draw / TimeoutEqualHealthFraction` на tick `1`; historical bytes сохранены до Engine bump и не перезаписывались.
 
-## Текущий реализованный этап
+## Последний завершённый этап
 
-**WP-07 Movement — `IMPLEMENTED / LOCAL ACCEPTANCE PASS; CI PENDING`.**
+**WP-07 Movement — `COMPLETED`.**
 
 Реализованы:
 
@@ -93,13 +94,15 @@ Pinned `approach_band_l3`:
 
 Локальный Windows execution от `2026-08-05`: locked restore green; Release build `0` warnings/errors; `528` tests passed; WP-04 reproducibility, WP-06/WP-07 target parity green; WP-02/WP-03/WP-06/WP-07 critical coverage `100%`, Battle.Core line gate `>=85%`. `UnityClient` и DATA artifacts не изменены.
 
+GitHub Actions execution от `2026-08-11` для code head `2248ac9`: `ubuntu-latest` и `windows-latest`, Debug и Release — все четыре jobs green. Release jobs подтвердили WP-04 reproducibility, WP-06/WP-07 target determinism, полный test suite и coverage gates на обеих OS.
+
 `OPEN-WP07-01..13` закрыты и реализованы. `OPEN-WP07-13` сохраняет обязательство WP-10: общий stat clamp/DATA migration должен быть добавлен до movement effects/modifiers.
 
-Статус не повышен до `COMPLETED`, потому что незакоммиченные изменения ещё не прошли фактический GitHub Actions Release matrix на Windows/Linux. Workflow уже содержит оба OS и WP-07 target/coverage gates.
+Фактическая GitHub Actions Windows/Linux matrix green; все blocking acceptance criteria выполнены, поэтому WP-07 переведён в `COMPLETED`.
 
 ## Следующее действие
 
-Проверить diff, затем после разрешённого пользователем commit/push дождаться green Windows/Linux CI. После этого перевести WP-07 в `COMPLETED` и подготовить WP-08 Decisions; Codex commit не выполняет.
+Опубликовать documentation closure в текущем Pull Request, объединить green PR с `master`, синхронизировать локальный `master` и подготовить WP-08 Decisions: Brief, exact Test Plan и решения для всех `OPEN-WP08-*` до начала реализации.
 
 ## Ограничения
 

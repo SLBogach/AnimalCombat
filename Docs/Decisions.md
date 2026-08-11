@@ -67,7 +67,7 @@
 
 ### Закрытые и реализованные решения
 
-- `OPEN-WP07-01 — CLOSED`: [WP-07 Brief](./WP-07_Brief.md) задаёт scope, а [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — обязательный exact pass/fail. Matrix реализована и локально green; `COMPLETED` ожидает внешний Windows/Linux CI pass.
+- `OPEN-WP07-01 — CLOSED`: [WP-07 Brief](./WP-07_Brief.md) задаёт scope, а [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — обязательный exact pass/fail. Matrix реализована; локальные проверки и фактическая Windows/Linux CI matrix green, WP-07 — `COMPLETED`.
 - `OPEN-WP07-02 — CLOSED`: canonical fixed-point key — `global.sim.fp_scale`; `global.sim.math_scale` из TDD §7.1 считается терминологической ошибкой. Runtime alias/default запрещён.
 - `OPEN-WP07-03 — CLOSED`: position является центром тела. Legal bounds равны `[arena.min + collision_radius, arena.max - collision_radius]`; initial A-left/B-right order и non-overlap обязательны. Separation distance выводится из суммы radii, новый DATA key не вводится.
 - `OPEN-WP07-04 — CLOSED`: neutral surface-gap band включителен и равен `[sys_approach.preferred_range_max, sys_retreat.preferred_range_min]`, сейчас `1500..1600`. Ниже выбирается Retreat при наличии outward headroom, внутри — Wait, выше — Approach. Это даёт ровно один positive candidate и не вводит weighted WP-08 semantics.
@@ -84,7 +84,7 @@
 ### Статус этапа
 
 - `OPEN-WP07-01..13` закрыты и реализованы; проектных/DATA blockers нет.
-- WP-07 имеет статус `IMPLEMENTED / LOCAL ACCEPTANCE PASS; CI PENDING`: `528` local Release tests green, target/coverage/generated gates green.
+- WP-07 имеет статус `COMPLETED`: `528` local tests и фактическая GitHub Actions Windows/Linux Debug/Release matrix green; target/coverage/generated gates прошли на обеих OS.
 - Current wait pins: input `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`, final `sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b`, file `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`.
 - Movement pins: config `sha256:6abd6c81701abacdb394fe637e450ae357719e5caf49ef17ccb269573e2ee7b4`, input `sha256:dae170bccf84b44e6c0c173692e6198c45ec0e0ae1484bf9c7dd989cad4a0b20`, final `sha256:956b15fd915222f8b404823dfab070c6bc2f6e1852309d1ef12dc988954cfe93`, file `7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873`.
-- `UnityClient` остаётся вне scope и не изменён. Финальный `COMPLETED` допускается после фактического Windows/Linux CI pass.
+- `UnityClient` остаётся вне scope и не изменён. Финальный `COMPLETED` зафиксирован после фактического Windows/Linux CI pass от `2026-08-11` для code head `2248ac9`.

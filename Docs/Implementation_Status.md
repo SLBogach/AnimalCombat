@@ -100,22 +100,22 @@ GitHub Actions execution от `2026-08-11` для code head `2248ac9`: `ubuntu-l
 
 Фактическая GitHub Actions Windows/Linux matrix green; все blocking acceptance criteria выполнены, поэтому WP-07 переведён в `COMPLETED`.
 
-## Текущий подготовленный этап
+## Текущий этап
 
-**WP-08 Decisions — `PREPARED / DECISIONS PROPOSED; IMPLEMENTATION NOT STARTED`.**
+**WP-08 Decisions — `READY / DECISIONS APPROVED; IMPLEMENTATION NOT STARTED`.**
 
-Подготовлены:
+Утверждены:
 
-1. [WP-08 Brief](./WP-08_Brief.md) с текущей structural gap-картой, scope WP-08/WP-09 и точными proposed-решениями `OPEN-WP08-01..17`;
-2. [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md) с proposed matrix, которая после approval становится blocking для catalog/availability, weights, Decision RNG, repeat/opportunity, atomic commit, diagnostics/replay, determinism и regression;
-3. proposed compatibility policy для отсутствующего в canonical v0.1 явного `target_selector`, без ActionId-specific hardcode и без изменения balance schema до approval;
-4. proposed engine bump `battle.core/0.2.0 → battle.core/0.3.0` с обязательным сохранением historical fixtures и отдельным weighted golden `decision_weighted_l1`.
+1. [WP-08 Brief](./WP-08_Brief.md) с текущей structural gap-картой, scope WP-08/WP-09 и точными утверждёнными решениями `OPEN-WP08-01..17`;
+2. [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md) как blocking matrix для catalog/availability, weights, Decision RNG, repeat/opportunity, atomic commit, diagnostics/replay, determinism и regression;
+3. утверждённая compatibility policy для отсутствующего в canonical v0.1 явного `target_selector`, без ActionId-specific hardcode и без изменения balance schema;
+4. утверждённый engine bump `battle.core/0.2.0 → battle.core/0.3.0` с обязательным сохранением historical fixtures и отдельным weighted golden `decision_weighted_l1`.
 
-Все `OPEN-WP08-*` имеют статус `OPEN / PROPOSED`: решения ещё не утверждены и не реализованы. Production code/tests, `ContractVersions`, config/schema/generated artifacts и replay fixtures на этом documentation-only этапе не изменялись. `UnityClient` не изменён.
+Все `OPEN-WP08-01..17` имеют статус `CLOSED` по owner approval от `2026-08-11`. Решения утверждены, но ещё не реализованы: production code/tests, `ContractVersions`, config/schema/generated artifacts и replay fixtures пока не изменялись. `UnityClient` не изменён.
 
 ## Следующее действие
 
-Провести review и явно принять либо скорректировать `OPEN-WP08-01..17`. После approval отметить решения `CLOSED`, перевести WP-08 в `READY` и только затем начинать production-реализацию по blocking matrix. До approval код WP-08 не начинать.
+Начать production-реализацию WP-08 по утверждённым [Brief](./WP-08_Brief.md) и [Combat Test Plan](./Combat_Test_Plan_WP-08_v0.1.md), реализовать blocking matrix и сохранить historical replay bytes и `UnityClient` без изменений.
 
 ## Ограничения
 

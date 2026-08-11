@@ -8,6 +8,7 @@
 4. [Combat Lab Technical Design v0.1](./Combat_Lab_Technical_Design_v0.1.docx) — архитектура и этапы WP.
 5. [Combat Test Plan v0.1](./Combat_Test_Plan_v0.1.md) — exact pass/fail-матрица WP-06; закрывает `OPEN-05`.
 6. [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — исполненная exact pass/fail-матрица Movement; закрывает `OPEN-WP07-01..13`, Windows/Linux CI green.
+7. [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md) — утверждённая blocking exact pass/fail-матрица Decisions; `OPEN-WP08-01..17` закрыты, выполнение ещё не начато.
 
 ## Рабочие этапы
 
@@ -21,7 +22,7 @@
 | WP-05 | Replay | завершён | [WP-05 Brief](./WP-05_Brief.md) |
 | WP-06 | Engine shell: initialization, tick coordinator, outcome/watchdog | завершён | [WP-06 Brief](./WP-06_Brief.md) |
 | WP-07 | Movement | завершён | [WP-07 Brief](./WP-07_Brief.md) |
-| WP-08 | Decisions | `PREPARED`: решения предложены, реализация не начата | [WP-08 Brief](./WP-08_Brief.md) |
+| WP-08 | Decisions | `READY`: решения утверждены, реализация не начата | [WP-08 Brief](./WP-08_Brief.md) |
 | WP-09 | Resolution | запланирован | — |
 | WP-10 | Effects | запланирован | — |
 | WP-11 | Fighters | запланирован | — |
@@ -37,8 +38,8 @@
 - [Завершённый WP-06 Engine shell](./WP-06_Brief.md)
 - [Завершённый WP-07 Movement](./WP-07_Brief.md)
 - [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md)
-- [Подготовленный WP-08 Decisions](./WP-08_Brief.md)
-- [Combat Test Plan WP-08 v0.1 — DRAFT / NOT EXECUTED](./Combat_Test_Plan_WP-08_v0.1.md)
+- [Готовый к реализации WP-08 Decisions](./WP-08_Brief.md)
+- [Combat Test Plan WP-08 v0.1 — APPROVED / NOT EXECUTED](./Combat_Test_Plan_WP-08_v0.1.md)
 
 ## Правила
 

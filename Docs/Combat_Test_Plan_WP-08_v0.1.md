@@ -1,8 +1,8 @@
 # Combat Test Plan WP-08 v0.1 — Decisions
 
-> Статус: `DRAFT / NOT EXECUTED`; WP-08 — `PREPARED`.
+> Статус: `APPROVED / NOT EXECUTED`; WP-08 — `READY`.
 >
-> Это proposed blocking acceptance matrix. Ни один case ещё не реализован и не пройден. Matrix становится нормативной только после явного approval `OPEN-WP08-01..17`.
+> Это утверждённая blocking acceptance matrix. `OPEN-WP08-01..17` закрыты owner approval от `2026-08-11`; ни один WP-08 case ещё не заявлен как реализованный или пройденный.
 
 ## 1. Назначение
 
@@ -26,7 +26,7 @@ Test Plan задаёт exact pass/fail для:
 - Combat Lab Technical Design v0.1: §§8.1–8.3, 12–13.2, 15.1–15.2, 21.2–21.4, 23.2, приложения B/E.
 - Combat Event & Replay Schema v0.1: §§7–8.3, 9.2, 10.1–10.2, 11–12.2, 19.3–19.4, 21.2–21.4.
 - Canonical balance config v0.1 — actions/tactics/passive/gear/settings values and Stable IDs.
-- [WP-08 Brief](./WP-08_Brief.md) — scope, algorithms и proposed decisions.
+- [WP-08 Brief](./WP-08_Brief.md) — утверждённые scope, algorithms и decisions.
 - [Decisions](./Decisions.md) — approval/closure state.
 
 CDS combat rule → DATA number/ID → Replay Schema wire/integrity → TDD architecture → этот Test Plan pass/fail. Existing code не разрешает конфликт сам по себе.
@@ -43,17 +43,15 @@ Blocking WP-08 проверяет decision/commit и generic lifecycle. След
 
 Combat action может пройти `Startup → Active → Recovery → null`, но его Active phase до WP-09 не наносит урон и не двигает бойца/цель.
 
-## 4. Approval contract
+## 4. Approval state
 
-Все cases ниже предполагают approval exact решений `OPEN-WP08-01..17` из Brief. До approval:
+Exact решения `OPEN-WP08-01..17` из Brief утверждены. Поэтому:
 
-- документы имеют статус draft/proposal;
-- тестовые checkbox не отмечаются;
-- `ContractVersions.Engine` не меняется;
-- fixture/digest не создаётся;
-- production files не изменяются.
-
-После approval `Decisions.md` должен пометить каждый пункт `CLOSED`, а WP-08 — `READY`.
+- этот Test Plan является нормативной blocking matrix;
+- `Decisions.md` помечает каждый пункт `CLOSED`;
+- WP-08 имеет статус `READY`;
+- тестовые cases остаются `NOT EXECUTED`, пока нет фактической реализации и результатов;
+- `ContractVersions.Engine`, fixtures/digests и production files изменяются только в ходе реализации, не самим фактом approval.
 
 ## 5. DATA и validation oracle
 
@@ -705,7 +703,7 @@ WP-08 may become `COMPLETED` only when:
 - `battle.core/0.3.0` current fixtures added, historical fixture bytes unchanged;
 - exact weighted fixture digests pinned and verifier green;
 - standard/diagnostic canonical parity proven;
-- docs updated from proposed/DRAFT to executed facts;
+- docs updated from `APPROVED / NOT EXECUTED` to executed facts;
 - `UnityClient` unchanged.
 
-До этого Test Plan остаётся `DRAFT / NOT EXECUTED` и не является утверждением, что decision engine уже работает.
+До выполнения этих условий Test Plan остаётся `APPROVED / NOT EXECUTED` и не является утверждением, что decision engine уже работает.

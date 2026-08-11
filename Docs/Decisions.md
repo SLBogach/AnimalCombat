@@ -1,4 +1,4 @@
-# Принятые решения
+# Решения и предложения
 
 ## WP-04 JSON envelope
 
@@ -88,3 +88,33 @@
 - Current wait pins: input `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`, final `sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b`, file `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`.
 - Movement pins: config `sha256:6abd6c81701abacdb394fe637e450ae357719e5caf49ef17ccb269573e2ee7b4`, input `sha256:dae170bccf84b44e6c0c173692e6198c45ec0e0ae1484bf9c7dd989cad4a0b20`, final `sha256:956b15fd915222f8b404823dfab070c6bc2f6e1852309d1ef12dc988954cfe93`, file `7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873`.
 - `UnityClient` остаётся вне scope и не изменён. Финальный `COMPLETED` зафиксирован после фактического Windows/Linux CI pass от `2026-08-11` для code head `2248ac9`.
+
+## WP-08 Decisions
+
+### Предложенные решения — не утверждены и не реализованы
+
+Полное обоснование, формулы и implementation boundary находятся в [WP-08 Brief](./WP-08_Brief.md), а exact proposed acceptance — в [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md).
+
+- `OPEN-WP08-01 — OPEN / PROPOSED`: Brief задаёт scope; Test Plan WP-08 становится blocking matrix только после явного approval.
+- `OPEN-WP08-02 — OPEN / PROPOSED`: checked catalog — all System + actor-animal Basic + actor-animal Special в ordinal ActionId order; mode/loadout остаются predicates и видны в diagnostic trace. Mode/config collections sort canonically, но порядок двух build Specials является canonical input и может менять input digest.
+- `OPEN-WP08-03 — OPEN / PROPOSED`: один immutable phase-5 `DecisionBatchSnapshot` снимается после phases 2–4 и до draw/commit; оба решения читают его, selector не читает mutable state; `tick-pipeline/1` не меняется.
+- `OPEN-WP08-04 — OPEN / PROPOSED`: для текущего `combat.balance/0.1` target/range выводятся только из System/slot/hit schedule/movement mode/range fields по Brief, без branches по конкретному ActionId. Non-System Opponent допускает `None/Approach/Follow/Push/Pull/Swap`, Self — `None/Approach/Retreat/Adaptive`; иная pair получает `AmbiguousTargetProfile`. Explicit target DATA review отложен до WP-11.
+- `OPEN-WP08-05 — OPEN / PROPOSED`: availability predicates и first rejection code имеют фиксированный порядок state/category → mode → owner/slot/loadout → cooldown → costs → target → decision/system range → headroom → observed telegraph → MaxConsecutive. Rejected WP-07 system profile uses `SystemBandUnavailable`/`NoMovementHeadroom`; fighter-specific prerequisites остаются WP-09/WP-11 seams.
+- `OPEN-WP08-06 — OPEN / PROPOSED`: final weight — checked sequential fixed-point `Base × Tactic × Situation × Synergy × Counter × Variety × Opportunity`, floor после каждого stage, multiplier/final clamps из DATA; reachable overflow/sum risk rejected pre-start, runtime `DecisionArithmeticOverflow` guards only corrupted internal input.
+- `OPEN-WP08-07 — OPEN / PROPOSED`: tactic fields отображаются на exact tags/stages и fold order из Brief; `counter_fp`, context fields и `repeat_penalty_fp` не дублируются в Tactic stage; canonical key `low_hpfp` сохраняется.
+- `OPEN-WP08-08 — OPEN / PROPOSED`: Situation использует только DATA-backed low-HP/wall/recovery contexts; range влияет на availability, несуществующий distance multiplier не выдумывается. Synergy — passive tag multiplier и gear `normalized_value` в slot order.
+- `OPEN-WP08-09 — OPEN / PROPOSED`: Counter читает только committed observable telegraph после tactic perception delay; required tactic value авторитетен, global default не является runtime fallback; future/uncommitted opponent choice и direct AnimalId bonus запрещены.
+- `OPEN-WP08-10 — OPEN / PROPOSED`: precedence — one legal, emergency suppression of hard, HardOpportunity, zero sum, weighted RNG. При multiple legal и positive sum один draw выполняется даже с одним positive-weight candidate. Candidates/intervals ordinal; draws A→B без reserved indices.
+- `OPEN-WP08-11 — OPEN / PROPOSED`: Variety хранит immediate consecutive ActionId/category; same-action, same-category, tactic repeat multipliers применяются в этом порядке. MaxConsecutive использует двухпроходное правило и не может самостоятельно удалить все base-legal candidates.
+- `OPEN-WP08-12 — OPEN / PROPOSED`: opportunity debt per Special: legal miss increments, illegal unchanged, selected commit resets; growth/cap exact. Action hard value `0` disables override; ready legal Special may hard-select even at final weight `0`, before zero-sum fallback; multiple hard tie — debt DESC, weight DESC, ActionId ASC. Emergency threat detection поставляет WP-09.
+- `OPEN-WP08-13 — OPEN / PROPOSED`: оба commit descriptors и previewed Decision RNG freeze до mutation; exact whole-batch event-cap preflight предотвращает partial decision/commit. Затем authoritative submutations идут A→B без повторной rule evaluation: Decisions A/B, Commits A/B, costs A/B, telegraphs A/B. Frames снимаются из каждой submutation; B descriptor остаётся snapshot-frozen. Cost списывается один раз; cooldown first decrements next tick; combat timing freeze использует CDS §10.5; periodic gains остаются WP-11.
+- `OPEN-WP08-14 — OPEN / PROPOSED`: Opponent target/direction freeze по decision snapshot; Self target fields null. Non-empty hit schedule emit `AttackPrepared`. Generic combat lifecycle uses actor-only phase events with `StartupCompleted`/`ActiveCompleted`/`RecoveryCompleted` and exact source chain; WP-07 `MovementCompleted`/`MoveEnded` semantics remain unchanged. No combat intents/Resolution RNG/HP or position mutation.
+- `OPEN-WP08-15 — OPEN / PROPOSED`: canonical event/replay shape/version достаточны; legal diagnostic candidate содержит ровно шесть folded stage traces, illegal — none, оставаясь внутри schema cap. Optional diagnostic sink публикует DecisionTrace и общий версионированный `decision.batch-snapshot/0.1` commitment вне canonical chain; contracts/verifier усиливают mode/weight/RNG semantics, Standard/Diagnostic parity обязательна.
+- `OPEN-WP08-16 — OPEN / PROPOSED`: Engine bump до `battle.core/0.3.0`; event/replay/balance/RNG/ordering versions сохраняются; historical fixtures immutable, current wait и `decision_weighted_l1` создаются отдельно.
+- `OPEN-WP08-17 — OPEN / PROPOSED`: никаких Bear/Kangaroo/Gorilla или combat ActionId switches. Resolution — WP-09, effects/stat clamp — WP-10, полный fighter-kit availability/resource/passive semantics и explicit target DATA review — WP-11.
+
+### Статус этапа
+
+- WP-08 — `PREPARED / DECISIONS PROPOSED; IMPLEMENTATION NOT STARTED`.
+- `OPEN-WP08-01..17` ещё не `CLOSED`; owner approval является blocking decision gate.
+- Production code, tests, versions, config artifacts и fixtures WP-08 не изменялись; `UnityClient` не изменён.

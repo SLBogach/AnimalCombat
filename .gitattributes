@@ -1,2 +1,9 @@
-# Canonical generated CSV artifacts are compared byte-for-byte in CI.
+# Canonical artifacts and replay package files are compared byte-for-byte in CI.
+.gitattributes text eol=lf
 CombatLab/config/generated/*.csv text eol=lf
+CombatLab/README.md text eol=lf
+CombatLab/manifest.json text eol=lf
+CombatLab/examples/*.json text eol=lf
+CombatLab/schemas/*.json text eol=lf
+CombatLab/schemas/replay/v0.1/*.json text eol=lf
+CombatLab/fixtures/replay/v0.1/*.json text eol=lf

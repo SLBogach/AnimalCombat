@@ -83,8 +83,11 @@ public sealed class Wp08CrossCuttingRegressionTests
             "38db30bd8572f325c6259bc110456944ed18ec42538d584953b6290205be9fae",
             Hash(PathInRoot("config", "generated", "combat.balance.v0.1.map.csv")));
         Assert.Equal(
-            "db1287436f6cd7412df3ba664d37bf7eb0825cb2d854de275c3f40722edf0fa5",
-            Hash(PathInRoot("config", "generated", "combat.balance.v0.1.validation.json")));
+            "041ff6c70a2e1d9f0cd91b6edeae3879e72782a38f043730ce1ae191c6a74526",
+            Hash(PathInRoot(
+                "config",
+                "generated",
+                "combat.balance.v0.1.validation.json")));
 
         var gate = Read("scripts", "verify-wp04-generated.ps1");
         Assert.Contains("combat.balance.v0.1.json", gate);

@@ -1,8 +1,8 @@
 # WP-08 Brief — Decisions
 
-> Статус: `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.
+> Статус: `COMPLETED`.
 >
-> Все `OPEN-WP08-01..17` закрыты и реализованы. В коде присутствуют тесты для всех `107` уникальных blocking ID; финальная GitHub Actions matrix ещё не выполнялась на текущем head, поэтому статус не `COMPLETED`.
+> Все `OPEN-WP08-01..17` закрыты и реализованы. Тесты покрывают все `107` уникальных blocking ID; GitHub Actions matrix `windows-latest`/`ubuntu-latest` × Debug/Release green для code head `26e151f` от `2026-08-19`.
 
 ## 1. Результат этапа
 
@@ -131,7 +131,7 @@ DATA gap: CDS §9.1 называет `TargetSelector` обязательным A
 
 | OPEN | Статус | Точное утверждённое решение |
 |---|---|---|
-| `OPEN-WP08-01` | `CLOSED` | Этот Brief задаёт утверждённый scope, а [Combat Test Plan WP-08](./Combat_Test_Plan_WP-08_v0.1.md) является blocking exact pass/fail matrix. После реализации всех `107` unique IDs WP-08 имеет статус `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`. |
+| `OPEN-WP08-01` | `CLOSED` | Этот Brief задаёт утверждённый scope, а [Combat Test Plan WP-08](./Combat_Test_Plan_WP-08_v0.1.md) является blocking exact pass/fail matrix. Все `107` unique IDs реализованы и green локально и в обязательной Windows/Linux CI matrix; WP-08 имеет статус `COMPLETED`. |
 | `OPEN-WP08-02` | `CLOSED` | Checked catalog строится в ordinal `ActionId` order: все три System actions; все Basic actor animal; все Special actor animal. Mode/loadout являются predicates, поэтому rejected entries остаются в diagnostic trace. Production legal set содержит один WP-07 system candidate, allowlisted Basics и ровно два выбранных allowlisted Specials, прошедших predicates. Mode/config collections canonical-sort; порядок двух `FighterBuildSnapshot.SpecialActionIds` остаётся canonical input и не обещает одинаковый input digest при перестановке. |
 | `OPEN-WP08-03` | `CLOSED` | Phase 5 начинает работу с одним immutable `DecisionBatchSnapshot`, снятым после phases 2–4 и до первого draw/commit. Оба actor contexts входят в него одновременно; selector не читает mutable `BattleState`. Это не новая tick phase и не меняет `tick-pipeline/1`. Phase-1 pre-tick snapshot и observer trace сохраняются. |
 | `OPEN-WP08-04` | `CLOSED` | В `combat.balance/0.1` target выводится без ActionId branches: System → Opponent; non-system с `hit_count>0` или non-empty `hit_schedule` → Opponent; иначе Self. Opponent inference допускает `None/Approach/Follow/Push/Pull/Swap`, Self — `None/Approach/Retreat/Adaptive`; любая иная inferred-target/movement pair отклоняется как `AmbiguousTargetProfile` до старта. Opponent stationary/Push/Pull/Swap проверяет inclusive hit range; Opponent Approach/Follow — inclusive preferred start range; Self Approach/Retreat/Adaptive проверяет direction/headroom, Self None legal at any gap. Impact range повторно проверит WP-09. `CurrentGrabTarget` отложен до WP-09; explicit DATA target field пересматривается в WP-11. |
@@ -384,13 +384,13 @@ Historical `0.1.0`/`0.2.0` wait и `approach_band_l3` bytes не перезап�
 
 ## 12. Статус реализации
 
-WP-08 имеет статус `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`:
+WP-08 имеет статус `COMPLETED`:
 
 - owner approval `OPEN-WP08-01..17` и blocking decision gate сохранены;
 - production implementation и тестовые методы для всех `107` unique blocking IDs присутствуют;
 - `battle.core/0.3.0`, diagnostic/replay hardening и новые versioned fixtures добавлены;
 - historical replay bytes, generated balance artifacts и `UnityClient` не изменены;
 - local verification от `2026-08-19` green: locked restore; Release build `0` warnings/errors; full solution `875/875`; filtered `WorkPackage=WP08` `347/347`; generated, target-determinism, historical replay и все coverage gates green;
-- GitHub Actions `windows-latest`/`ubuntu-latest` × Debug/Release для финального WP-08 head ещё не запускалась.
+- GitHub Actions от `2026-08-19` для code head `26e151f`: `windows-latest`/`ubuntu-latest` × Debug/Release — все четыре jobs green.
 
-Статус `COMPLETED` запрещён до фактического green CI matrix. Следующий шаг — отправить ветку и подтвердить все четыре CI jobs.
+Все completion conditions выполнены. Следующий шаг — зафиксировать обновление документации, дождаться CI на новом docs head и объединить Pull Request; после merge можно готовить WP-09 Resolution.

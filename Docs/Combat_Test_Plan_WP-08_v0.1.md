@@ -1,8 +1,8 @@
 # Combat Test Plan WP-08 v0.1 — Decisions
 
-> Статус: `IMPLEMENTED / LOCAL VERIFIED; CI PENDING`; WP-08 — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.
+> Статус: `EXECUTED / PASSED`; WP-08 — `COMPLETED`.
 >
-> Это утверждённая blocking acceptance matrix. `OPEN-WP08-01..17` закрыты и реализованы; тестовые методы покрывают все `107` уникальных blocking ID. Local gates от `2026-08-19` green; GitHub Actions matrix ожидает выполнения на финальном head.
+> Это исполненная blocking acceptance matrix. `OPEN-WP08-01..17` закрыты и реализованы; тестовые методы покрывают все `107` уникальных blocking ID. Local gates и GitHub Actions matrix `windows-latest`/`ubuntu-latest` × Debug/Release green от `2026-08-19`.
 
 ## 1. Назначение
 
@@ -49,11 +49,11 @@ Exact решения `OPEN-WP08-01..17` из Brief утверждены. Поэ�
 
 - этот Test Plan является нормативной blocking matrix;
 - `Decisions.md` помечает каждый пункт `CLOSED`;
-- WP-08 имеет статус `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`;
+- WP-08 имеет статус `COMPLETED`;
 - production implementation и тесты для всех `107` уникальных §14 IDs присутствуют;
 - `ContractVersions.Engine` повышен до `battle.core/0.3.0`, current fixtures созданы отдельно от immutable historical fixtures;
 - consolidated local run green: locked restore, Release build/test, filtered inventory, generated/target/historical replay и coverage gates;
-- статус `COMPLETED` запрещён до green `windows-latest`/`ubuntu-latest` × Debug/Release на финальном head.
+- обязательная matrix `windows-latest`/`ubuntu-latest` × Debug/Release green для code head `26e151f`.
 
 ## 5. DATA и validation oracle
 
@@ -719,7 +719,7 @@ Current record:
 - coverage execution: Core `522` passed and WP-08 conformance `184` passed; WP-02, WP-03, WP-06, WP-07 and WP-08 coverage gates green, including required `100%` critical branch targets and Battle.Core line coverage `>=85%`;
 - WP-04 generated reproducibility and WP-06/WP-07/WP-08 target-determinism gates green for Release; current fixtures match `netstandard2.1`/`net10.0`, historical SHA pins remain unchanged;
 - current WP-08 wait pins: recorded and enforced by the fixture test/target gate;
-- GitHub Actions Windows/Linux Debug/Release: pending on final WP-08 head;
+- GitHub Actions от `2026-08-19` для code head `26e151f`: Windows/Linux Debug/Release — все четыре jobs green;
 - `UnityClient`: unchanged.
 
-До выполнения всех completion conditions Test Plan имеет статус `IMPLEMENTED / LOCAL VERIFIED; CI PENDING`, а WP-08 — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`, но не `COMPLETED`.
+Все completion conditions выполнены. Test Plan имеет статус `EXECUTED / PASSED`, WP-08 — `COMPLETED`.

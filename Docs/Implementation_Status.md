@@ -10,6 +10,7 @@
 - WP-05 Replay
 - WP-06 Engine shell
 - WP-07 Movement
+- WP-08 Decisions
 
 WP-05 завершил typed event journal, canonical JSON, SHA-256 event chain и replay verifier. Его требования сохранены в [WP-05_Brief.md](./WP-05_Brief.md).
 
@@ -100,9 +101,9 @@ GitHub Actions execution от `2026-08-11` для code head `2248ac9`: `ubuntu-l
 
 Фактическая GitHub Actions Windows/Linux matrix green; все blocking acceptance criteria выполнены, поэтому WP-07 переведён в `COMPLETED`.
 
-## Текущий этап
+## Завершённый WP-08 Decisions
 
-**WP-08 Decisions — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.**
+**WP-08 Decisions — `COMPLETED`.**
 
 Реализованы все `107` уникальных blocking ID из [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md):
 
@@ -164,11 +165,15 @@ Consolidated Windows run от `2026-08-19` по §15 Combat Test Plan завер
 - WP-02/WP-03/WP-06/WP-07/WP-08 coverage gates — green; required critical branches `100%`, Battle.Core line coverage `>=85%`;
 - `git diff --check` — green; historical fixtures имеют прежние SHA.
 
+### GitHub Actions WP-08
+
+GitHub Actions execution от `2026-08-19` для code head `26e151f`: `ubuntu-latest` и `windows-latest`, Debug и Release — все четыре jobs green. CI подтвердил полную test suite и обязательные generated, target-determinism, historical replay и coverage gates на обеих ОС.
+
 `UnityClient` и generated balance artifacts не изменены.
 
 ## Следующее действие
 
-Отправить финальный head в GitHub и дождаться зелёной matrix `windows-latest`/`ubuntu-latest` × Debug/Release. Только после фактического CI pass WP-08 можно перевести из `LOCAL IMPLEMENTATION COMPLETE / CI PENDING` в `COMPLETED`.
+Зафиксировать это документальное обновление, дождаться зелёной CI matrix на новом docs head и объединить Pull Request в `master`. После merge следующий этап разработки — подготовка WP-09 Resolution.
 
 ## Ограничения
 

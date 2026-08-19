@@ -123,8 +123,8 @@
 
 ### Статус этапа
 
-- WP-08 — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.
+- WP-08 — `COMPLETED`.
 - `OPEN-WP08-01..17` закрыты и реализованы; автоматические тесты существуют для всех `107` уникальных blocking ID.
 - Engine повышен до `battle.core/0.3.0`; weighted fixture и current wait pinned отдельными artifacts. Current wait: config `sha256:f7524a127ca0ec085562d1ca43fc91d384b7f713f1ddb323be53bc701f6d0dc3`, input `sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08`, final `sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9`, file `8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd`, events `8`; historical fixture bytes сохранены.
-- Consolidated local verification от `2026-08-19` green: locked restore, Release build `0/0`, full solution `875/875`, filtered WP-08 `347/347`, generated/target/historical replay и coverage gates. GitHub Actions `windows-latest`/`ubuntu-latest` × Debug/Release ещё не выполнена на финальном head, поэтому статус не `COMPLETED`.
+- Consolidated local verification от `2026-08-19` green: locked restore, Release build `0/0`, full solution `875/875`, filtered WP-08 `347/347`, generated/target/historical replay и coverage gates. GitHub Actions от `2026-08-19` для code head `26e151f`: `windows-latest`/`ubuntu-latest` × Debug/Release — все четыре jobs green; completion gate закрыт.
 - `UnityClient` и canonical generated balance artifacts не изменены.

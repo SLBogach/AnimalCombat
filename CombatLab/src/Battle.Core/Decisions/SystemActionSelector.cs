@@ -66,14 +66,24 @@ internal static class SystemActionSelector
         }
 
         var weightSum = 0;
-        foreach (var candidate in candidates)
+        try
         {
-            if (candidate.Weight < 0)
+            foreach (var candidate in candidates)
             {
-                throw new ArgumentOutOfRangeException(nameof(candidates));
-            }
+                if (candidate.Weight < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(candidates));
+                }
 
-            weightSum = checked(weightSum + candidate.Weight);
+                weightSum = checked(weightSum + candidate.Weight);
+            }
+        }
+        catch (OverflowException exception)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.DecisionArithmeticOverflow,
+                TickPhase.Decisions.ToString(),
+                "System decision weight sum overflowed: " + exception.Message);
         }
 
         if (candidates.Count == 1)

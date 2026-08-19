@@ -41,7 +41,10 @@ public sealed class MovementGoldenTests
         AssertCommonTrace(
             run,
             "sys_approach",
-            650,
+            812,
+            715,
+            new[] { ("Tactic", 1_250) },
+            new[] { ("Synergy", 1_100) },
             MoveStartKind.Approach,
             CommitDirection.Right,
             CommitDirection.Left,
@@ -67,7 +70,10 @@ public sealed class MovementGoldenTests
         AssertCommonTrace(
             run,
             "sys_retreat",
-            450,
+            337,
+            618,
+            new[] { ("Tactic", 750) },
+            new[] { ("Tactic", 1_250), ("Synergy", 1_100) },
             MoveStartKind.Retreat,
             CommitDirection.Left,
             CommitDirection.Right,
@@ -93,7 +99,10 @@ public sealed class MovementGoldenTests
         AssertCommonTrace(
             run,
             "sys_retreat",
-            450,
+            303,
+            618,
+            new[] { ("Tactic", 750), ("Situation", 900) },
+            new[] { ("Tactic", 1_250), ("Synergy", 1_100) },
             MoveStartKind.Retreat,
             CommitDirection.Left,
             CommitDirection.Right,
@@ -205,7 +214,10 @@ public sealed class MovementGoldenTests
     private static void AssertCommonTrace(
         MovementEngineRun run,
         string actionId,
-        int actionWeight,
+        int actionWeightA,
+        int actionWeightB,
+        IReadOnlyList<(string Code, int Multiplier)> dominantA,
+        IReadOnlyList<(string Code, int Multiplier)> dominantB,
         MoveStartKind movementKind,
         CommitDirection directionA,
         CommitDirection directionB,
@@ -274,16 +286,33 @@ public sealed class MovementGoldenTests
         Assert.Equal(
             Enumerable.Range(0, 18).Select(index => index is >= 1 and <= 14 ? actionId : null),
             events.Select(item => item.Draft.ActionId?.Value));
-        Assert.Equal(
-            new[]
-            {
-                "Initialization", "OnlyLegalAction", "OnlyLegalAction", "ActionSelected", "ActionSelected",
-                "StartupCompleted", "StartupCompleted", "MovementStarted", "MovementStarted",
-                "VoluntaryMovement", "VoluntaryMovement", stopReasonB, stopReasonA,
-                "MovementCompleted", "MovementCompleted", "TimeLimitReached",
-                "TimeoutEqualHealthFraction", "TimeoutEqualHealthFraction",
-            },
-            events.Select(item => Assert.Single(item.Draft.ReasonCodes).Value));
+        var expectedReasons = new IReadOnlyList<string>[]
+        {
+            new[] { "Initialization" },
+            new[] { "OnlyLegalAction" }.Concat(dominantA.Select(item => item.Code)).ToArray(),
+            new[] { "OnlyLegalAction" }.Concat(dominantB.Select(item => item.Code)).ToArray(),
+            new[] { "ActionSelected" },
+            new[] { "ActionSelected" },
+            new[] { "StartupCompleted" },
+            new[] { "StartupCompleted" },
+            new[] { "MovementStarted" },
+            new[] { "MovementStarted" },
+            new[] { "VoluntaryMovement" },
+            new[] { "VoluntaryMovement" },
+            new[] { stopReasonB },
+            new[] { stopReasonA },
+            new[] { "MovementCompleted" },
+            new[] { "MovementCompleted" },
+            new[] { "TimeLimitReached" },
+            new[] { "TimeoutEqualHealthFraction" },
+            new[] { "TimeoutEqualHealthFraction" },
+        };
+        for (var index = 0; index < expectedReasons.Length; index++)
+        {
+            Assert.Equal(
+                expectedReasons[index],
+                events[index].Draft.ReasonCodes.Select(code => code.Value));
+        }
         Assert.All(events, item =>
         {
             Assert.Null(item.Draft.Rng);
@@ -307,16 +336,20 @@ public sealed class MovementGoldenTests
         AssertFrame(initialA, initialA, initialPositionA, FighterState.DecisionReady, null, null, null);
         AssertFrame(initialB, initialB, initialPositionB, FighterState.DecisionReady, null, null, null);
 
+        var decisionWeights = new[] { actionWeightA, actionWeightB };
+        var decisionDominants = new[] { dominantA, dominantB };
         foreach (var index in new[] { 1, 2 })
         {
             var decision = Assert.IsType<DecisionMadePayload>(events[index].Draft.Payload);
             Assert.Equal(stableActionId, decision.ChosenActionId);
             Assert.Equal(new[] { stableActionId }, decision.LegalActionIds);
             Assert.Equal(1, decision.CandidateCount);
-            Assert.Equal(actionWeight, decision.ChosenWeight);
-            Assert.Equal(actionWeight, decision.WeightSum);
+            Assert.Equal(decisionWeights[index - 1], decision.ChosenWeight);
+            Assert.Equal(decisionWeights[index - 1], decision.WeightSum);
             Assert.Equal(DecisionSelectionMode.OnlyLegalAction, decision.SelectionMode);
-            Assert.Empty(decision.DominantModifiers);
+            Assert.Equal(
+                decisionDominants[index - 1],
+                decision.DominantModifiers.Select(item => (item.Code.Value, item.MultiplierFixedPoint)));
         }
 
         var committedA = Assert.IsType<ActionCommittedPayload>(events[3].Draft.Payload);

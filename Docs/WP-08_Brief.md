@@ -1,8 +1,8 @@
 # WP-08 Brief — Decisions
 
-> Статус: `READY / DECISIONS APPROVED; IMPLEMENTATION NOT STARTED`.
+> Статус: `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.
 >
-> Все `OPEN-WP08-01..17` закрыты явным owner approval от `2026-08-11`. Утверждение требований не означает реализацию: production-код, тесты, версии и fixtures WP-08 пока не изменялись.
+> Все `OPEN-WP08-01..17` закрыты и реализованы. В коде присутствуют тесты для всех `107` уникальных blocking ID; финальная GitHub Actions matrix ещё не выполнялась на текущем head, поэтому статус не `COMPLETED`.
 
 ## 1. Результат этапа
 
@@ -55,31 +55,24 @@ Source order: CDS gameplay semantics → canonical balance DATA/Stable IDs → R
 
 ## 3. Текущее состояние проекта
 
-### 3.1 Уже существует
+### 3.1 Реализованный production seam
 
-- `Battle.Core.Decisions.SystemActionSelector`:
-  - `OnlyLegalAction`;
-  - zero-weight priority `sys_approach > sys_retreat > sys_wait`;
-  - намеренный отказ от weighted selection нескольких positive candidates.
-- `ISystemActionAvailability` и `Wp07SystemActionAvailability` возвращают один legal system candidate по surface gap/headroom.
-- `TickCoordinator`:
-  - вызывает phase 5;
-  - создаёт решения A/B до commits;
-  - emit order: `DecisionMade A`, `DecisionMade B`, `ActionCommitted A`, `ActionCommitted B`.
-- `GameplayRng.Decision` и `Pcg32Stream.NextInt` уже дают unbiased bounded draw и полную `RngProvenance`.
-- Contracts уже содержат `DecisionMadePayload`, `ActionCommittedPayload`, `AttackPreparedPayload`, `ModifierTrace`, `DecisionSelectionMode` и `RngProvenance`.
-- `CompiledBattleConfig` хранит Stable-ID-sorted catalogs действий, tactics, passive и gear.
-- `FighterRuntimeState` уже имеет cooldown dictionary, action/phase/timer и decision counter, но не общий combat-action descriptor, repeat history или opportunity debt.
+- `Battle.Config` materializes и валидирует typed AI/action/tactic/passive/gear decision profiles, target/range inference, bounds и reachable overflow risks без runtime defaults.
+- `Battle.Core.Decisions` содержит Stable-ID-ordered catalog, fixed first-rejection availability, шесть weight stages, selection precedence, repeat/opportunity state и unbiased Decision RNG provenance.
+- `DecisionBatchSnapshot` является immutable общим phase-5 view обоих бойцов; selector и frozen A/B descriptors не читают mutable runtime state после snapshot.
+- Atomic commit preflight исключает partial decision batch; costs, cooldowns, timers, direction и target применяются из frozen descriptors в утверждённом A→B event/submutation order.
+- Generic non-System lifecycle выпускает `AttackPrepared` только при непустом hit schedule и не выполняет WP-09 resolution, damage или forced movement.
+- Optional diagnostic sink публикует `DecisionTrace` и `decision.batch-snapshot/0.1` commitment вне canonical event chain.
+- `Battle.Replay` связывает selection mode, weights, RNG nullability/index/result, chosen candidate, timings, target/direction, costs, telegraph и lifecycle; malformed/tampered package возвращает typed verification failure без exception.
+- `ContractVersions.Engine = battle.core/0.3.0`; остальные wire/determinism versions сохранены.
 
-### 3.2 Недостающий production seam
+### 3.2 Safety boundaries
 
-- `BattleSetupFactory` валидирует build specials/passive/gear/tactic, но не сохраняет их как typed decision profile.
-- `TickSnapshot` содержит только public frames; cooldown/history/opportunity/tactic/perception data отсутствуют.
-- Selector не умеет positive weighted choice.
-- Energy/resource cost и cooldown не применяются на commit.
-- Combat action lifecycle не обобщён поверх WP-07 system movement lifecycle.
-- Replay semantic validator проверяет RNG index continuity, но не связывает `selection_mode`, weights и RNG nullability.
-- Diagnostic profile пока не публикует schema-defined DecisionTrace overlay.
+- `InvalidSystemAction` (`$.actions[<action_id>]`) запрещает неизвестный дополнительный `sys_*` action.
+- `DecisionTimingOverflowRisk` (`$.actions[<action_id>].hit_schedule`) запрещает reachable impact timing overflow до `journal.Begin`.
+- Diagnostic checked catalog ограничен `256` кандидатами; legal decision set ограничен `128`. Это разные limits: diagnostics сохраняет полный checked catalog, Core выбирает только из bounded legal set.
+- Weight stages, legal-weight sum, action timers, repeat/opportunity/decision counters и absolute impact ticks используют checked arithmetic и typed failures вместо wraparound.
+- `UnityClient`, historical replay bytes и canonical generated balance artifacts не изменены.
 
 ## 4. Scope
 
@@ -138,7 +131,7 @@ DATA gap: CDS §9.1 называет `TargetSelector` обязательным A
 
 | OPEN | Статус | Точное утверждённое решение |
 |---|---|---|
-| `OPEN-WP08-01` | `CLOSED` | Этот Brief задаёт утверждённый scope, а [Combat Test Plan WP-08](./Combat_Test_Plan_WP-08_v0.1.md) является blocking exact pass/fail matrix. WP-08 имеет статус `READY`. |
+| `OPEN-WP08-01` | `CLOSED` | Этот Brief задаёт утверждённый scope, а [Combat Test Plan WP-08](./Combat_Test_Plan_WP-08_v0.1.md) является blocking exact pass/fail matrix. После реализации всех `107` unique IDs WP-08 имеет статус `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`. |
 | `OPEN-WP08-02` | `CLOSED` | Checked catalog строится в ordinal `ActionId` order: все три System actions; все Basic actor animal; все Special actor animal. Mode/loadout являются predicates, поэтому rejected entries остаются в diagnostic trace. Production legal set содержит один WP-07 system candidate, allowlisted Basics и ровно два выбранных allowlisted Specials, прошедших predicates. Mode/config collections canonical-sort; порядок двух `FighterBuildSnapshot.SpecialActionIds` остаётся canonical input и не обещает одинаковый input digest при перестановке. |
 | `OPEN-WP08-03` | `CLOSED` | Phase 5 начинает работу с одним immutable `DecisionBatchSnapshot`, снятым после phases 2–4 и до первого draw/commit. Оба actor contexts входят в него одновременно; selector не читает mutable `BattleState`. Это не новая tick phase и не меняет `tick-pipeline/1`. Phase-1 pre-tick snapshot и observer trace сохраняются. |
 | `OPEN-WP08-04` | `CLOSED` | В `combat.balance/0.1` target выводится без ActionId branches: System → Opponent; non-system с `hit_count>0` или non-empty `hit_schedule` → Opponent; иначе Self. Opponent inference допускает `None/Approach/Follow/Push/Pull/Swap`, Self — `None/Approach/Retreat/Adaptive`; любая иная inferred-target/movement pair отклоняется как `AmbiguousTargetProfile` до старта. Opponent stationary/Push/Pull/Swap проверяет inclusive hit range; Opponent Approach/Follow — inclusive preferred start range; Self Approach/Retreat/Adaptive проверяет direction/headroom, Self None legal at any gap. Impact range повторно проверит WP-09. `CurrentGrabTarget` отложен до WP-09; explicit DATA target field пересматривается в WP-11. |
@@ -153,7 +146,7 @@ DATA gap: CDS §9.1 называет `TargetSelector` обязательным A
 | `OPEN-WP08-13` | `CLOSED` | Commit descriptors обоих actors полностью создаются до mutation; между descriptor freeze и концом batch нет rule evaluation. Exact batch events и previewed Decision RNG state проходят event-cap preflight до первого phase-5 emit/mutation; недостаточная capacity оставляет gameplay/RNG/history неизменными и ведёт к reserved terminal invalid event. Canonical projection применяет authoritative submutations A→B: Decisions A/B, ActionCommitted A/B, затем cost events A energy/resource, B energy/resource, затем AttackPrepared A/B. Каждый event снимает frames из своей submutation; поэтому target frame commit B может уже содержать public committed state A, но никогда не меняет frozen B descriptor. Costs списываются один раз, cooldown ставится на commit и впервые декрементируется в phase 3 следующего tick. Combat startup/recovery freeze использует CDS §10.5; Active/HitSchedule не ускоряются; `FixedTiming` использует identity. Periodic resource gains остаются WP-11. |
 | `OPEN-WP08-14` | `CLOSED` | Opponent commit target/direction freeze по decision snapshot; Self имеет null target/target frame/target position, direction вычисляется только для movement profile. `AttackPrepared` emit для non-empty hit schedule: telegraph tick=commit tick, impact ticks=`commit+startup+schedule`, direction locked, source=`ActionCommitted`. Generic combat lifecycle использует actor-only `ActionPhaseChanged`, exact reasons `StartupCompleted`/`ActiveCompleted`/`RecoveryCompleted` и lifecycle-anchor chain из §8; WP-07 movement chain/reasons не меняются. Phases 7–10 не создают combat intents и не меняют HP/position. |
 | `OPEN-WP08-15` | `CLOSED` | Existing canonical event/replay shape достаточна. Constructors и semantic validator усиливаются: sorted legal IDs, count/list equality, chosen membership, mode/weight/RNG rules, `Decision/NextInt`, range `0..weight_sum`, raw/result/normalized checks. Legal diagnostic candidate несёт ровно шесть folded stage traces (`Tactic..Opportunity`), illegal — none, поэтому schema cap `16` не нарушается. Diagnostic-only typed sink публикует DecisionTrace и общий `decision.batch-snapshot/0.1` digest из §9; Standard remains `diagnostics=null`; canonical events/input/final digest совпадают. |
-| `OPEN-WP08-16` | `CLOSED` | Behavior bump: `battle.core/0.2.0 → battle.core/0.3.0`. `combat.event/0.1`, `combat.replay/0.1`, `combat.balance/0.1`, `pcg32/1`, `tick-pipeline/1` сохраняются. Historical `0.1.0/0.2.0` fixtures immutable; до completion создаются current wait `0.3.0` и weighted `decision_weighted_l1` fixture с pinned bytes/digests. |
+| `OPEN-WP08-16` | `CLOSED` | Behavior bump: `battle.core/0.2.0 → battle.core/0.3.0`. `combat.event/0.1`, `combat.replay/0.1`, `combat.balance/0.1`, `pcg32/1`, `tick-pipeline/1` сохраняются. Historical `0.1.0/0.2.0` fixtures immutable; current wait `0.3.0` и weighted `decision_weighted_l1` создаются отдельными versioned artifacts. |
 | `OPEN-WP08-17` | `CLOSED` | WP-08 не вводит action-specific switch по Bear/Kangaroo/Gorilla. Generic target/range/tag behavior входит сейчас; resolution prerequisites — WP-09, effects/stat clamp — WP-10, полный fighter-kit availability/resource/passive semantics и explicit target DATA review — WP-11. |
 
 ## 7. Canonical decision algorithms
@@ -191,7 +184,7 @@ MaxConsecutive — двухпроходное правило:
 3. reject capped candidate только если существует хотя бы один base-legal non-capped alternative;
 4. если все base-legal candidates capped, cap никого не удаляет, а Variety penalties продолжают действовать.
 
-System availability не меняется: ниже neutral band Retreat при headroom, внутри Wait, выше Approach. Поэтому в production legal set присутствует ровно один system candidate, который конкурирует с combat actions.
+System availability сохраняет строгую WP-07 truth table: ниже neutral band при положительном outward headroom legal только Retreat, ниже band при нулевом headroom legal только Wait, внутри inclusive band legal только Wait, выше band legal только Approach. Mode exclusion не «ремонтируется» другим system action: если обязательный кандидат запрещён mode, Core получает no-legal typed invariant/rejection. Поэтому при согласованном mode в production legal set присутствует ровно один system candidate, который конкурирует с combat actions.
 
 ### 7.3 Weight
 
@@ -335,35 +328,51 @@ DrawDeclared(TimeoutEqualHealthFraction)
 BattleEnded
 ```
 
-Exact config/input/final/file digests фиксируются после первого approved implementation run и до статуса `COMPLETED`; до этого historical fixture bytes не меняются.
+Pinned weighted fixture:
 
-## 11. План реализации
+- fixture config: `sha256:26c53cf464539e2ebf1eb37f90d73715adb0842e29e6b7a9eeaede8336d49227`;
+- input: `sha256:eaee293a90e5fc432ab1822965b3f632abc803bd79b23ae401a8fc9fd8a2b021`;
+- final: `sha256:6ed4f34aa845096ee63d125d306fbef64ff469773e14389bfe1152146a007f3f`;
+- file SHA-256: `1e2ea3f87bab119b1db687556d7835b2791089b095d202285c7e7f037e331eb0`;
+- canonical events: `9`.
+
+Pinned current `wait_equal_l1` fixture для `battle.core/0.3.0`:
+
+- fixture config: `sha256:f7524a127ca0ec085562d1ca43fc91d384b7f713f1ddb323be53bc701f6d0dc3`;
+- input: `sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08`;
+- final: `sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9`;
+- file SHA-256: `8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd`;
+- canonical events: `8`.
+
+Historical `0.1.0`/`0.2.0` wait и `approach_band_l3` bytes не перезаписываются.
+
+## 11. Реализованные изменения
 
 1. Contracts/typed profiles:
-   - усилить invariants `DecisionMadePayload`/`RngProvenance`;
-   - добавить diagnostic trace DTO и optional sink contract;
-   - не менять canonical event shape.
+   - усилены invariants `DecisionMadePayload`/`RngProvenance`;
+   - добавлены diagnostic trace DTO и optional sink contract;
+   - canonical event shape не изменён.
 2. Config/setup:
-   - materialize/validate AI settings, action/tactic/passive/gear decision profiles;
-   - сохранить build refs и derived ActionSpeed;
-   - добавить overflow, schedule, tag и candidate-count checks без defaults.
+   - materialized/validated AI settings, action/tactic/passive/gear decision profiles;
+   - build refs и derived ActionSpeed сохраняются;
+   - добавлены typed bounds, schedule, tag, system-action, candidate-count и overflow checks без defaults.
 3. Core decision model:
-   - `DecisionBatchSnapshot`, catalog, ordered availability, CandidateScore;
-   - stage calculators, repeat/opportunity state и selector;
-   - Decision RNG provenance.
+   - реализованы `DecisionBatchSnapshot`, catalog, ordered availability и candidate scoring;
+   - реализованы stage calculators, repeat/opportunity state и selector;
+   - Decision RNG consumption/provenance соответствует утверждённой precedence.
 4. Commit/lifecycle:
-   - frozen generic action descriptor;
-   - atomic A/B commits, cost/cooldown, phase transitions и `AttackPrepared`;
-   - сохранить WP-07 movement behavior.
+   - реализован frozen generic action descriptor;
+   - A/B commits, costs/cooldowns, phase transitions и `AttackPrepared` выполняются атомарно;
+   - WP-07 movement lifecycle и strict system truth table сохранены.
 5. Replay:
-   - decision semantic validation и tamper cases;
-   - diagnostic overlay writer/profile parity.
+   - усилена decision/lifecycle semantic validation и tamper rejection;
+   - реализованы diagnostic overlay writer и Standard/Diagnostic canonical parity.
 6. Acceptance:
-   - unit/conformance/integration/determinism/safety/coverage tests;
-   - engine bump `0.3.0`, immutable historical checks, current wait и weighted golden;
-   - locked restore, Release build/test, target parity и Windows/Linux CI.
+   - добавлены unit/conformance/integration/determinism/safety/architecture/coverage tests для всех `107` уникальных blocking ID;
+   - Engine повышен до `0.3.0`, historical fixtures сохранены, weighted golden и current wait добавлены отдельными pinned artifacts;
+   - repository scripts/runsettings включают WP-08 target determinism и coverage gates.
 
-Предполагаемые production areas:
+Затронутые production areas:
 
 - `CombatLab/src/Battle.Contracts/Events`, `Replay`, `Ports`;
 - `CombatLab/src/Battle.Core/Decisions`, `Engine`, `Initialization`;
@@ -371,16 +380,17 @@ Exact config/input/final/file digests фиксируются после перв
 - `CombatLab/src/Battle.Replay/Journal`, `Verification`;
 - соответствующие test projects, scripts и новые versioned fixtures.
 
-`UnityClient`, WP-09 resolution files и existing historical fixture bytes не изменяются.
+`UnityClient`, WP-09 resolution files и existing historical fixture bytes не изменены.
 
-## 12. Статус готовности к реализации
+## 12. Статус реализации
 
-WP-08 переведён в `READY`, потому что:
+WP-08 имеет статус `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`:
 
-- owner явно принял `OPEN-WP08-01..17` от `2026-08-11`;
-- все решения помечены `CLOSED` в [Decisions.md](./Decisions.md);
-- [Combat Test Plan WP-08](./Combat_Test_Plan_WP-08_v0.1.md) утверждён как blocking matrix;
-- v0.1 target/range compatibility policy и defer boundaries WP-09/WP-11 подтверждены;
-- `UnityClient` и исторические replay bytes остаются вне изменений.
+- owner approval `OPEN-WP08-01..17` и blocking decision gate сохранены;
+- production implementation и тестовые методы для всех `107` unique blocking IDs присутствуют;
+- `battle.core/0.3.0`, diagnostic/replay hardening и новые versioned fixtures добавлены;
+- historical replay bytes, generated balance artifacts и `UnityClient` не изменены;
+- local verification от `2026-08-19` green: locked restore; Release build `0` warnings/errors; full solution `875/875`; filtered `WorkPackage=WP08` `347/347`; generated, target-determinism, historical replay и все coverage gates green;
+- GitHub Actions `windows-latest`/`ubuntu-latest` × Debug/Release для финального WP-08 head ещё не запускалась.
 
-Этот документ теперь является утверждённым implementation contract, но не доказательством реализованного поведения. Следующий шаг — production-реализация §11 и выполнение всей blocking matrix.
+Статус `COMPLETED` запрещён до фактического green CI matrix. Следующий шаг — отправить ветку и подтвердить все четыре CI jobs.

@@ -101,7 +101,8 @@ public sealed class CombatEngine
             var coordinator = new TickCoordinator(
                 setup.Settings.MaximumZeroProgressTicks,
                 _observer,
-                _systemActionAvailability);
+                _systemActionAvailability,
+                journal as ICombatDecisionDiagnostics);
             while (state.Tick < setup.Settings.TimeLimitTicks)
             {
                 var immediate = coordinator.RunActiveTick(state, setup.Settings, emitter);

@@ -10,12 +10,12 @@ using Canonicalizer = Battle.Replay.CanonicalJson.CanonicalJson;
 namespace Battle.Replay.Journal;
 
 /// <summary>
-/// Assembles a completed standard journal into a self-contained canonical replay.
+/// Assembles a completed standard or diagnostic journal into a self-contained replay.
 /// </summary>
 public static class CanonicalReplayArtifactWriter
 {
     /// <summary>
-    /// Writes a completed standard replay without consulting wall-clock time or
+    /// Writes a completed replay without consulting wall-clock time or
     /// any other ambient source of nondeterminism.
     /// </summary>
     public static byte[] Write(
@@ -30,12 +30,6 @@ public static class CanonicalReplayArtifactWriter
         if (metadata is null)
         {
             throw new ArgumentNullException(nameof(metadata));
-        }
-
-        if (journal.Profile != JournalProfile.StandardReplay)
-        {
-            throw new InvalidOperationException(
-                "Only a StandardReplay journal can be published by this writer.");
         }
 
         if (!journal.IsCompleted ||
@@ -88,7 +82,11 @@ public static class CanonicalReplayArtifactWriter
                 WriteElement(writer, "schema_version", input.GetProperty("schema_version"));
                 WriteElement(writer, "replay_id", input.GetProperty("replay_id"));
                 WriteElement(writer, "battle_id", input.GetProperty("battle_id"));
-                writer.WriteString("profile", "standard");
+                writer.WriteString(
+                    "profile",
+                    journal.Profile == JournalProfile.StandardReplay
+                        ? "standard"
+                        : "diagnostic");
                 WriteElement(writer, "engine", input.GetProperty("engine"));
                 WriteElement(writer, "config", input.GetProperty("config"));
                 WriteElement(writer, "input", input.GetProperty("input"));
@@ -109,7 +107,7 @@ public static class CanonicalReplayArtifactWriter
                 }
 
                 writer.WriteEndArray();
-                writer.WriteNull("diagnostics");
+                WriteDiagnostics(writer, journal);
 
                 writer.WriteStartObject("integrity");
                 writer.WriteString("canonicalization", "combat-canonical-json/1");
@@ -156,6 +154,68 @@ public static class CanonicalReplayArtifactWriter
                 document.Dispose();
             }
         }
+    }
+
+    private static void WriteDiagnostics(
+        Utf8JsonWriter writer,
+        CanonicalReplayJournal journal)
+    {
+        if (journal.Profile == JournalProfile.StandardReplay)
+        {
+            writer.WriteNull("diagnostics");
+            return;
+        }
+
+        writer.WriteStartObject("diagnostics");
+        writer.WriteStartArray("decisions");
+        foreach (var trace in journal.DecisionTraces)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("actor_id", FighterIdText(trace.ActorId));
+            writer.WriteStartArray("candidates");
+            foreach (var candidate in trace.Candidates)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("action_id", candidate.ActionId.Value);
+                writer.WriteNumber("base_weight", candidate.BaseWeight);
+                if (candidate.FirstRejectionCode.HasValue)
+                {
+                    writer.WriteString(
+                        "first_rejection_code",
+                        candidate.FirstRejectionCode.Value.Value);
+                }
+                else
+                {
+                    writer.WriteNull("first_rejection_code");
+                }
+
+                writer.WriteNumber("final_weight", candidate.FinalWeight);
+                writer.WriteBoolean("legal", candidate.Legal);
+                writer.WriteStartArray("modifiers");
+                foreach (var modifier in candidate.Modifiers)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("code", modifier.Code.Value);
+                    writer.WriteNumber("multiplier_fp", modifier.MultiplierFixedPoint);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+            writer.WriteString("decision_id", trace.DecisionId.Value);
+            writer.WriteNumber("sequence", trace.Sequence);
+            writer.WriteString("snapshot_digest", trace.SnapshotDigest.Value);
+            writer.WriteNumber("tick", trace.Tick);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+        writer.WriteStartArray("warnings");
+        writer.WriteEndArray();
+        writer.WriteEndObject();
     }
 
     private static byte[] WriteKeyframe(
@@ -228,4 +288,11 @@ public static class CanonicalReplayArtifactWriter
         writer.WritePropertyName(propertyName);
         Canonicalizer.WriteCanonical(writer, value, "$." + propertyName);
     }
+
+    private static string FighterIdText(FighterId fighterId) => fighterId switch
+    {
+        FighterId.FighterA => "fighter_a",
+        FighterId.FighterB => "fighter_b",
+        _ => throw new ArgumentOutOfRangeException(nameof(fighterId)),
+    };
 }

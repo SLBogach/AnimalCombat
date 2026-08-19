@@ -121,6 +121,7 @@ internal static class StrictBalanceJsonReader
             return;
         }
 
+        var actualNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in element.EnumerateObject())
         {
             var path = "$.settings." + property.Name;
@@ -130,13 +131,14 @@ internal static class StrictBalanceJsonReader
                 continue;
             }
 
+            actualNames.Add(property.Name);
             if (TryReadValue(property.Value, schema, path, issues, out var value))
             {
                 target.Add(property.Name, value);
             }
         }
 
-        AddMissingFields(BalanceV01Schema.Settings, target.Keys, "$.settings", issues);
+        AddMissingFields(BalanceV01Schema.Settings, actualNames, "$.settings", issues);
     }
 
     private static List<BalanceJsonEntity> ReadCatalog(
@@ -172,6 +174,7 @@ internal static class StrictBalanceJsonReader
             }
 
             var properties = new SortedDictionary<string, ConfigValue>(StringComparer.Ordinal);
+            var actualNames = new HashSet<string>(StringComparer.Ordinal);
             foreach (var property in item.EnumerateObject())
             {
                 var propertyPath = itemPath + "." + property.Name;
@@ -181,13 +184,14 @@ internal static class StrictBalanceJsonReader
                     continue;
                 }
 
+                actualNames.Add(property.Name);
                 if (TryReadValue(property.Value, field, propertyPath, issues, out var value))
                 {
                     properties.Add(property.Name, value);
                 }
             }
 
-            AddMissingFields(schema, properties.Keys, itemPath, issues);
+            AddMissingFields(schema, actualNames, itemPath, issues);
             if (schema.IdProperty is null ||
                 !properties.TryGetValue(schema.IdProperty, out var idValue) ||
                 idValue.Kind != ConfigValueKind.String)

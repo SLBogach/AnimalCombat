@@ -109,6 +109,13 @@ public static class ReplayVerificationCodes
     public const string CausalityInvalid = "semantic.causality";
     public const string MovementInvalid = "semantic.movement";
     public const string RngSequenceInvalid = "semantic.rng_sequence";
+    public const string DecisionCandidateInvalid = "semantic.decision_candidate";
+    public const string DecisionModeInvalid = "semantic.decision_mode";
+    public const string DecisionRngInvalid = "semantic.decision_rng";
+    public const string DecisionOrderingInvalid = "semantic.decision_order";
+    public const string DecisionCommitInvalid = "semantic.decision_commit";
+    public const string DecisionCausalityInvalid = "semantic.decision_causality";
+    public const string DecisionDiagnosticInvalid = "semantic.decision_diagnostic";
     public const string SummaryMismatch = "semantic.summary";
     public const string KeyframeMismatch = "semantic.keyframe";
     public const string InputDigestMismatch = "integrity.input_digest";

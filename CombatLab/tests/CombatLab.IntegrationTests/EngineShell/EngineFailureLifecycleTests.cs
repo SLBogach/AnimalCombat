@@ -33,15 +33,15 @@ public sealed class EngineFailureLifecycleTests
         Assert.Equal(1, journal.CompleteCount);
         Assert.True(capture.IsCompleted);
         Assert.False(capture.PublishesReplay);
-        Assert.Equal(4, capture.EventCount);
-        Assert.Equal(4, capture.CapturedDrafts.Count);
+        Assert.Equal(2, capture.EventCount);
+        Assert.Equal(2, capture.CapturedDrafts.Count);
         var terminalDraft = capture.CapturedDrafts[^1];
         Assert.Equal(CombatEventType.BattleEnded, terminalDraft.EventType);
         var ended = Assert.IsType<BattleEndedPayload>(terminalDraft.Payload);
         Assert.Equal(BattleOutcome.Invalid, ended.Summary.Outcome);
         Assert.Null(ended.Summary.WinnerFighterId);
         Assert.Equal(BattleEndReason.BattleInvalid, ended.Summary.EndReason);
-        Assert.Equal(4, ended.Summary.EventCount);
+        Assert.Equal(2, ended.Summary.EventCount);
         Assert.Same(ended.Summary, capture.Summary);
     }
 

@@ -20,6 +20,9 @@ internal static class EngineFailureCodes
 {
     internal static ReasonCode EventCapExceeded { get; } = new("EventCapExceeded");
 
+    internal static ReasonCode DecisionArithmeticOverflow { get; } =
+        new("DecisionArithmeticOverflow");
+
     internal static ReasonCode InvalidStateTransition { get; } = new("InvalidStateTransition");
 
     internal static ReasonCode NoLegalSystemAction { get; } = new("NoLegalSystemAction");

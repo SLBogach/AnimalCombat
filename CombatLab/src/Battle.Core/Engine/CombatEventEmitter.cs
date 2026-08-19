@@ -40,6 +40,30 @@ internal sealed class CombatEventEmitter
         ? null
         : EventId.FromSequence(_nextSequence - 1);
 
+    internal void PreflightNonterminalBatch(int eventCount)
+    {
+        if (eventCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(eventCount));
+        }
+
+        if (IsTerminal)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.TerminalMutation,
+                "EventEmitter",
+                "No canonical event may follow BattleEnded.");
+        }
+
+        if ((long)eventCount > (_maximumEvents - 1L) - _nextSequence)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.EventCapExceeded,
+                TickPhase.Decisions.ToString(),
+                $"The event cap of {_maximumEvents} cannot fit an atomic batch of {eventCount} events while reserving BattleEnded.");
+        }
+    }
+
     internal CombatEventIdentity Emit(
         int tick,
         CombatEventPayload payload,

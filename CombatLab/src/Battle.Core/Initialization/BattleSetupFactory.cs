@@ -136,6 +136,25 @@ internal static class BattleSetupFactory
             startPositionA.Value,
             startPositionB.Value);
         var initiative = DetermineInitiative(fighterA, fighterB, request.MasterSeed);
+        var decisionIssues = new List<DecisionSetupIssue>();
+        var decisions = DecisionSetupMaterializer.TryCreate(
+            request,
+            config,
+            timeLimit.Value,
+            arena,
+            systemApproach,
+            systemRetreat,
+            decisionIssues);
+        foreach (var issue in decisionIssues)
+        {
+            issues.Add(new ValidationIssue(issue.Code, issue.Path, issue.Entity));
+        }
+
+        if (decisions is null || issues.Count != 0)
+        {
+            return new BattleSetupResult(null, ToRejectionErrors(issues));
+        }
+
         var allowedSystemActionIds = request.ModeRules.AllowedActionIds
             .Where(id => id == SystemActionSelector.ApproachId ||
                          id == SystemActionSelector.RetreatId ||
@@ -152,6 +171,7 @@ internal static class BattleSetupFactory
             systemRetreat,
             systemWait,
             allowedSystemActionIds,
+            decisions,
             initiative);
 
         return new BattleSetupResult(
@@ -791,7 +811,40 @@ internal static class BattleSetupFactory
         ValidateEntityString(action, "category", "Wait", path, "InvalidSystemAction", issues);
         ValidateEntityString(action, "movement_mode", "None", path, "InvalidSystemAction", issues);
         ValidateEntityBoolean(action, "track_target", false, path, issues);
-        _ = ReadRequiredEntityInteger(action, "move_distance", 0, 0, path, issues);
+        ValidateEntityBoolean(action, "wall_impact", false, path, issues);
+        ValidateEntityBoolean(action, "blockable", false, path, issues);
+        ValidateEntityBoolean(action, "dodgeable", false, path, issues);
+        ValidateEntityBoolean(action, "undodgeable", false, path, issues);
+        ValidateEntityString(action, "hit_schedule", string.Empty, path, "InvalidSystemAction", issues);
+
+        foreach (var field in new[]
+                 {
+                     "base_damage",
+                     "base_knockback",
+                     "base_stagger",
+                     "base_stun_ticks",
+                     "block_base_chance_fp",
+                     "block_reduction_fp",
+                     "chip_min",
+                     "clash_priority",
+                     "dodge_base_chance_fp",
+                     "grab_priority",
+                     "hit_count",
+                     "hit_range_min",
+                     "hit_range_max",
+                     "knockback_min",
+                     "knockback_max",
+                     "min_damage",
+                     "move_distance",
+                     "power_ratio_fp",
+                     "wall_damage_min",
+                     "wall_damage_max",
+                     "wall_damage_per_unit_fp",
+                 })
+        {
+            _ = ReadRequiredEntityInteger(action, field, 0, 0, path, issues);
+        }
+
         var preferredMinimum = ReadRequiredEntityInteger(
             action,
             "preferred_range_min",
@@ -810,14 +863,29 @@ internal static class BattleSetupFactory
         var weight = ReadRequiredEntityInteger(action, "base_weight", 1, int.MaxValue, path, issues);
         var energy = ReadRequiredEntityInteger(action, "energy_cost", 0, 0, path, issues);
         var resource = ReadRequiredEntityInteger(action, "resource_cost", 0, 0, path, issues);
-        var startup = ReadRequiredEntityInteger(action, "startup_base_ticks", 0, int.MaxValue, path, issues);
+        var startup = ReadRequiredEntityInteger(action, "startup_base_ticks", 0, 0, path, issues);
+        var startupMinimum = ReadRequiredEntityInteger(action, "startup_min_ticks", 0, 0, path, issues);
+        var startupMaximum = ReadRequiredEntityInteger(action, "startup_max_ticks", 0, 0, path, issues);
         var active = ReadRequiredEntityInteger(action, "active_ticks", 1, int.MaxValue, path, issues);
-        var recovery = ReadRequiredEntityInteger(action, "recovery_base_ticks", 0, int.MaxValue, path, issues);
+        var recovery = ReadRequiredEntityInteger(action, "recovery_base_ticks", 0, 0, path, issues);
+        var recoveryMinimum = ReadRequiredEntityInteger(action, "recovery_min_ticks", 0, 0, path, issues);
+        var recoveryMaximum = ReadRequiredEntityInteger(action, "recovery_max_ticks", 0, 0, path, issues);
         var cooldown = ReadRequiredEntityInteger(action, "cooldown_ticks", 0, 0, path, issues);
 
+        if (preferredMinimum.HasValue && preferredMaximum.HasValue &&
+            preferredMinimum.Value > preferredMaximum.Value)
+        {
+            issues.Add(new ValidationIssue(
+                "InvalidSystemAction",
+                path + "/preferred_range_max",
+                SystemActionSelector.WaitId.Value));
+        }
+
         return weight.HasValue && energy.HasValue && resource.HasValue && startup.HasValue &&
-               active.HasValue && recovery.HasValue && cooldown.HasValue &&
-               preferredMinimum.HasValue && preferredMaximum.HasValue
+               startupMinimum.HasValue && startupMaximum.HasValue && active.HasValue &&
+               recovery.HasValue && recoveryMinimum.HasValue && recoveryMaximum.HasValue &&
+               cooldown.HasValue && preferredMinimum.HasValue && preferredMaximum.HasValue &&
+               preferredMinimum.Value <= preferredMaximum.Value
             ? new SystemActionDefinition(
                 SystemActionSelector.WaitId,
                 weight.Value,
@@ -864,8 +932,9 @@ internal static class BattleSetupFactory
                      "MaxResource",
                      "StartResource",
                       "StaggerThreshold",
-                      "Initiative",
-                      "MoveSpeed",
+                     "Initiative",
+                     "ActionSpeed",
+                     "MoveSpeed",
                       "CollisionRadius",
                   })
         {
@@ -983,12 +1052,13 @@ internal static class BattleSetupFactory
         var startResource = stats["StartResource"];
         var staggerThreshold = stats["StaggerThreshold"];
         var initiative = stats["Initiative"];
+        var actionSpeed = stats["ActionSpeed"];
         var moveSpeed = stats["MoveSpeed"];
         var collisionRadius = stats["CollisionRadius"];
 
         if (maximumHealth < 1 || maximumEnergy < 0 || maximumResource < 0 ||
             startResource < 0 || startResource > maximumResource || staggerThreshold < 1 ||
-            moveSpeed < 1 || collisionRadius < 1)
+            actionSpeed < 1 || moveSpeed < 1 || collisionRadius < 1)
         {
             issues.Add(new ValidationIssue("InvalidInitialState", path, build.AnimalId.Value));
             return null;
@@ -1007,6 +1077,7 @@ internal static class BattleSetupFactory
             maximumResource,
             staggerThreshold,
             initiative,
+            actionSpeed,
             moveSpeed,
             collisionRadius);
     }

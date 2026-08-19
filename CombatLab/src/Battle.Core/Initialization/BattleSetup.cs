@@ -16,6 +16,7 @@ internal sealed record RuntimeBattleSettings(
     SystemActionDefinition SystemRetreat,
     SystemActionDefinition SystemWait,
     IReadOnlyList<StableId> AllowedSystemActionIds,
+    DecisionRuntimeSettings Decisions,
     IReadOnlyList<FighterId> InitiativeOrder)
 {
     internal SystemActionDefinition GetSystemAction(StableId actionId)

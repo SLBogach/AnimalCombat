@@ -223,6 +223,7 @@ public sealed class MovementEventProjectionTests
             maximumResource: 100,
             staggerThreshold: 100,
             initiative: fighterId == FighterId.FighterB ? 2 : 1,
+            actionSpeed: 100,
             moveSpeed: 100,
             collisionRadius: 500);
 

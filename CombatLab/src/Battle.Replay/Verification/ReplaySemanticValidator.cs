@@ -20,6 +20,7 @@ internal static class ReplaySemanticValidator
         ValidateInput(replay, events, issues);
         ValidateEvents(replay, events, issues);
         MovementReplaySemanticValidator.Validate(events, issues);
+        DecisionReplaySemanticValidator.Validate(replay, events, issues);
         ValidateSummary(replay, events, issues);
         ValidateKeyframes(replay, events, issues);
     }
@@ -158,7 +159,11 @@ internal static class ReplaySemanticValidator
                 expectedEngineVersion,
                 expectedConfigHash,
                 issues);
-            ValidateRolesAndFrames(combatEvent, path, issues);
+            ValidateRolesAndFrames(
+                combatEvent,
+                path,
+                IsWp08CompatibleEngine(expectedEngineVersion),
+                issues);
             ValidateBackwardReferences(combatEvent, path, priorEventIds, issues);
             ValidateRng(combatEvent, path, nextRngIndex, issues);
 
@@ -207,12 +212,18 @@ internal static class ReplaySemanticValidator
     private static void ValidateRolesAndFrames(
         JsonElement combatEvent,
         string path,
+        bool useWp08Roles,
         ICollection<ReplayVerificationIssue> issues)
     {
         var eventType = combatEvent.GetProperty("event_type").GetString()!;
         var actor = GetNullableString(combatEvent.GetProperty("actor_id"));
         var target = GetNullableString(combatEvent.GetProperty("target_id"));
-        var role = GetRoleRule(eventType);
+        var role = (eventType, useWp08Roles) switch
+        {
+            ("DecisionMade", false) => EventRoleRule.ActorAndTarget,
+            ("ActionPhaseChanged", true) => EventRoleRule.ActorOnly,
+            _ => GetRoleRule(eventType),
+        };
 
         var roleIsValid = role switch
         {
@@ -609,13 +620,39 @@ internal static class ReplaySemanticValidator
         "BattleStarted" or "TimeoutReached" or "DrawDeclared" or "BattleEnded" => EventRoleRule.None,
         "FighterDefeated" or "MoveStarted" or "PositionChanged" or "MoveEnded" or
             "ResourceChanged" or "StateChanged" => EventRoleRule.ActorOnly,
-        "DecisionMade" or "KnockbackApplied" or "WallImpact" or "ConflictResolved" or
+        "KnockbackApplied" or "WallImpact" or "ConflictResolved" or
             "AttackHit" or "Blocked" or "Dodged" or "Countered" or "DamageApplied" or
             "GrabStarted" or "GrabEnded" or "FinisherTriggered" => EventRoleRule.ActorAndTarget,
-        "ActionCommitted" or "AttackPrepared" or "ActionPhaseChanged" or "ActionCancelled" or
+        "DecisionMade" or "ActionCommitted" or "AttackPrepared" or
+            "ActionPhaseChanged" or "ActionCancelled" or
             "AttackMissed" or "EffectAdded" or "EffectRemoved" => EventRoleRule.ActorWithOptionalTarget,
         _ => throw new InvalidOperationException($"Unsupported canonical event type '{eventType}'."),
     };
+
+    private static bool IsWp08CompatibleEngine(string value)
+    {
+        const string prefix = "battle.core/0.3.";
+        if (!value.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var patch = value.AsSpan(prefix.Length);
+        if (patch.IsEmpty || (patch.Length > 1 && patch[0] == '0'))
+        {
+            return false;
+        }
+
+        foreach (var character in patch)
+        {
+            if (character is < '0' or > '9')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static BigInteger ReadInteger(JsonElement value) =>
         BigInteger.Parse(value.GetRawText(), NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);

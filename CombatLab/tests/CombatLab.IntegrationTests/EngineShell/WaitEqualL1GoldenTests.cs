@@ -19,10 +19,10 @@ public sealed class WaitEqualL1GoldenTests
         Assert.Equal(EngineShellFixture.ReplayId, run.Result.ReplayId);
         Assert.Equal(run.Journal.FinalDigest, run.Result.FinalDigest);
         Assert.Equal(
-            "sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2",
+            "sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08",
             run.Journal.InputDigest!.Value.Value);
         Assert.Equal(
-            "sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b",
+            "sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9",
             run.Journal.FinalDigest!.Value.Value);
         var start = run.Journal.Start
             ?? throw new InvalidOperationException("Completed journal did not retain its start receipt.");
@@ -32,7 +32,7 @@ public sealed class WaitEqualL1GoldenTests
         Assert.Equal(0, start.Input.Arena.MinimumPosition);
         Assert.Equal(10_000, start.Input.Arena.MaximumPosition);
         Assert.Equal(2_000, start.Input.Arena.StartPositionA);
-        Assert.Equal(8_000, start.Input.Arena.StartPositionB);
+        Assert.Equal(4_500, start.Input.Arena.StartPositionB);
 
         var events = run.Journal.Events;
         Assert.Equal(8, events.Count);
@@ -125,7 +125,7 @@ public sealed class WaitEqualL1GoldenTests
         AssertStarted(events[0], run);
         AssertDecision(events[1], FighterId.FighterA, FighterId.FighterB);
         AssertDecision(events[2], FighterId.FighterB, FighterId.FighterA);
-        AssertCommit(events[3], FighterId.FighterB, 8_000);
+        AssertCommit(events[3], FighterId.FighterB, 4_500);
         AssertCommit(events[4], FighterId.FighterA, 2_000);
         AssertTimeout(events[5]);
         AssertDraw(events[6]);
@@ -143,7 +143,7 @@ public sealed class WaitEqualL1GoldenTests
             payload.InitiativeOrder);
         Assert.Equal(InitiativeTieBreak.StatThenSeededHash, payload.InitiativeTieBreak);
         AssertInitialFrame(payload.InitialFrames[0], FighterId.FighterA, 2_000, Facing.Right, 1_650, "rage", 260);
-        AssertInitialFrame(payload.InitialFrames[1], FighterId.FighterB, 8_000, Facing.Left, 1_150, "tempo", 180);
+        AssertInitialFrame(payload.InitialFrames[1], FighterId.FighterB, 4_500, Facing.Left, 1_150, "tempo", 180);
         Assert.Null(draft.Before.Actor);
         Assert.Null(draft.Before.Target);
         Assert.Null(draft.After.Actor);
@@ -233,7 +233,7 @@ public sealed class WaitEqualL1GoldenTests
             new[] { new EventId("evt-0000000005"), new EventId("evt-0000000006") },
             summary.PivotalEventIds);
         AssertFinalFrame(summary.FinalFrames[0], FighterId.FighterA, 2_000, Facing.Right, 1_650, "rage", 260);
-        AssertFinalFrame(summary.FinalFrames[1], FighterId.FighterB, 8_000, Facing.Left, 1_150, "tempo", 180);
+        AssertFinalFrame(summary.FinalFrames[1], FighterId.FighterB, 4_500, Facing.Left, 1_150, "tempo", 180);
     }
 
     private static void AssertInitialFrame(

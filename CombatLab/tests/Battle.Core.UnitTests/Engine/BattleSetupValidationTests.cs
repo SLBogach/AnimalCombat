@@ -1,4 +1,5 @@
 using Battle.Core;
+using Battle.Core.Initialization;
 using Battle.Contracts.Config;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Requests;
@@ -9,6 +10,153 @@ namespace Battle.Core.UnitTests.Engine;
 
 public sealed class BattleSetupValidationTests
 {
+    [Fact]
+    [Trait("Category", "WP08")]
+    [Trait("WorkPackage", "WP08")]
+    public void WP08_CFG_005_ReachableWeightSumOverflowRiskRejectsBeforeJournalBegin()
+    {
+        const int weightMaximum = 536_870_912;
+        var basicId = new StableId("bear_basic_overflow_probe");
+        var config = EngineTestFixture.CreateConfig(
+            changeSettings: source => ReplaceSetting(
+                source,
+                "global.sim.decision_weight_max",
+                ConfigValue.FromInteger(weightMaximum)),
+            changeActions: source =>
+            {
+                var items = source.ToArray();
+                var template = items.Single(item => item.Id == new StableId("bear_earthbreaker"));
+                var properties = template.Properties
+                    .Select(property => property.Name == "slot_type"
+                        ? new ConfigProperty("slot_type", ConfigValue.FromString("Basic"))
+                        : property)
+                    .ToArray();
+                return EngineTestFixture.ReindexCatalog(
+                    items.Append(new CompiledConfigEntity(basicId, items.Length, properties)));
+            });
+        var request = EngineTestFixture.CreateRequest(
+            allowedActions: EngineTestFixture.ActionIds().Append(basicId));
+        var journal = new RecordingJournal();
+
+        var result = new CombatEngine().Simulate(request, config, journal);
+
+        Assert.Equal(BattleResultStatus.Rejected, result.Status);
+        var error = Assert.Single(result.RejectionErrors);
+        Assert.Equal("DecisionWeightSumOverflowRisk", error.Code.Value);
+        Assert.Equal("$.mode_rules.allowed_action_ids", error.Path);
+        Assert.Equal(0, journal.BeginCount);
+        Assert.Equal(0, journal.CompleteCount);
+        Assert.Empty(journal.Drafts);
+    }
+
+    [Fact]
+    [Trait("Category", "WP08")]
+    [Trait("WorkPackage", "WP08")]
+    public void WP08_CFG_005_OverflowBoundCountsOneLegalSystemSlotNotEveryAllowedSystemEntry()
+    {
+        const int safeForThreeCandidates = 715_827_882;
+        var config = EngineTestFixture.CreateConfig(
+            changeSettings: source => ReplaceSetting(
+                source,
+                "global.sim.decision_weight_max",
+                ConfigValue.FromInteger(safeForThreeCandidates)));
+        var request = EngineTestFixture.CreateRequest(
+            allowedActions: EngineTestFixture.ActionIds().Append(new StableId("sys_retreat")));
+
+        var setup = BattleSetupFactory.Create(request, config);
+
+        Assert.True(
+            setup.IsSuccess,
+            string.Join(",", setup.Errors.Select(error => error.Code.Value + "@" + error.Path)));
+        Assert.DoesNotContain(
+            setup.Errors,
+            error => error.Code.Value == "DecisionWeightSumOverflowRisk");
+    }
+
+    [Theory]
+    [InlineData("startup_base_ticks", 1)]
+    [InlineData("startup_min_ticks", 1)]
+    [InlineData("startup_max_ticks", 1)]
+    [InlineData("recovery_base_ticks", 1)]
+    [InlineData("recovery_min_ticks", 1)]
+    [InlineData("recovery_max_ticks", 1)]
+    [InlineData("base_damage", 1)]
+    [InlineData("hit_count", 1)]
+    [Trait("Category", "WP08")]
+    [Trait("WorkPackage", "WP08")]
+    public void SystemWaitIgnoredTimingAndCombatFieldsAreRejectedBeforeBegin(
+        string field,
+        int value)
+    {
+        var config = EngineTestFixture.CreateConfig(
+            changeActions: source => EngineTestFixture.ReindexCatalog(source.Select(action =>
+                action.Id.Value == "sys_wait"
+                    ? EngineTestFixture.WithProperty(action, field, ConfigValue.FromInteger(value))
+                    : action)));
+        var journal = new RecordingJournal();
+
+        var result = new CombatEngine().Simulate(
+            EngineTestFixture.CreateRequest(),
+            config,
+            journal);
+
+        AssertRejectedBeforeBegin(result, journal);
+        Assert.Contains(result.RejectionErrors, error =>
+            error.Path == "/system_actions/sys_wait/" + field);
+    }
+
+    [Fact]
+    [Trait("Category", "WP08")]
+    [Trait("WorkPackage", "WP08")]
+    public void SystemWaitHitScheduleIsRejectedBeforeBegin()
+    {
+        var config = EngineTestFixture.CreateConfig(
+            changeActions: source => EngineTestFixture.ReindexCatalog(source.Select(action =>
+                action.Id.Value == "sys_wait"
+                    ? EngineTestFixture.WithProperty(
+                        action,
+                        "hit_schedule",
+                        ConfigValue.FromString("0"))
+                    : action)));
+        var journal = new RecordingJournal();
+
+        var result = new CombatEngine().Simulate(
+            EngineTestFixture.CreateRequest(),
+            config,
+            journal);
+
+        AssertRejectedBeforeBegin(result, journal);
+        Assert.Contains(result.RejectionErrors, error =>
+            error.Code.Value == "InvalidSystemAction" &&
+            error.Path == "/system_actions/sys_wait");
+    }
+
+    [Fact]
+    [Trait("Category", "WP08")]
+    [Trait("WorkPackage", "WP08")]
+    public void ExtraSystemActionIsRejectedBeforeBeginEvenForPrecompiledConfig()
+    {
+        var extraId = new StableId("sys_taunt");
+        var config = EngineTestFixture.CreateConfig(
+            changeActions: source =>
+            {
+                var items = source.ToArray();
+                var template = items.Single(action => action.Id == new StableId("sys_wait"));
+                return EngineTestFixture.ReindexCatalog(items.Append(
+                    new CompiledConfigEntity(extraId, items.Length, template.Properties)));
+            });
+        var request = EngineTestFixture.CreateRequest(
+            allowedActions: EngineTestFixture.ActionIds().Append(extraId));
+        var journal = new RecordingJournal();
+
+        var result = new CombatEngine().Simulate(request, config, journal);
+
+        AssertRejectedBeforeBegin(result, journal);
+        Assert.Contains(result.RejectionErrors, error =>
+            error.Code.Value == "InvalidSystemAction" &&
+            error.Path == "$.actions[sys_taunt]");
+    }
+
     [Theory]
     [InlineData("engine", "EngineVersionMismatch", "/engine_version")]
     [InlineData("config_hash", "ConfigHashMismatch", "/config_hash")]

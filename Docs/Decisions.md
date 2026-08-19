@@ -70,7 +70,7 @@
 - `OPEN-WP07-01 — CLOSED`: [WP-07 Brief](./WP-07_Brief.md) задаёт scope, а [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — обязательный exact pass/fail. Matrix реализована; локальные проверки и фактическая Windows/Linux CI matrix green, WP-07 — `COMPLETED`.
 - `OPEN-WP07-02 — CLOSED`: canonical fixed-point key — `global.sim.fp_scale`; `global.sim.math_scale` из TDD §7.1 считается терминологической ошибкой. Runtime alias/default запрещён.
 - `OPEN-WP07-03 — CLOSED`: position является центром тела. Legal bounds равны `[arena.min + collision_radius, arena.max - collision_radius]`; initial A-left/B-right order и non-overlap обязательны. Separation distance выводится из суммы radii, новый DATA key не вводится.
-- `OPEN-WP07-04 — CLOSED`: neutral surface-gap band включителен и равен `[sys_approach.preferred_range_max, sys_retreat.preferred_range_min]`, сейчас `1500..1600`. Ниже выбирается Retreat при наличии outward headroom, внутри — Wait, выше — Approach. Это даёт ровно один positive candidate и не вводит weighted WP-08 semantics.
+- `OPEN-WP07-04 — CLOSED`: neutral surface-gap band включителен и равен `[sys_approach.preferred_range_max, sys_retreat.preferred_range_min]`, сейчас `1500..1600`. Строгая truth table: ниже band при положительном outward headroom legal только Retreat; ниже band при нулевом headroom legal только Wait; внутри band legal только Wait; выше band legal только Approach. Mode exclusion не заменяет требуемое system action другим кандидатом. Это даёт ровно один system candidate при согласованном mode и не вводит скрытый fallback.
 - `OPEN-WP07-05 — CLOSED`: derived `MoveSpeed` — distance units per active tick, после modifier pipeline и с FP identity state multiplier. Speed замораживается на старте segment; `tick_ms` и floating point в формулу не входят. По закрытому `OPEN-WP07-13` отсутствующий stat clamp не заменяется default.
 - `OPEN-WP07-06 — CLOSED`: оба movement request рассчитываются из одного phase-start snapshot. Target budget распределяется пропорционально speed capacity методом largest remainder; exact remainder tie разрешает immutable WP-06 `InitiativeOrder`, без Side/FighterId/iteration-order и без нового RNG draw.
 - `OPEN-WP07-07 — CLOSED`: pair result применяется атомарно. Overlap устраняется minimum rollback, пропорциональным inward displacement, создавшему penetration; stationary actor не сдвигается, remainder разрешает `InitiativeOrder`, crossing запрещён. Separation payload использует signed `requested_delta=actual_delta=to-from`, wall/action/decision null semantics по Test Plan.
@@ -85,13 +85,13 @@
 
 - `OPEN-WP07-01..13` закрыты и реализованы; проектных/DATA blockers нет.
 - WP-07 имеет статус `COMPLETED`: `528` local tests и фактическая GitHub Actions Windows/Linux Debug/Release matrix green; target/coverage/generated gates прошли на обеих OS.
-- Current wait pins: input `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`, final `sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b`, file `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`.
+- Historical Engine `0.2.0` wait pins: input `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`, final `sha256:95670ca45d0f1d9be0b72781871f23a1a44e6a7ed218306b42266c8ca3c6373b`, file `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`.
 - Movement pins: config `sha256:6abd6c81701abacdb394fe637e450ae357719e5caf49ef17ccb269573e2ee7b4`, input `sha256:dae170bccf84b44e6c0c173692e6198c45ec0e0ae1484bf9c7dd989cad4a0b20`, final `sha256:956b15fd915222f8b404823dfab070c6bc2f6e1852309d1ef12dc988954cfe93`, file `7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873`.
 - `UnityClient` остаётся вне scope и не изменён. Финальный `COMPLETED` зафиксирован после фактического Windows/Linux CI pass от `2026-08-11` для code head `2248ac9`.
 
 ## WP-08 Decisions
 
-### Утверждённые решения — реализация ещё не начата
+### Утверждённые и реализованные решения
 
 Полное обоснование, формулы и implementation boundary находятся в [WP-08 Brief](./WP-08_Brief.md), а exact blocking acceptance — в [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md). Все решения утверждены owner approval от `2026-08-11`.
 
@@ -113,8 +113,18 @@
 - `OPEN-WP08-16 — CLOSED`: Engine bump до `battle.core/0.3.0`; event/replay/balance/RNG/ordering versions сохраняются; historical fixtures immutable, current wait и `decision_weighted_l1` создаются отдельно.
 - `OPEN-WP08-17 — CLOSED`: никаких Bear/Kangaroo/Gorilla или combat ActionId switches. Resolution — WP-09, effects/stat clamp — WP-10, полный fighter-kit availability/resource/passive semantics и explicit target DATA review — WP-11.
 
+### Реализационные уточнения
+
+- Diagnostic checked catalog сохраняет до `256` candidates, тогда как bounded legal decision set ограничен `128`; это разные guards, и legal cap не обрезает diagnostic trace.
+- Неизвестный дополнительный `sys_*` action отклоняется typed code `InvalidSystemAction` по path `$.actions[<action_id>]` как в config materialization, так и в Core applicability boundary.
+- Reachable overflow absolute impact timing отклоняется typed code `DecisionTimingOverflowRisk` по path `$.actions[<action_id>].hit_schedule` до `journal.Begin`; runtime timers/counters используют checked operations.
+- Replay validator усиливает mode/weight/RNG, chosen candidate/dominant modifiers, timing/target/direction, cost/telegraph и lifecycle completeness. Tampered package возвращает typed verification failure без exception.
+- `battle.core/0.3.0` current wait и weighted fixtures создаются отдельными файлами. Historical Engine `0.1.0`/`0.2.0` fixtures и WP-07 movement golden не перезаписываются.
+
 ### Статус этапа
 
-- WP-08 — `READY / DECISIONS APPROVED; IMPLEMENTATION NOT STARTED`.
-- `OPEN-WP08-01..17` закрыты owner approval от `2026-08-11`; blocking decision gate пройден.
-- Production code, tests, versions, config artifacts и fixtures WP-08 не изменялись; `UnityClient` не изменён.
+- WP-08 — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.
+- `OPEN-WP08-01..17` закрыты и реализованы; автоматические тесты существуют для всех `107` уникальных blocking ID.
+- Engine повышен до `battle.core/0.3.0`; weighted fixture и current wait pinned отдельными artifacts. Current wait: config `sha256:f7524a127ca0ec085562d1ca43fc91d384b7f713f1ddb323be53bc701f6d0dc3`, input `sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08`, final `sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9`, file `8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd`, events `8`; historical fixture bytes сохранены.
+- Consolidated local verification от `2026-08-19` green: locked restore, Release build `0/0`, full solution `875/875`, filtered WP-08 `347/347`, generated/target/historical replay и coverage gates. GitHub Actions `windows-latest`/`ubuntu-latest` × Debug/Release ещё не выполнена на финальном head, поэтому статус не `COMPLETED`.
+- `UnityClient` и canonical generated balance artifacts не изменены.

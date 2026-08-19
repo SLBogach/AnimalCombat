@@ -60,7 +60,7 @@ Historical Engine `battle.core/0.1.0`:
 - final: `sha256:d06e3c2153a4fbfc495279cd6fcf7379d6f8d42c059e8756a5003d01acfa9ea6`;
 - canonical events: `8`.
 
-Current Engine `battle.core/0.2.0`:
+Historical Engine `battle.core/0.2.0`:
 
 - file SHA-256: `ee56e6186506b3b962c52d6f0ca3f6a22597b94b362226e7252a9f53938f2409`;
 - input: `sha256:89f3cf32381147cc18bd5f842060fb73d0730607068dcc72d7fccae8f183f8e2`;
@@ -102,20 +102,73 @@ GitHub Actions execution от `2026-08-11` для code head `2248ac9`: `ubuntu-l
 
 ## Текущий этап
 
-**WP-08 Decisions — `READY / DECISIONS APPROVED; IMPLEMENTATION NOT STARTED`.**
+**WP-08 Decisions — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.**
 
-Утверждены:
+Реализованы все `107` уникальных blocking ID из [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md):
 
-1. [WP-08 Brief](./WP-08_Brief.md) с текущей structural gap-картой, scope WP-08/WP-09 и точными утверждёнными решениями `OPEN-WP08-01..17`;
-2. [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md) как blocking matrix для catalog/availability, weights, Decision RNG, repeat/opportunity, atomic commit, diagnostics/replay, determinism и regression;
-3. утверждённая compatibility policy для отсутствующего в canonical v0.1 явного `target_selector`, без ActionId-specific hardcode и без изменения balance schema;
-4. утверждённый engine bump `battle.core/0.2.0 → battle.core/0.3.0` с обязательным сохранением historical fixtures и отдельным weighted golden `decision_weighted_l1`.
+1. typed decision profiles, catalog и фиксированный availability pipeline с первой стабильной причиной отказа;
+2. последовательный checked fixed-point pipeline `Tactic → Situation → Synergy → Counter → Variety → Opportunity`, selection precedence и единственный unbiased Decision RNG draw там, где он требуется;
+3. repeat/opportunity state, immutable общий phase-5 snapshot и атомарный A/B commit с costs, cooldown, frozen timings/target/direction и generic lifecycle;
+4. `DecisionMade`, `ActionCommitted`, `AttackPrepared`, diagnostic `DecisionTrace` и commitment `decision.batch-snapshot/0.1` без изменения canonical event chain;
+5. усиленная replay-проверка mode/weights/RNG, timings, target/direction, costs, telegraph и lifecycle, включая typed non-throwing tamper rejection;
+6. Engine bump до `battle.core/0.3.0`; event/replay/balance/RNG/ordering versions не изменены;
+7. unit, conformance, integration, determinism, historical replay, safety, architecture и coverage checks для WP-08.
 
-Все `OPEN-WP08-01..17` имеют статус `CLOSED` по owner approval от `2026-08-11`. Решения утверждены, но ещё не реализованы: production code/tests, `ContractVersions`, config/schema/generated artifacts и replay fixtures пока не изменялись. `UnityClient` не изменён.
+Строгая таблица WP-07 system availability сохранена как часть decision catalog:
+
+- `gap < inner` и `outward_headroom > 0` — только `sys_retreat`;
+- `gap < inner` и `outward_headroom = 0` — только `sys_wait`;
+- `inner <= gap <= outer` — только `sys_wait`;
+- `gap > outer` — только `sys_approach`.
+
+Mode exclusion не заменяет требуемое system action другим: отсутствие обязательного кандидата приводит к typed invariant/rejection, а не к скрытому fallback.
+
+Добавлены typed guards:
+
+- `InvalidSystemAction` с path `$.actions[<action_id>]` для неизвестного дополнительного `sys_*` action;
+- `DecisionTimingOverflowRisk` с path `$.actions[<action_id>].hit_schedule` для reachable overflow impact timing;
+- diagnostic checked catalog допускает не более `256` кандидатов, а legal decision set — не более `128`; превышение и reachable weight-sum risk отклоняются до начала боя;
+- runtime counters, timing и decision arithmetic используют checked operations и typed failure вместо wraparound.
+
+### WP-08 replay fixtures
+
+Historical fixtures `battle.core/0.1.0`/`0.2.0` и movement golden `approach_band_l3` не перезаписывались; их pins остаются без изменений.
+
+Current `wait_equal_l1` для `battle.core/0.3.0` создан отдельным versioned artifact:
+
+- fixture config: `sha256:f7524a127ca0ec085562d1ca43fc91d384b7f713f1ddb323be53bc701f6d0dc3`;
+- input: `sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08`;
+- final: `sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9`;
+- file SHA-256: `8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd`;
+- canonical events: `8`.
+
+Historical files при создании current fixture не менялись.
+
+Weighted golden `decision_weighted_l1` (`battle.core/0.3.0`):
+
+- fixture config: `sha256:26c53cf464539e2ebf1eb37f90d73715adb0842e29e6b7a9eeaede8336d49227`;
+- input: `sha256:eaee293a90e5fc432ab1822965b3f632abc803bd79b23ae401a8fc9fd8a2b021`;
+- final: `sha256:6ed4f34aa845096ee63d125d306fbef64ff469773e14389bfe1152146a007f3f`;
+- file SHA-256: `1e2ea3f87bab119b1db687556d7835b2791089b095d202285c7e7f037e331eb0`;
+- canonical events: `9`.
+
+### Локальная проверка WP-08
+
+Consolidated Windows run от `2026-08-19` по §15 Combat Test Plan завершён:
+
+- `dotnet restore --locked-mode` — green;
+- Release build — `0` warnings / `0` errors;
+- полный solution — `875` passed / `0` failed / `0` skipped (`522` Core, `317` Conformance, `36` Integration; Performance project пока не содержит тестов);
+- filtered `WorkPackage=WP08` — `347` passed / `0` failed / `0` skipped (`153` Core, `184` Conformance, `10` Integration);
+- WP-04 generated reproducibility, WP-06/WP-07/WP-08 target determinism и historical replay SHA gates — green;
+- WP-02/WP-03/WP-06/WP-07/WP-08 coverage gates — green; required critical branches `100%`, Battle.Core line coverage `>=85%`;
+- `git diff --check` — green; historical fixtures имеют прежние SHA.
+
+`UnityClient` и generated balance artifacts не изменены.
 
 ## Следующее действие
 
-Начать production-реализацию WP-08 по утверждённым [Brief](./WP-08_Brief.md) и [Combat Test Plan](./Combat_Test_Plan_WP-08_v0.1.md), реализовать blocking matrix и сохранить historical replay bytes и `UnityClient` без изменений.
+Отправить финальный head в GitHub и дождаться зелёной matrix `windows-latest`/`ubuntu-latest` × Debug/Release. Только после фактического CI pass WP-08 можно перевести из `LOCAL IMPLEMENTATION COMPLETE / CI PENDING` в `COMPLETED`.
 
 ## Ограничения
 

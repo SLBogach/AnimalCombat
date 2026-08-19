@@ -1,8 +1,8 @@
 # Combat Test Plan WP-08 v0.1 — Decisions
 
-> Статус: `APPROVED / NOT EXECUTED`; WP-08 — `READY`.
+> Статус: `IMPLEMENTED / LOCAL VERIFIED; CI PENDING`; WP-08 — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`.
 >
-> Это утверждённая blocking acceptance matrix. `OPEN-WP08-01..17` закрыты owner approval от `2026-08-11`; ни один WP-08 case ещё не заявлен как реализованный или пройденный.
+> Это утверждённая blocking acceptance matrix. `OPEN-WP08-01..17` закрыты и реализованы; тестовые методы покрывают все `107` уникальных blocking ID. Local gates от `2026-08-19` green; GitHub Actions matrix ожидает выполнения на финальном head.
 
 ## 1. Назначение
 
@@ -43,15 +43,17 @@ Blocking WP-08 проверяет decision/commit и generic lifecycle. След
 
 Combat action может пройти `Startup → Active → Recovery → null`, но его Active phase до WP-09 не наносит урон и не двигает бойца/цель.
 
-## 4. Approval state
+## 4. Approval and implementation state
 
 Exact решения `OPEN-WP08-01..17` из Brief утверждены. Поэтому:
 
 - этот Test Plan является нормативной blocking matrix;
 - `Decisions.md` помечает каждый пункт `CLOSED`;
-- WP-08 имеет статус `READY`;
-- тестовые cases остаются `NOT EXECUTED`, пока нет фактической реализации и результатов;
-- `ContractVersions.Engine`, fixtures/digests и production files изменяются только в ходе реализации, не самим фактом approval.
+- WP-08 имеет статус `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`;
+- production implementation и тесты для всех `107` уникальных §14 IDs присутствуют;
+- `ContractVersions.Engine` повышен до `battle.core/0.3.0`, current fixtures созданы отдельно от immutable historical fixtures;
+- consolidated local run green: locked restore, Release build/test, filtered inventory, generated/target/historical replay и coverage gates;
+- статус `COMPLETED` запрещён до green `windows-latest`/`ubuntu-latest` × Debug/Release на финальном head.
 
 ## 5. DATA и validation oracle
 
@@ -103,7 +105,8 @@ Exact integer domains before cross-field validation:
 - `fp_scale <= action.opportunity_cap_fp <= global opportunity cap`;
 - action hard misses is `0` (disabled) or `1..global hard threshold`;
 - selected tactic perception delay `>=0`; required tactic value is authoritative;
-- per-fighter maximum legal catalog size `<=128`;
+- full diagnostic checked catalog size `<=256`;
+- per-fighter maximum legal decision set size `<=128`;
 - `candidate_count × decision_weight_max <= Int32.MaxValue` for every reachable build/mode catalog, or setup rejects before Begin;
 - hit schedule is unique/sorted, matches configured hit count/primitives and lies within Active schedule;
 - tag token comparison is ordinal exact; duplicate tokens reject; token order does not alter meaning.
@@ -119,6 +122,8 @@ Stable validation oracle for every required setting key `K`:
 - invalid action opportunity cap/threshold → `NumericOutOfRange`, path `$.actions[<action_id>].<field>`;
 - duplicate/invalid tag token → new stable code `InvalidTagSet`, path `$.<catalog>[<stable_id>].tags`;
 - invalid schedule → new stable code `InvalidHitSchedule`, path `$.actions[<action_id>].hit_schedule`;
+- reachable impact-timing overflow → `DecisionTimingOverflowRisk`, path `$.actions[<action_id>].hit_schedule`;
+- unknown additional `sys_*` action → `InvalidSystemAction`, path `$.actions[<action_id>]`;
 - incompatible inferred target/movement pair → new stable code `AmbiguousTargetProfile`, path `$.actions[<action_id>].movement_mode`;
 - reachable legal-weight sum risk → Engine applicability code `DecisionWeightSumOverflowRisk`, path `$.mode_rules.allowed_action_ids`.
 
@@ -575,12 +580,13 @@ Resolution index remains `0`.
 
 Final A frame: Retreat/Startup, remaining `1`; final B frame: AttackPrepare/Startup, remaining `3`. HP/energy/resource/positions unchanged. Decision next index `2`; Resolution next index `0`.
 
-Before completion:
+Implemented fixture state:
 
-- generate new versioned fixture, never overwrite historical files;
-- pin fixture config/input/final/file SHA-256 and event count in Brief/status;
-- verify artifact schema/semantics/integrity;
-- repeat exact semantic output `100` times and across target/profile/culture variants.
+- a new versioned weighted fixture was generated without overwriting historical files;
+- weighted pins: config `sha256:26c53cf464539e2ebf1eb37f90d73715adb0842e29e6b7a9eeaede8336d49227`, input `sha256:eaee293a90e5fc432ab1822965b3f632abc803bd79b23ae401a8fc9fd8a2b021`, final `sha256:6ed4f34aa845096ee63d125d306fbef64ff469773e14389bfe1152146a007f3f`, file `1e2ea3f87bab119b1db687556d7835b2791089b095d202285c7e7f037e331eb0`, events `9`;
+- current `wait_equal_l1` for `battle.core/0.3.0` is a separate artifact: config `sha256:f7524a127ca0ec085562d1ca43fc91d384b7f713f1ddb323be53bc701f6d0dc3`, input `sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08`, final `sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9`, file `8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd`, events `8`;
+- historical Engine `0.1.0`/`0.2.0` wait fixtures and WP-07 `approach_band_l3` bytes remain immutable;
+- schema/semantic/integrity, ×100 repetition and target/profile/culture variants are part of the final execution gates below; their outcome is not predeclared here.
 
 ## 13. Determinism, safety, regression and architecture
 
@@ -656,7 +662,7 @@ One failed blocking case leaves WP-08 not completed.
 
 ## 15. Execution gates after implementation
 
-Required local commands, run from repository root. WP-08 implementation must add `verify-wp08-target-determinism.ps1`, `verify-wp08-coverage.ps1` and `coverage.wp08-replay.runsettings` before this gate can pass. The new runsettings includes `[Battle.Replay]*,[Battle.Contracts]*`; the existing `coverage.runsettings` remains the Core/Contracts source for all earlier coverage gates.
+Required local commands, run from repository root. WP-08 implementation includes `verify-wp08-target-determinism.ps1`, `verify-wp08-coverage.ps1` and `coverage.wp08-replay.runsettings`. The new runsettings includes `[Battle.Replay]*,[Battle.Contracts]*`; the existing `coverage.runsettings` remains the Core/Contracts source for all earlier coverage gates.
 
 ```powershell
 Set-Location CombatLab
@@ -692,7 +698,7 @@ Required CI:
 - Debug and Release;
 - all four jobs green on final WP-08 code/docs head.
 
-## 16. Completion gate
+## 16. Completion gate and current execution record
 
 WP-08 may become `COMPLETED` only when:
 
@@ -706,4 +712,14 @@ WP-08 may become `COMPLETED` only when:
 - docs updated from `APPROVED / NOT EXECUTED` to executed facts;
 - `UnityClient` unchanged.
 
-До выполнения этих условий Test Plan остаётся `APPROVED / NOT EXECUTED` и не является утверждением, что decision engine уже работает.
+Current record:
+
+- implementation coverage: all `107` unique blocking IDs have corresponding automated tests;
+- local consolidated verification from `2026-08-19`: locked restore green; Release build `0` warnings / `0` errors; full solution `875` passed / `0` failed / `0` skipped; filtered `WorkPackage=WP08` `347` passed / `0` failed / `0` skipped;
+- coverage execution: Core `522` passed and WP-08 conformance `184` passed; WP-02, WP-03, WP-06, WP-07 and WP-08 coverage gates green, including required `100%` critical branch targets and Battle.Core line coverage `>=85%`;
+- WP-04 generated reproducibility and WP-06/WP-07/WP-08 target-determinism gates green for Release; current fixtures match `netstandard2.1`/`net10.0`, historical SHA pins remain unchanged;
+- current WP-08 wait pins: recorded and enforced by the fixture test/target gate;
+- GitHub Actions Windows/Linux Debug/Release: pending on final WP-08 head;
+- `UnityClient`: unchanged.
+
+До выполнения всех completion conditions Test Plan имеет статус `IMPLEMENTED / LOCAL VERIFIED; CI PENDING`, а WP-08 — `LOCAL IMPLEMENTATION COMPLETE / CI PENDING`, но не `COMPLETED`.

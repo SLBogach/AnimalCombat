@@ -12,6 +12,18 @@ internal sealed class Pcg32Stream
     private readonly ulong _increment;
     private ulong _state;
 
+    private Pcg32Stream(
+        RngStream stream,
+        ulong increment,
+        ulong state,
+        ulong nextDrawIndex)
+    {
+        Stream = stream;
+        _increment = increment;
+        _state = state;
+        NextDrawIndex = nextDrawIndex;
+    }
+
     private Pcg32Stream(RngStream stream, ulong masterSeed, ulong domain)
     {
         Stream = stream;
@@ -36,6 +48,28 @@ internal sealed class Pcg32Stream
 
     internal static Pcg32Stream CreateResolution(ulong masterSeed) =>
         new(RngStream.Resolution, masterSeed, ResolutionDomain);
+
+    internal Pcg32Stream CreatePreview() =>
+        new(Stream, _increment, _state, NextDrawIndex);
+
+    internal void CommitPreview(Pcg32Stream preview)
+    {
+        if (preview is null)
+        {
+            throw new ArgumentNullException(nameof(preview));
+        }
+
+        if (preview.Stream != Stream || preview._increment != _increment ||
+            preview.NextDrawIndex < NextDrawIndex)
+        {
+            throw new ArgumentException(
+                "The RNG preview does not belong to this stream state.",
+                nameof(preview));
+        }
+
+        _state = preview._state;
+        NextDrawIndex = preview.NextDrawIndex;
+    }
 
     internal RngProvenance NextInt(
         int minimumInclusive,

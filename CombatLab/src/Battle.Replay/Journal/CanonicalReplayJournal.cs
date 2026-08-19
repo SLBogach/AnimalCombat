@@ -3,6 +3,7 @@ using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Ports;
 using Battle.Contracts.Replay;
+using Battle.Contracts.Requests;
 using Battle.Contracts.Results;
 using Battle.Contracts.Versions;
 
@@ -13,10 +14,13 @@ namespace Battle.Replay.Journal;
 /// identity; the journal verifies them, builds the digest chain, and freezes the
 /// resulting canonical bytes.
 /// </summary>
-public sealed class CanonicalReplayJournal : ICombatEventJournal
+public sealed class CanonicalReplayJournal : ICombatEventJournal, ICombatDecisionDiagnostics
 {
     private readonly JournalIntegrityChain _integrity;
     private readonly List<JournaledCombatEvent> _events = new();
+    private readonly List<DecisionTrace> _decisionTraces = new();
+    private readonly Dictionary<Sha256Digest, int> _decisionSnapshotTicks = new();
+    private readonly Dictionary<int, Sha256Digest> _decisionTraceDigestsByTick = new();
     private ArtifactVersion? _schemaVersion;
     private ArtifactVersion? _engineVersion;
     private Sha256Digest? _configHash;
@@ -45,6 +49,8 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
 
     public bool PublishesReplay => true;
 
+    public bool IsEnabled => Profile == JournalProfile.DiagnosticReplay;
+
     public ExternalId ReplayId => _integrity.ReplayId;
 
     public CombatJournalStart? Start => _integrity.Start;
@@ -55,6 +61,9 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
 
     public IReadOnlyList<JournaledCombatEvent> Events =>
         new ReadOnlyCollection<JournaledCombatEvent>(_events.ToList());
+
+    public IReadOnlyList<DecisionTrace> DecisionTraces =>
+        new ReadOnlyCollection<DecisionTrace>(_decisionTraces.ToList());
 
     public BattleSummary? Summary { get; private set; }
 
@@ -160,12 +169,137 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
         }
 
         ValidateFinisherPredictions();
+        ValidateDecisionTraceCompleteness();
 
         Summary = summary;
         FinalDigest = _integrity.Complete();
         IsCompleted = true;
         return new JournalCompletion(FinalDigest.Value, ReplayId);
     }
+
+    public Sha256Digest ComputeSnapshotDigest(DecisionBatchSnapshotProjection snapshot)
+    {
+        if (snapshot is null)
+        {
+            throw new ArgumentNullException(nameof(snapshot));
+        }
+
+        if (!IsEnabled)
+        {
+            throw new InvalidOperationException(
+                "Decision diagnostics are enabled only for DiagnosticReplay.");
+        }
+
+        if (_integrity.Start is null || IsCompleted)
+        {
+            throw new InvalidOperationException(
+                "A diagnostic snapshot can be hashed only while a begun journal is active.");
+        }
+
+        ValidateDecisionSnapshotIdentity(snapshot);
+        var digest = DecisionSnapshotCanonicalWriter.ComputeDigest(snapshot);
+        _decisionSnapshotTicks[digest] = snapshot.Tick;
+        return digest;
+    }
+
+    public void AppendDecisionTrace(DecisionTrace trace)
+    {
+        if (trace is null)
+        {
+            throw new ArgumentNullException(nameof(trace));
+        }
+
+        if (!IsEnabled)
+        {
+            throw new InvalidOperationException(
+                "Decision traces are enabled only for DiagnosticReplay.");
+        }
+
+        if (IsCompleted || trace.Sequence >= _events.Count)
+        {
+            throw new InvalidOperationException(
+                "A decision trace must follow its canonical DecisionMade event.");
+        }
+
+        var canonical = _events[checked((int)trace.Sequence)].Draft;
+        if (canonical.EventType != CombatEventType.DecisionMade ||
+            canonical.DecisionId != trace.DecisionId ||
+            canonical.ActorId != trace.ActorId ||
+            canonical.Tick != trace.Tick)
+        {
+            throw new InvalidOperationException(
+                "A decision trace identity must match its canonical DecisionMade event.");
+        }
+
+        if (_decisionTraces.Count != 0 &&
+            _decisionTraces[^1].Sequence >= trace.Sequence)
+        {
+            throw new InvalidOperationException(
+                "Decision traces must be appended in strict canonical sequence order.");
+        }
+
+        if (!_decisionSnapshotTicks.TryGetValue(trace.SnapshotDigest, out var snapshotTick) ||
+            snapshotTick != trace.Tick)
+        {
+            throw new InvalidOperationException(
+                "A decision trace must use this active journal's snapshot digest for the same tick.");
+        }
+
+        if (_decisionTraceDigestsByTick.TryGetValue(trace.Tick, out var batchDigest) &&
+            batchDigest != trace.SnapshotDigest)
+        {
+            throw new InvalidOperationException(
+                "All decision traces in one tick must use the same immutable batch snapshot digest.");
+        }
+
+        var payload = (DecisionMadePayload)canonical.Payload;
+        var legal = trace.Candidates
+            .Where(candidate => candidate.Legal)
+            .Select(candidate => candidate.ActionId)
+            .ToArray();
+        var chosen = trace.Candidates.SingleOrDefault(
+            candidate => candidate.ActionId == payload.ChosenActionId);
+        var tracedWeightSum = trace.Candidates
+            .Where(candidate => candidate.Legal)
+            .Aggregate(0L, (sum, candidate) => checked(sum + candidate.FinalWeight));
+        if (!legal.SequenceEqual(payload.LegalActionIds) ||
+            chosen is null ||
+            chosen.FinalWeight != payload.ChosenWeight ||
+            tracedWeightSum != payload.WeightSum)
+        {
+            throw new InvalidOperationException(
+                "A decision trace must reproduce the public legal set, chosen weight and weight sum.");
+        }
+
+        _decisionTraceDigestsByTick[trace.Tick] = trace.SnapshotDigest;
+        _decisionTraces.Add(trace);
+    }
+
+    private void ValidateDecisionSnapshotIdentity(DecisionBatchSnapshotProjection snapshot)
+    {
+        var start = _integrity.Start!;
+        if (snapshot.BattleId != start.BattleId ||
+            snapshot.EngineVersion != start.EngineVersion ||
+            snapshot.MasterSeed != start.Input.MasterSeed ||
+            snapshot.ConfigHash != start.Config.ConfigHash ||
+            snapshot.ModeRules.Id != start.Input.ModeRulesId ||
+            !BuildsEqual(snapshot.Fighters[0].Build, start.FighterA.Build) ||
+            !BuildsEqual(snapshot.Fighters[1].Build, start.FighterB.Build))
+        {
+            throw new InvalidOperationException(
+                "A decision snapshot must retain the active journal input identity and selected builds.");
+        }
+    }
+
+    private static bool BuildsEqual(FighterBuildSnapshot left, FighterBuildSnapshot right) =>
+        left.FighterId == right.FighterId &&
+        left.Side == right.Side &&
+        left.AnimalId == right.AnimalId &&
+        left.BuildId == right.BuildId &&
+        left.SpecialActionIds.SequenceEqual(right.SpecialActionIds) &&
+        left.PassiveId == right.PassiveId &&
+        left.Gear == right.Gear &&
+        left.TacticId == right.TacticId;
 
     private void ValidateIdentityAndOrder(CombatEventDraft draft)
     {
@@ -281,7 +415,13 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
 
     private static void ValidateRolesAndFrames(CombatEventDraft draft)
     {
-        var role = GetRoleRule(draft.EventType);
+        var useWp08Roles = IsWp08CompatibleEngine(draft.EngineVersion.ToString());
+        var role = (draft.EventType, useWp08Roles) switch
+        {
+            (CombatEventType.DecisionMade, false) => EventRoleRule.ActorAndTarget,
+            (CombatEventType.ActionPhaseChanged, true) => EventRoleRule.ActorOnly,
+            _ => GetRoleRule(draft.EventType),
+        };
         var roleIsValid = role switch
         {
             EventRoleRule.None => !draft.ActorId.HasValue && !draft.TargetId.HasValue,
@@ -348,6 +488,30 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
         }
     }
 
+    private void ValidateDecisionTraceCompleteness()
+    {
+        if (!IsEnabled)
+        {
+            if (_decisionTraces.Count != 0)
+            {
+                throw new InvalidOperationException(
+                    "StandardReplay cannot contain decision traces.");
+            }
+
+            return;
+        }
+
+        var decisionSequences = _events
+            .Where(item => item.Draft.EventType == CombatEventType.DecisionMade)
+            .Select(item => item.Draft.Sequence)
+            .ToArray();
+        if (!decisionSequences.SequenceEqual(_decisionTraces.Select(item => item.Sequence)))
+        {
+            throw new InvalidOperationException(
+                "DiagnosticReplay requires exactly one trace for every DecisionMade event.");
+        }
+    }
+
     private static bool IsLethal(CombatEventPayload payload) => payload switch
     {
         DamageAppliedPayload damage => damage.Lethal,
@@ -367,18 +531,44 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal
         CombatEventType.FighterDefeated or CombatEventType.MoveStarted or
             CombatEventType.PositionChanged or CombatEventType.MoveEnded or
             CombatEventType.ResourceChanged or CombatEventType.StateChanged => EventRoleRule.ActorOnly,
-        CombatEventType.DecisionMade or CombatEventType.KnockbackApplied or
+        CombatEventType.KnockbackApplied or
             CombatEventType.WallImpact or CombatEventType.ConflictResolved or
             CombatEventType.AttackHit or CombatEventType.Blocked or CombatEventType.Dodged or
             CombatEventType.Countered or CombatEventType.DamageApplied or
             CombatEventType.GrabStarted or CombatEventType.GrabEnded or
             CombatEventType.FinisherTriggered => EventRoleRule.ActorAndTarget,
-        CombatEventType.ActionCommitted or CombatEventType.AttackPrepared or
+        CombatEventType.DecisionMade or CombatEventType.ActionCommitted or
+            CombatEventType.AttackPrepared or
             CombatEventType.ActionPhaseChanged or CombatEventType.ActionCancelled or
             CombatEventType.AttackMissed or CombatEventType.EffectAdded or
             CombatEventType.EffectRemoved => EventRoleRule.ActorWithOptionalTarget,
         _ => throw new ArgumentOutOfRangeException(nameof(eventType)),
     };
+
+    private static bool IsWp08CompatibleEngine(string value)
+    {
+        const string prefix = "battle.core/0.3.";
+        if (!value.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var patch = value.AsSpan(prefix.Length);
+        if (patch.IsEmpty || (patch.Length > 1 && patch[0] == '0'))
+        {
+            return false;
+        }
+
+        foreach (var character in patch)
+        {
+            if (character is < '0' or > '9')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private enum EventRoleRule
     {

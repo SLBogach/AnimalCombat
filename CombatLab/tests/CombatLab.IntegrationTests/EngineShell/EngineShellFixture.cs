@@ -51,6 +51,8 @@ internal static class EngineShellFixture
         var settings = root["settings"]?.AsObject()
             ?? throw new InvalidDataException("Generated balance config must contain settings.");
         settings["battle.time_limit_ticks"] = 1;
+        settings["global.arena.start_position_a"] = 2_000;
+        settings["global.arena.start_position_b"] = 4_500;
         if (maximumEvents.HasValue)
         {
             settings["global.sim.max_events_per_battle"] = maximumEvents.Value;

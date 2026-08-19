@@ -15,6 +15,7 @@ internal static class BalanceSemanticValidator
         ValidateVersions(document, issues);
         ValidateSettings(document.Settings, issues);
         ValidateCatalogs(document, issues);
+        Wp08DecisionConfigValidator.Validate(document, issues);
     }
 
     private static void ValidateVersions(
@@ -49,6 +50,7 @@ internal static class BalanceSemanticValidator
         foreach (var item in settings)
         {
             if (item.Value.Kind == ConfigValueKind.Integer &&
+                !Wp08DecisionConfigValidator.OwnsSettingNumericDomain(item.Key) &&
                 IsMagnitudeTooLarge(item.Value.AsInteger()))
             {
                 Add(
@@ -71,7 +73,6 @@ internal static class BalanceSemanticValidator
             ValidateInside(settings, "global.arena.start_position_b", arenaMin, arenaMax, issues);
         }
 
-        ValidatePositive(settings, "global.sim.fp_scale", ConfigValidationCodes.ZeroDivisor, issues);
         ValidatePositive(settings, "global.control.control_k", ConfigValidationCodes.ZeroDivisor, issues);
         ValidatePositive(settings, "global.control.force_k", ConfigValidationCodes.ZeroDivisor, issues);
         ValidatePositive(settings, "global.damage.armor_k", ConfigValidationCodes.ZeroDivisor, issues);
@@ -91,7 +92,6 @@ internal static class BalanceSemanticValidator
             issues);
 
         ValidateOrdered(settings, "global.sim.probability_min", "global.sim.probability_max", issues);
-        ValidateOrdered(settings, "global.sim.multiplier_min", "global.sim.multiplier_max", issues);
         ValidateOrdered(settings, "global.damage.block_min", "global.damage.block_max", issues);
         ValidateOrdered(settings, "global.damage.dodge_min", "global.damage.dodge_max", issues);
         ValidateOrdered(settings, "global.damage.speed_min", "global.damage.speed_max", issues);
@@ -102,19 +102,6 @@ internal static class BalanceSemanticValidator
             (probabilityMin < 0 || probabilityMax > 1000))
         {
             Add(issues, ConfigValidationCodes.NumericOutOfRange, "$.settings", "Probability bounds must remain inside [0, 1000].");
-        }
-
-        if (TryInteger(settings, "global.sim.decision_weight_max", out var weightMax) &&
-            TryInteger(settings, "global.sim.multiplier_max", out var multiplierMax))
-        {
-            try
-            {
-                _ = checked(weightMax * multiplierMax);
-            }
-            catch (OverflowException)
-            {
-                Add(issues, ConfigValidationCodes.ArithmeticOverflowRisk, "$.settings", "Decision weight multiplication can overflow Int64.");
-            }
         }
     }
 
@@ -152,6 +139,15 @@ internal static class BalanceSemanticValidator
                 if (owner != "all" || !action.Id.Value.StartsWith("sys_", StringComparison.Ordinal))
                 {
                     Add(issues, ConfigValidationCodes.WrongOwner, path, "System actions must be owned by 'all' and use the sys_ prefix.");
+                }
+
+                if (action.Id.Value is not ("sys_approach" or "sys_retreat" or "sys_wait"))
+                {
+                    Add(
+                        issues,
+                        ConfigValidationCodes.InvalidSystemAction,
+                        path,
+                        "Engine 0.3 supports exactly sys_approach, sys_retreat and sys_wait.");
                 }
             }
             else if (owner == "all" || !action.Id.Value.StartsWith(owner + "_", StringComparison.Ordinal))
@@ -228,6 +224,7 @@ internal static class BalanceSemanticValidator
                 foreach (var property in entity.Properties)
                 {
                     if (property.Value.Kind == ConfigValueKind.Integer &&
+                        !Wp08DecisionConfigValidator.OwnsCatalogNumericDomain(catalog.Key, property.Key) &&
                         IsMagnitudeTooLarge(property.Value.AsInteger()))
                     {
                         Add(

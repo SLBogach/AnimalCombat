@@ -136,6 +136,34 @@ public sealed class GameplayRngTests
     }
 
     [Fact]
+    [Trait("Category", "WP08")]
+    [Trait("WorkPackage", "WP08")]
+    public void PreviewCommit_AcceptsOwnedForwardPreviewAndRejectsEveryForeignShape()
+    {
+        var stream = new GameplayRng(42UL).Decision;
+
+        Assert.Throws<ArgumentNullException>(() => stream.CommitPreview(null!));
+        Assert.Throws<ArgumentException>(() =>
+            stream.CommitPreview(new GameplayRng(42UL).Resolution.CreatePreview()));
+        Assert.Throws<ArgumentException>(() =>
+            stream.CommitPreview(new GameplayRng(43UL).Decision.CreatePreview()));
+
+        var stale = stream.CreatePreview();
+        _ = stream.NextInt(0, 1_000, RngOperation.NextInt);
+        Assert.Throws<ArgumentException>(() => stream.CommitPreview(stale));
+
+        var forward = stream.CreatePreview();
+        var previewedDraw = forward.NextInt(0, 1_000, RngOperation.NextInt);
+        stream.CommitPreview(forward);
+
+        Assert.Equal(2UL, stream.NextDrawIndex);
+        Assert.Equal(1UL, previewedDraw.Index);
+        Assert.Equal(
+            forward.NextInt(0, 1_000, RngOperation.NextInt),
+            stream.NextInt(0, 1_000, RngOperation.NextInt));
+    }
+
+    [Fact]
     public void NextInt_UsesRejectionSamplingButConsumesOneLogicalIndex()
     {
         var stream = new GameplayRng(1UL).Decision;

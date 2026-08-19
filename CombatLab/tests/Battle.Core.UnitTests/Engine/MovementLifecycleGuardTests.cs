@@ -181,6 +181,7 @@ public sealed class MovementLifecycleGuardTests
         1_000,
         260,
         85,
+        85,
         moveSpeed,
         520);
 

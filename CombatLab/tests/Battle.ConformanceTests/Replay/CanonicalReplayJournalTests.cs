@@ -262,6 +262,71 @@ public sealed class CanonicalReplayJournalTests
     }
 
     [Fact]
+    [Trait("WorkPackage", "WP08")]
+    public void WP08_CON_012_JournalUsesCompatibleEnginePatchRoles()
+    {
+        var engine = new ArtifactVersion("battle.core/0.3.1");
+        var journal = CreateBegunCanonicalJournal(engine);
+        journal.Append(CreateStartedDraft(journal.InputDigest!.Value, engine));
+        var decisionPayload = new DecisionMadePayload(
+            new[] { EventId.FromSequence(0) },
+            new StableId("bear_paw_jab"),
+            new[] { new StableId("bear_paw_jab") },
+            1,
+            100,
+            100,
+            DecisionSelectionMode.OnlyLegalAction,
+            Array.Empty<ModifierTrace>());
+        var actorFrames = CreateFrames(FighterId.FighterA, null);
+        var decision = CreateDraft(
+            1,
+            0,
+            decisionPayload,
+            FighterId.FighterA,
+            null,
+            sourceEventId: EventId.FromSequence(0),
+            before: actorFrames,
+            after: actorFrames,
+            engineVersion: engine);
+
+        journal.Append(in decision);
+
+        var phasePayload = new ActionPhaseChangedPayload(
+            new[] { EventId.FromSequence(1) },
+            ActionPhase.Startup,
+            ActionPhase.Active,
+            1);
+        var wrongTargetFrames = CreateFrames(FighterId.FighterA, FighterId.FighterB);
+        var phaseWithTarget = CreateDraft(
+            2,
+            1,
+            phasePayload,
+            FighterId.FighterA,
+            FighterId.FighterB,
+            sourceEventId: EventId.FromSequence(1),
+            before: wrongTargetFrames,
+            after: wrongTargetFrames,
+            engineVersion: engine);
+
+        Assert.Throws<InvalidOperationException>(() => journal.Append(in phaseWithTarget));
+
+        var actorOnlyFrames = CreateFrames(FighterId.FighterA, null);
+        var actorOnlyPhase = CreateDraft(
+            2,
+            1,
+            phasePayload,
+            FighterId.FighterA,
+            null,
+            sourceEventId: EventId.FromSequence(1),
+            before: actorOnlyFrames,
+            after: actorOnlyFrames,
+            engineVersion: engine);
+        var identity = journal.Append(in actorOnlyPhase);
+
+        Assert.Equal(EventId.FromSequence(2), identity.EventId);
+    }
+
+    [Fact]
     public void Journal_RejectsAppendAfterBattleEndedOrCompletion()
     {
         var endedJournal = CreateStartedJournal();
@@ -585,16 +650,19 @@ public sealed class CanonicalReplayJournalTests
         return journal;
     }
 
-    private static CanonicalReplayJournal CreateBegunCanonicalJournal()
+    private static CanonicalReplayJournal CreateBegunCanonicalJournal(
+        ArtifactVersion? engineVersion = null)
     {
         var journal = new CanonicalReplayJournal(ReplayId);
-        var start = CreateJournalStart();
+        var start = CreateJournalStart(engineVersion);
         var begin = journal.Begin(in start);
         Assert.Equal(journal.InputDigest, begin.InputDigest);
         return journal;
     }
 
-    private static CombatEventDraft CreateStartedDraft(Sha256Digest inputDigest)
+    private static CombatEventDraft CreateStartedDraft(
+        Sha256Digest inputDigest,
+        ArtifactVersion? engineVersion = null)
     {
         var frameA = CreateFrame(FighterId.FighterA);
         var frameB = CreateFrame(FighterId.FighterB);
@@ -610,13 +678,15 @@ public sealed class CanonicalReplayJournalTests
             null,
             null,
             before: new FramePair(null, null),
-            after: new FramePair(null, null));
+            after: new FramePair(null, null),
+            engineVersion: engineVersion);
     }
 
-    private static CombatJournalStart CreateJournalStart() =>
+    private static CombatJournalStart CreateJournalStart(
+        ArtifactVersion? engineVersion = null) =>
         new(
             BattleId,
-            ContractVersions.Engine,
+            engineVersion ?? ContractVersions.Engine,
             ContractVersions.Rng,
             ContractVersions.Ordering,
             new ConfigReference(
@@ -687,12 +757,13 @@ public sealed class CanonicalReplayJournalTests
         ExternalId? resolutionGroupId = null,
         FramePair? before = null,
         FramePair? after = null,
-        RngProvenance? rng = null)
+        RngProvenance? rng = null,
+        ArtifactVersion? engineVersion = null)
     {
         var frames = CreateFrames(actorId, targetId);
         return new CombatEventDraft(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            engineVersion ?? ContractVersions.Engine,
             ConfigHash,
             battleId ?? BattleId,
             tick,

@@ -170,7 +170,7 @@ public sealed class TimeoutOutcomeTests
         Assert.Equal(0, commitA.RecoveryTicks);
         Assert.Equal(0, commitA.CooldownTicks);
         Assert.Equal(CommitDirection.None, commitA.CommitDirection);
-        Assert.Equal(8_000, commitA.TargetPositionAtCommit);
+        Assert.Equal(4_500, commitA.TargetPositionAtCommit);
 
         var timeout = Assert.IsType<TimeoutReachedPayload>(journal.Drafts[5].Payload);
         Assert.Equal(1_897_500, timeout.LeftCrossProduct);

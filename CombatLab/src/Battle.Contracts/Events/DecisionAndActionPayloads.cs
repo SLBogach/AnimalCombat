@@ -35,6 +35,23 @@ public sealed class DecisionMadePayload : CombatEventPayload
             128,
             nameof(legalActionIds),
             requireUnique: true);
+        PayloadContract.RequireStrictlySorted(
+            _legalActionIds,
+            static (left, right) => left.CompareTo(right),
+            nameof(legalActionIds));
+        if (candidateCount != _legalActionIds.Count)
+        {
+            throw new ArgumentException(
+                "Candidate count must equal the number of legal action IDs.",
+                nameof(candidateCount));
+        }
+
+        if (!_legalActionIds.Contains(chosenActionId))
+        {
+            throw new ArgumentException(
+                "The chosen action must belong to the legal action set.",
+                nameof(chosenActionId));
+        }
         CandidateCount = candidateCount;
         ChosenWeight = chosenWeight;
         WeightSum = weightSum;
@@ -42,8 +59,15 @@ public sealed class DecisionMadePayload : CombatEventPayload
         _dominantModifiers = PayloadContract.Copy(
             dominantModifiers,
             0,
-            8,
+            6,
             nameof(dominantModifiers));
+        if (_dominantModifiers.Select(item => item.Code).Distinct().Count() !=
+            _dominantModifiers.Count)
+        {
+            throw new ArgumentException(
+                "Dominant modifier reason codes must be unique.",
+                nameof(dominantModifiers));
+        }
     }
 
     public override CombatEventType EventType => CombatEventType.DecisionMade;

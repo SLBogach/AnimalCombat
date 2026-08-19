@@ -26,7 +26,7 @@ internal static class Program
         {
             Console.Error.WriteLine(
                 "Usage: Wp06.TargetProbe <CombatLab root> <netstandard2.1|net10.0> " +
-                "[wait|approach] [create-output-path]");
+                "[wait|approach|decision] [create-output-path]");
             return 2;
         }
 
@@ -41,7 +41,9 @@ internal static class Program
             if (result.Status != BattleResultStatus.Completed)
             {
                 throw new InvalidOperationException(
-                    $"{scenario.Name} ended with unexpected status '{result.Status}'.");
+                    $"{scenario.Name} ended with unexpected status '{result.Status}': " +
+                    string.Join(", ", result.RejectionErrors.Select(error =>
+                        error.Code.Value + "@" + error.Path)));
             }
 
             var replay = CanonicalReplayArtifactWriter.Write(
@@ -139,6 +141,11 @@ internal static class Program
         CompiledBattleConfig config,
         ProbeScenario scenario)
     {
+        if (scenario.DecisionWeighted)
+        {
+            return CreateWeightedDecisionRequest(config, scenario);
+        }
+
         var buildA = new FighterBuildSnapshot(
             FighterId.FighterA,
             FighterSide.A,
@@ -196,7 +203,70 @@ internal static class Program
             ContractVersions.Engine,
             config.Reference.ConfigHash,
             modeRules,
-            2_026_072_901,
+            scenario.MasterSeed,
+            buildA,
+            buildB);
+    }
+
+    private static BattleRequest CreateWeightedDecisionRequest(
+        CompiledBattleConfig config,
+        ProbeScenario scenario)
+    {
+        var specialActionIds = new[]
+        {
+            new StableId("bear_earthbreaker"),
+            new StableId("bear_fury_maul"),
+        };
+        var gear = new GearSelection(
+            new StableId("gear_offense_power_wraps"),
+            new StableId("gear_defense_reinforced_hide"),
+            new StableId("gear_utility_sprint_soles"));
+        var buildA = new FighterBuildSnapshot(
+            FighterId.FighterA,
+            FighterSide.A,
+            new StableId("bear"),
+            null,
+            specialActionIds,
+            new StableId("bear_thick_hide"),
+            gear,
+            new StableId("tactic_pressure"));
+        var buildB = new FighterBuildSnapshot(
+            FighterId.FighterB,
+            FighterSide.B,
+            new StableId("bear"),
+            null,
+            specialActionIds,
+            new StableId("bear_thick_hide"),
+            gear,
+            new StableId("tactic_pressure"));
+        var modeRules = new ModeRulesSnapshot(
+            scenario.ModeRulesId,
+            ContractVersions.ModeRules,
+            NormalizationMode.None,
+            new[] { new StableId("bear") },
+            new[]
+            {
+                new StableId("bear_earthbreaker"),
+                new StableId("bear_fury_maul"),
+                new StableId("bear_paw_jab"),
+                RetreatActionId,
+                WaitActionId,
+            },
+            new[] { new StableId("bear_thick_hide") },
+            new[]
+            {
+                new StableId("gear_defense_reinforced_hide"),
+                new StableId("gear_offense_power_wraps"),
+                new StableId("gear_utility_sprint_soles"),
+            },
+            new[] { new StableId("tactic_pressure") });
+
+        return new BattleRequest(
+            scenario.BattleId,
+            ContractVersions.Engine,
+            config.Reference.ConfigHash,
+            modeRules,
+            scenario.MasterSeed,
             buildA,
             buildB);
     }
@@ -210,6 +280,8 @@ internal static class Program
         int StartPositionA,
         int StartPositionB,
         bool IncludeMovementActions,
+        ulong MasterSeed,
+        bool DecisionWeighted,
         DateTimeOffset CreatedAtUtc,
         ExternalId Producer,
         string Notes)
@@ -221,7 +293,9 @@ internal static class Program
             new StableId("engine_shell_wait_v01"),
             1,
             2_000,
-            8_000,
+            4_500,
+            false,
+            2_026_072_901,
             false,
             new DateTimeOffset(2026, 7, 29, 12, 0, 0, TimeSpan.Zero),
             new ExternalId("combat-lab-wp06-target-probe"),
@@ -236,15 +310,33 @@ internal static class Program
             4_000,
             6_555,
             true,
+            2_026_072_901,
+            false,
             new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero),
             new ExternalId("combat-lab-wp07-target-probe"),
             "WP-07 approach_band_l3 target determinism probe");
+
+        internal static ProbeScenario Decision { get; } = new(
+            "decision_weighted_l1",
+            new ExternalId("battle-wp08-decision-weighted-l1"),
+            new ExternalId("replay-wp08-decision-weighted-l1"),
+            new StableId("decision_weighted_l1_v01"),
+            1,
+            4_000,
+            5_540,
+            false,
+            0,
+            true,
+            new DateTimeOffset(2026, 8, 11, 12, 0, 0, TimeSpan.Zero),
+            new ExternalId("combat-lab-wp08-target-probe"),
+            "WP-08 decision_weighted_l1 target determinism probe");
 
         internal static ProbeScenario Parse(string value) => value switch
         {
             "wait" => Wait,
             "approach" => Approach,
-            _ => throw new ArgumentException("Probe scenario must be wait or approach.", nameof(value)),
+            "decision" => Decision,
+            _ => throw new ArgumentException("Probe scenario must be wait, approach, or decision.", nameof(value)),
         };
     }
 }

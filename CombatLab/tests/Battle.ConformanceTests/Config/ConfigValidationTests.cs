@@ -143,7 +143,7 @@ public sealed class ConfigValidationTests
                 ConfigFixture.Entity(root, "actions", "action_id", "bear_paw_jab")["hit_range_min"] = 1_051;
                 break;
             case "overflow":
-                settings["global.sim.decision_weight_max"] = long.MaxValue;
+                settings["global.arena.wall_zone_size"] = long.MaxValue;
                 break;
             case "conflict_matrix":
                 ConfigFixture.Entity(

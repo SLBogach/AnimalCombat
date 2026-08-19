@@ -70,11 +70,25 @@ internal static class EngineTestFixture
             ("global.arena.max_position", ConfigValue.FromInteger(10_000)),
             ("global.arena.min_position", ConfigValue.FromInteger(0)),
             ("global.arena.start_position_a", ConfigValue.FromInteger(2_000)),
-            ("global.arena.start_position_b", ConfigValue.FromInteger(8_000)),
+            ("global.arena.start_position_b", ConfigValue.FromInteger(4_500)),
+            ("global.arena.wall_zone_size", ConfigValue.FromInteger(1_200)),
+            ("global.ai.default_perception_delay_ticks", ConfigValue.FromInteger(5)),
+            ("global.ai.hard_opportunity_misses", ConfigValue.FromInteger(4)),
+            ("global.ai.opportunity_cap_fp", ConfigValue.FromInteger(2_500)),
+            ("global.ai.opportunity_growth_fp", ConfigValue.FromInteger(250)),
+            ("global.ai.repeat_same_action_fp", ConfigValue.FromInteger(550)),
+            ("global.ai.repeat_same_category_fp", ConfigValue.FromInteger(800)),
+            ("global.damage.speed_baseline", ConfigValue.FromInteger(100)),
+            ("global.damage.speed_max", ConfigValue.FromInteger(1_500)),
+            ("global.damage.speed_min", ConfigValue.FromInteger(600)),
+            ("global.damage.speed_slope", ConfigValue.FromInteger(5)),
             ("global.sim.config_version", ConfigValue.FromString("v0.1")),
+            ("global.sim.decision_weight_max", ConfigValue.FromInteger(100_000_000)),
             ("global.sim.fp_scale", ConfigValue.FromInteger(1_000)),
             ("global.sim.max_events_per_battle", ConfigValue.FromInteger(maximumEvents)),
             ("global.sim.max_zero_progress_ticks", ConfigValue.FromInteger(maximumZeroProgressTicks)),
+            ("global.sim.multiplier_max", ConfigValue.FromInteger(3_000)),
+            ("global.sim.multiplier_min", ConfigValue.FromInteger(250)),
             ("global.sim.ordering_version", ConfigValue.FromString(ContractVersions.Ordering.ToString())),
             ("global.sim.rng_version", ConfigValue.FromString(ContractVersions.Rng.ToString())),
             ("global.sim.schema_version", ConfigValue.FromString(ContractVersions.BalanceSchema.ToString())));
@@ -85,6 +99,7 @@ internal static class EngineTestFixture
                 0,
                 ("collision_radius", ConfigValue.FromInteger(520)),
                 ("initiative", ConfigValue.FromInteger(85)),
+                ("action_speed", ConfigValue.FromInteger(85)),
                 ("max_energy", ConfigValue.FromInteger(1_000)),
                 ("max_health", ConfigValue.FromInteger(1_650)),
                 ("max_resource", ConfigValue.FromInteger(1_000)),
@@ -97,6 +112,7 @@ internal static class EngineTestFixture
                 1,
                 ("collision_radius", ConfigValue.FromInteger(430)),
                 ("initiative", ConfigValue.FromInteger(130)),
+                ("action_speed", ConfigValue.FromInteger(130)),
                 ("max_energy", ConfigValue.FromInteger(1_000)),
                 ("max_health", ConfigValue.FromInteger(1_150)),
                 ("max_resource", ConfigValue.FromInteger(1_000)),
@@ -211,16 +227,50 @@ internal static class EngineTestFixture
             ("kangaroo_flying_kick", "kangaroo", "Special"),
             ("kangaroo_tail_counter", "kangaroo", "Special"),
         };
-        var result = specs.Select((spec, index) => Entity(
+        var result = specs.Select((spec, index) => CombatAction(
             spec.Item1,
-            index,
-            ("animal_id", ConfigValue.FromString(spec.Item2)),
-            ("slot_type", ConfigValue.FromString(spec.Item3)))).ToList();
+            spec.Item2,
+            spec.Item3,
+            index)).ToList();
         result.Add(SystemAction("sys_approach", result.Count, "Movement", "Approach", 650, 0, 1_500, 1, 5, 1, true));
         result.Add(SystemAction("sys_retreat", result.Count, "Movement", "Retreat", 450, 1_600, 3_000, 1, 5, 1, true));
         result.Add(SystemAction("sys_wait", result.Count, "Wait", "None", 150, 0, 10_000, 0, 3, 0, false));
         return result;
     }
+
+    private static CompiledConfigEntity CombatAction(
+        string id,
+        string animalId,
+        string slot,
+        int handle) => Entity(
+        id,
+        handle,
+        ("active_ticks", ConfigValue.FromInteger(1)),
+        ("animal_id", ConfigValue.FromString(animalId)),
+        ("base_weight", ConfigValue.FromInteger(500)),
+        ("category", ConfigValue.FromString("SignatureStrike")),
+        ("cooldown_ticks", ConfigValue.FromInteger(10)),
+        ("energy_cost", ConfigValue.FromInteger(0)),
+        ("hard_opportunity_misses", ConfigValue.FromInteger(4)),
+        ("hit_count", ConfigValue.FromInteger(1)),
+        ("hit_range_max", ConfigValue.FromInteger(10_000)),
+        ("hit_range_min", ConfigValue.FromInteger(0)),
+        ("hit_schedule", ConfigValue.FromString("0")),
+        ("max_consecutive_uses", ConfigValue.FromInteger(1)),
+        ("movement_mode", ConfigValue.FromString("None")),
+        ("opportunity_cap_fp", ConfigValue.FromInteger(2_500)),
+        ("preferred_range_max", ConfigValue.FromInteger(10_000)),
+        ("preferred_range_min", ConfigValue.FromInteger(0)),
+        ("recovery_base_ticks", ConfigValue.FromInteger(1)),
+        ("recovery_max_ticks", ConfigValue.FromInteger(1)),
+        ("recovery_min_ticks", ConfigValue.FromInteger(1)),
+        ("resource_cost", ConfigValue.FromInteger(100)),
+        ("slot_type", ConfigValue.FromString(slot)),
+        ("startup_base_ticks", ConfigValue.FromInteger(1)),
+        ("startup_max_ticks", ConfigValue.FromInteger(1)),
+        ("startup_min_ticks", ConfigValue.FromInteger(1)),
+        ("tags", ConfigValue.FromString("signature|special")),
+        ("track_target", ConfigValue.FromBoolean(false)));
 
     private static CompiledConfigEntity SystemAction(
         string id,
@@ -254,15 +304,18 @@ internal static class EngineTestFixture
         ("dodgeable", ConfigValue.FromBoolean(false)),
         ("energy_cost", ConfigValue.FromInteger(0)),
         ("grab_priority", ConfigValue.FromInteger(0)),
+        ("hard_opportunity_misses", ConfigValue.FromInteger(0)),
         ("hit_count", ConfigValue.FromInteger(0)),
         ("hit_range_max", ConfigValue.FromInteger(0)),
         ("hit_range_min", ConfigValue.FromInteger(0)),
         ("hit_schedule", ConfigValue.FromString(string.Empty)),
         ("knockback_max", ConfigValue.FromInteger(0)),
         ("knockback_min", ConfigValue.FromInteger(0)),
+        ("max_consecutive_uses", ConfigValue.FromInteger(4)),
         ("min_damage", ConfigValue.FromInteger(0)),
         ("move_distance", ConfigValue.FromInteger(0)),
         ("movement_mode", ConfigValue.FromString(movementMode)),
+        ("opportunity_cap_fp", ConfigValue.FromInteger(1_000)),
         ("power_ratio_fp", ConfigValue.FromInteger(0)),
         ("preferred_range_max", ConfigValue.FromInteger(preferredRangeMaximum)),
         ("preferred_range_min", ConfigValue.FromInteger(preferredRangeMinimum)),
@@ -274,6 +327,8 @@ internal static class EngineTestFixture
         ("startup_base_ticks", ConfigValue.FromInteger(startupTicks)),
         ("startup_max_ticks", ConfigValue.FromInteger(startupTicks)),
         ("startup_min_ticks", ConfigValue.FromInteger(startupTicks)),
+        ("tags", ConfigValue.FromString(
+            movementMode == "None" ? "system|wait" : "system|movement|" + movementMode.ToLowerInvariant())),
         ("track_target", ConfigValue.FromBoolean(trackTarget)),
         ("undodgeable", ConfigValue.FromBoolean(false)),
         ("wall_damage_max", ConfigValue.FromInteger(0)),
@@ -286,18 +341,43 @@ internal static class EngineTestFixture
         Entity(
             "bear_thick_hide",
             0,
-            ("animal_id", ConfigValue.FromString("bear"))),
+            ("animal_id", ConfigValue.FromString("bear")),
+            ("tags", ConfigValue.FromString("defense")),
+            ("weight_multiplier_fp", ConfigValue.FromInteger(1_000))),
         Entity(
             "kangaroo_never_still",
             1,
-            ("animal_id", ConfigValue.FromString("kangaroo"))),
+            ("animal_id", ConfigValue.FromString("kangaroo")),
+            ("tags", ConfigValue.FromString("movement")),
+            ("weight_multiplier_fp", ConfigValue.FromInteger(1_000))),
     };
 
     private static IReadOnlyList<CompiledConfigEntity> CreateTactics() => new[]
     {
-        Entity("tactic_position", 0),
-        Entity("tactic_pressure", 1),
+        Tactic("tactic_position", 0),
+        Tactic("tactic_pressure", 1),
     };
+
+    private static CompiledConfigEntity Tactic(string id, int handle) => Entity(
+        id,
+        handle,
+        ("approach_fp", ConfigValue.FromInteger(1_000)),
+        ("block_fp", ConfigValue.FromInteger(1_000)),
+        ("counter_fp", ConfigValue.FromInteger(1_000)),
+        ("dodge_fp", ConfigValue.FromInteger(1_000)),
+        ("grab_fp", ConfigValue.FromInteger(1_000)),
+        ("heavy_fp", ConfigValue.FromInteger(1_000)),
+        ("light_fp", ConfigValue.FromInteger(1_000)),
+        ("low_hpfp", ConfigValue.FromInteger(1_000)),
+        ("perception_delay_ticks", ConfigValue.FromInteger(5)),
+        ("repeat_penalty_fp", ConfigValue.FromInteger(1_000)),
+        ("resource_generator_fp", ConfigValue.FromInteger(1_000)),
+        ("resource_spender_fp", ConfigValue.FromInteger(1_000)),
+        ("retreat_fp", ConfigValue.FromInteger(1_000)),
+        ("self_wall_fp", ConfigValue.FromInteger(1_000)),
+        ("signature_fp", ConfigValue.FromInteger(1_000)),
+        ("target_recovery_fp", ConfigValue.FromInteger(1_000)),
+        ("target_wall_fp", ConfigValue.FromInteger(1_000)));
 
     private static IReadOnlyList<CompiledConfigEntity> CreateGear() => new[]
     {
@@ -316,8 +396,10 @@ internal static class EngineTestFixture
         id,
         handle,
         ("operation1", ConfigValue.FromString("Add")),
+        ("normalized_value", ConfigValue.FromInteger(1_000)),
         ("slot", ConfigValue.FromString(slot)),
         ("stat1", ConfigValue.FromString(stat)),
+        ("tags", ConfigValue.FromString(stat.ToLowerInvariant())),
         ("value1", ConfigValue.FromInteger(value)));
 }
 

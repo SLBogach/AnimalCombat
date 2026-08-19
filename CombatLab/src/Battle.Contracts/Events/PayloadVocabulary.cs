@@ -288,4 +288,20 @@ internal static class PayloadContract
             throw new ArgumentOutOfRangeException(parameterName);
         }
     }
+
+    public static void RequireStrictlySorted<T>(
+        IReadOnlyList<T> values,
+        Comparison<T> comparison,
+        string parameterName)
+    {
+        for (var index = 1; index < values.Count; index++)
+        {
+            if (comparison(values[index - 1], values[index]) >= 0)
+            {
+                throw new ArgumentException(
+                    "The collection must be in strict canonical order.",
+                    parameterName);
+            }
+        }
+    }
 }

@@ -54,7 +54,7 @@ public sealed class BattleInitializationTests
         var frameB = setup.State.FighterB.ToFrame();
 
         AssertFrame(frameA, FighterId.FighterA, 2_000, Facing.Right, 1_650, "rage");
-        AssertFrame(frameB, FighterId.FighterB, 8_000, Facing.Left, 1_150, "tempo");
+        AssertFrame(frameB, FighterId.FighterB, 4_500, Facing.Left, 1_150, "tempo");
         Assert.Equal(FighterState.DecisionReady, frameA.State);
         Assert.Equal(FighterState.DecisionReady, frameB.State);
         Assert.Null(frameA.ActionId);

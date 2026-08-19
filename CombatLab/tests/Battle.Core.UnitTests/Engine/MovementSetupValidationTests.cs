@@ -428,10 +428,10 @@ public sealed class MovementSetupValidationTests
     [Theory]
     [InlineData("battle.core/0.1.0")]
     [InlineData("battle.core/9.9.9")]
-    public void WP07_VAL_006_CurrentEngineIs020AndOldOrUnknownRequestsAreRejected(
+    public void WP07_VAL_006_CurrentEngineIs030AndOldOrUnknownRequestsAreRejected(
         string engineVersion)
     {
-        Assert.Equal("battle.core/0.2.0", ContractVersions.Engine.ToString());
+        Assert.Equal("battle.core/0.3.0", ContractVersions.Engine.ToString());
         var journal = new RecordingJournal();
         var request = EngineTestFixture.CreateRequest(
             engineVersion: new ArtifactVersion(engineVersion));

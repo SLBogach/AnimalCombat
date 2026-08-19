@@ -311,6 +311,7 @@ public static class ConfigCommand
         {
             Encoder = JavaScriptEncoder.Default,
             Indented = true,
+            NewLine = "\n",
         });
 
         var errorCount = exportIssues.Count(issue => issue.Severity == BalanceExportIssueSeverity.Error) +

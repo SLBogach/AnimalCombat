@@ -25,6 +25,7 @@ $assemblies = @(
 )
 $targets = @("netstandard2.1", "net10.0")
 $results = @{}
+$historicalFixtureSha256 = "7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873"
 New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
 
 function Test-ByteArrayEqual {
@@ -46,6 +47,24 @@ function Test-ByteArrayEqual {
     return $true
 }
 
+function Get-Sha256Hex {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    $algorithm = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $algorithm.ComputeHash($stream)
+        return ([System.BitConverter]::ToString($hash) -replace '-', '').ToLowerInvariant()
+    }
+    finally {
+        $algorithm.Dispose()
+        $stream.Dispose()
+    }
+}
+
 try {
     dotnet restore $probeProject --locked-mode --disable-build-servers
     if ($LASTEXITCODE -ne 0) {
@@ -59,7 +78,12 @@ try {
         throw "Missing pinned WP-07 replay fixture '$fixturePath'."
     }
 
-    $fixtureBytes = [System.IO.File]::ReadAllBytes($fixturePath)
+    $fixtureHash = Get-Sha256Hex -Path $fixturePath
+    if (-not [System.StringComparer]::Ordinal.Equals(
+            $fixtureHash,
+            $historicalFixtureSha256)) {
+        throw "Historical WP-07 fixture changed: expected $historicalFixtureSha256, actual $fixtureHash."
+    }
 
     foreach ($target in $targets) {
         foreach ($assembly in $assemblies) {
@@ -98,9 +122,6 @@ try {
         }
 
         $results[$target] = [System.IO.File]::ReadAllBytes($resultPath)
-        if (-not (Test-ByteArrayEqual $results[$target] $fixtureBytes)) {
-            throw "WP-07 $target replay bytes differ from the pinned approach_band_l3 fixture."
-        }
     }
 
     if (-not (Test-ByteArrayEqual `
@@ -110,7 +131,7 @@ try {
     }
 
     Write-Output `
-        "WP-07 target determinism: both targets exactly match the pinned approach_band_l3 replay."
+        "WP-07 target determinism: current approach output matches across targets; historical battle.core/0.2.0 fixture hash is immutable."
 }
 finally {
     if (Test-Path -LiteralPath $temporaryRoot) {

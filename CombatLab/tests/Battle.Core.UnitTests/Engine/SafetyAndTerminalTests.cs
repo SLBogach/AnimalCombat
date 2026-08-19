@@ -21,7 +21,7 @@ public sealed class SafetyAndTerminalTests
 
         Assert.Equal(BattleResultStatus.FailedInvariant, result.Status);
         Assert.Equal("EventCapExceeded", result.InvariantFailure!.Code.Value);
-        Assert.Equal(4, journal.Drafts.Count);
+        Assert.Equal(2, journal.Drafts.Count);
         Assert.Equal(CombatEventType.BattleEnded, journal.Drafts[^1].EventType);
         Assert.Equal(BattleOutcome.Invalid, ((BattleEndedPayload)journal.Drafts[^1].Payload).Summary.Outcome);
         Assert.Equal(1, journal.CompleteCount);

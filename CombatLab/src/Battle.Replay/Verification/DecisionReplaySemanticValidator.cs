@@ -5,12 +5,11 @@ using System.Text.Json;
 namespace Battle.Replay.Verification;
 
 /// <summary>
-/// Config-free decision/commit validation introduced by battle.core/0.3.x.
+/// Config-free decision/commit validation introduced by battle.core/0.3.x and retained by 0.4.x.
 /// Older engine artifacts deliberately retain their historical v0.1 semantics.
 /// </summary>
 internal static class DecisionReplaySemanticValidator
 {
-    private const string CompatibleEnginePrefix = "battle.core/0.3.";
     private const int RngNormalizedScale = 1_000;
 
     private static readonly string[] StageCodes =
@@ -398,6 +397,16 @@ internal static class DecisionReplaySemanticValidator
             var combatEvent = events[index];
             var eventType = combatEvent.GetProperty("event_type").GetString()!;
             if (eventType is not "ResourceChanged" and not "AttackPrepared")
+            {
+                continue;
+            }
+
+            // battle.core/0.4.x also emits ResourceChanged during Resolution
+            // (for example, stagger gain/reset). Decision replay validation owns
+            // only phase-five action-cost deductions, which never have a
+            // resolution group.
+            if (eventType == "ResourceChanged" &&
+                combatEvent.GetProperty("resolution_group_id").ValueKind != JsonValueKind.Null)
             {
                 continue;
             }
@@ -1397,12 +1406,17 @@ internal static class DecisionReplaySemanticValidator
 
     private static bool IsCompatibleEngineVersion(string value)
     {
-        if (!value.StartsWith(CompatibleEnginePrefix, StringComparison.Ordinal))
+        const string prefix03 = "battle.core/0.3.";
+        const string prefix04 = "battle.core/0.4.";
+        var prefix = value.StartsWith(prefix03, StringComparison.Ordinal)
+            ? prefix03
+            : value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04 : null;
+        if (prefix is null)
         {
             return false;
         }
 
-        var patch = value.AsSpan(CompatibleEnginePrefix.Length);
+        var patch = value.AsSpan(prefix.Length);
         if (patch.IsEmpty || (patch.Length > 1 && patch[0] == '0'))
         {
             return false;

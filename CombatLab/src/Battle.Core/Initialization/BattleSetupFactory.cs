@@ -150,7 +150,17 @@ internal static class BattleSetupFactory
             issues.Add(new ValidationIssue(issue.Code, issue.Path, issue.Entity));
         }
 
-        if (decisions is null || issues.Count != 0)
+        var resolutionIssues = new List<ResolutionSetupIssue>();
+        var resolution = ResolutionSetupMaterializer.TryCreate(
+            config,
+            timeLimit.Value,
+            resolutionIssues);
+        foreach (var issue in resolutionIssues)
+        {
+            issues.Add(new ValidationIssue(issue.Code, issue.Path, issue.Entity));
+        }
+
+        if (decisions is null || resolution is null || issues.Count != 0)
         {
             return new BattleSetupResult(null, ToRejectionErrors(issues));
         }
@@ -172,6 +182,7 @@ internal static class BattleSetupFactory
             systemWait,
             allowedSystemActionIds,
             decisions,
+            resolution,
             initiative);
 
         return new BattleSetupResult(
@@ -935,7 +946,16 @@ internal static class BattleSetupFactory
                      "Initiative",
                      "ActionSpeed",
                      "MoveSpeed",
-                      "CollisionRadius",
+                     "CollisionRadius",
+                     "Power",
+                     "Armor",
+                     "Precision",
+                     "Evasion",
+                     "Guard",
+                     "GuardBreak",
+                     "ControlPower",
+                     "ControlResistance",
+                     "Mass",
                   })
         {
             if (!stats.ContainsKey(required))
@@ -1055,10 +1075,21 @@ internal static class BattleSetupFactory
         var actionSpeed = stats["ActionSpeed"];
         var moveSpeed = stats["MoveSpeed"];
         var collisionRadius = stats["CollisionRadius"];
+        var power = stats["Power"];
+        var armor = stats["Armor"];
+        var precision = stats["Precision"];
+        var evasion = stats["Evasion"];
+        var guard = stats["Guard"];
+        var guardBreak = stats["GuardBreak"];
+        var controlPower = stats["ControlPower"];
+        var controlResistance = stats["ControlResistance"];
+        var mass = stats["Mass"];
 
         if (maximumHealth < 1 || maximumEnergy < 0 || maximumResource < 0 ||
             startResource < 0 || startResource > maximumResource || staggerThreshold < 1 ||
-            actionSpeed < 1 || moveSpeed < 1 || collisionRadius < 1)
+            actionSpeed < 1 || moveSpeed < 1 || collisionRadius < 1 || power < 0 || armor < 0 ||
+            precision < 0 || evasion < 0 || guard < 0 || guardBreak < 0 || controlPower < 0 ||
+            controlResistance < 0 || mass < 1)
         {
             issues.Add(new ValidationIssue("InvalidInitialState", path, build.AnimalId.Value));
             return null;
@@ -1079,7 +1110,16 @@ internal static class BattleSetupFactory
             initiative,
             actionSpeed,
             moveSpeed,
-            collisionRadius);
+            collisionRadius,
+            power,
+            armor,
+            precision,
+            evasion,
+            guard,
+            guardBreak,
+            controlPower,
+            controlResistance,
+            mass);
     }
 
     private static IReadOnlyList<FighterId> DetermineInitiative(

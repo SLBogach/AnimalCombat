@@ -23,6 +23,9 @@ internal static class EngineFailureCodes
     internal static ReasonCode DecisionArithmeticOverflow { get; } =
         new("DecisionArithmeticOverflow");
 
+    internal static ReasonCode ResolutionArithmeticOverflow { get; } =
+        new("ResolutionArithmeticOverflow");
+
     internal static ReasonCode InvalidStateTransition { get; } = new("InvalidStateTransition");
 
     internal static ReasonCode NoLegalSystemAction { get; } = new("NoLegalSystemAction");

@@ -27,11 +27,11 @@ $targets = @("netstandard2.1", "net10.0")
 $currentScenarios = @(
     @{
         Name = "wait"
-        Fixture = "fixtures/replay/v0.1/wait-equal-l1.engine-0.3.0.json"
+        Fixture = "fixtures/replay/v0.1/wait-equal-l1.engine-0.4.0.json"
     },
     @{
         Name = "decision"
-        Fixture = "fixtures/replay/v0.1/decision-weighted-l1.engine-0.3.0.json"
+        Fixture = "fixtures/replay/v0.1/decision-weighted-l1.engine-0.4.0.json"
     }
 )
 $historicalFixtures = @(
@@ -46,6 +46,14 @@ $historicalFixtures = @(
     @{
         Path = "fixtures/replay/v0.1/approach-band-l3.engine-0.2.0.json"
         Sha256 = "7117b582cab17a110fd10b2c08caae923c764b036018b1a4a18ec7d5d26c4873"
+    },
+    @{
+        Path = "fixtures/replay/v0.1/wait-equal-l1.engine-0.3.0.json"
+        Sha256 = "8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd"
+    },
+    @{
+        Path = "fixtures/replay/v0.1/decision-weighted-l1.engine-0.3.0.json"
+        Sha256 = "1e2ea3f87bab119b1db687556d7835b2791089b095d202285c7e7f037e331eb0"
     }
 )
 $results = @{}
@@ -160,7 +168,7 @@ try {
             $actualBytes = [System.IO.File]::ReadAllBytes($resultPath)
             $results[$scenario.Name][$target] = $actualBytes
             if (-not (Test-ByteArrayEqual $actualBytes $fixtureBytes[$scenario.Name])) {
-                throw "WP-08 $target/$($scenario.Name) replay differs from its pinned battle.core/0.3.0 fixture."
+                throw "WP-08 $target/$($scenario.Name) replay differs from its current-engine fixture."
             }
         }
     }

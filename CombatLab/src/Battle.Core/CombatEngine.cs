@@ -206,13 +206,14 @@ public sealed class CombatEngine
         CombatEventEmitter emitter,
         ICombatEventJournal journal)
     {
-        var pivotal = new List<EventId>();
-        if (state.FighterA.Health == 0)
+        var pivotal = new List<EventId>(state.PivotalEventIds);
+        var hasResolutionPivotalEvents = pivotal.Count != 0;
+        if (!hasResolutionPivotalEvents && state.FighterA.Health == 0)
         {
             pivotal.Add(EmitDefeat(state, emitter, FighterId.FighterA).EventId);
         }
 
-        if (state.FighterB.Health == 0)
+        if (!hasResolutionPivotalEvents && state.FighterB.Health == 0)
         {
             pivotal.Add(EmitDefeat(state, emitter, FighterId.FighterB).EventId);
         }
@@ -226,7 +227,8 @@ public sealed class CombatEngine
                     pivotal,
                     DrawReason.DoubleKO,
                     new[] { FighterId.FighterA, FighterId.FighterB },
-                    null),
+                    state.TerminalResolutionGroupId),
+                resolutionGroupId: state.TerminalResolutionGroupId,
                 sourceEventId: terminalSource,
                 reasonCodes: new[] { new ReasonCode("DoubleKO") });
             pivotal.Add(draw.EventId);

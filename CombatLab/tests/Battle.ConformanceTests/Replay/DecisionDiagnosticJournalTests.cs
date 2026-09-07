@@ -112,7 +112,7 @@ public sealed class DecisionDiagnosticJournalTests
         var permutedDigest = journal.ComputeSnapshotDigest(CreateSnapshot(permutedMode));
 
         Assert.Equal(
-            "sha256:04e542a2c972370bc6c7ec7d03a5d594b8a4b43e78b4802194511248699b4873",
+            "sha256:3a5cfec129a2a43d7dbf4e374222693f8ff54ab18995399af2c424083fcb4892",
             russianDigest.Value);
         Assert.Equal(russianDigest, permutedDigest);
     }

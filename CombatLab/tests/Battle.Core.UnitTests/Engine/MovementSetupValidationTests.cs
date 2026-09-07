@@ -431,7 +431,7 @@ public sealed class MovementSetupValidationTests
     public void WP07_VAL_006_CurrentEngineIs030AndOldOrUnknownRequestsAreRejected(
         string engineVersion)
     {
-        Assert.Equal("battle.core/0.3.0", ContractVersions.Engine.ToString());
+        Assert.Equal("battle.core/0.4.0", ContractVersions.Engine.ToString());
         var journal = new RecordingJournal();
         var request = EngineTestFixture.CreateRequest(
             engineVersion: new ArtifactVersion(engineVersion));

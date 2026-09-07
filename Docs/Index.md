@@ -9,6 +9,7 @@
 5. [Combat Test Plan v0.1](./Combat_Test_Plan_v0.1.md) — exact pass/fail-матрица WP-06; закрывает `OPEN-05`.
 6. [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — исполненная exact pass/fail-матрица Movement; закрывает `OPEN-WP07-01..13`, Windows/Linux CI green.
 7. [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md) — исполненная blocking exact pass/fail-матрица Decisions: `107` unique IDs; local и Windows/Linux CI gates green.
+8. [Combat Test Plan WP-09 v0.1](./Combat_Test_Plan_WP-09_v0.1.md) — локально исполненная exact blocking matrix Resolution: `128/128` unique IDs; CI pending.
 
 ## Рабочие этапы
 
@@ -23,7 +24,7 @@
 | WP-06 | Engine shell: initialization, tick coordinator, outcome/watchdog | завершён | [WP-06 Brief](./WP-06_Brief.md) |
 | WP-07 | Movement | завершён | [WP-07 Brief](./WP-07_Brief.md) |
 | WP-08 | Decisions | завершён | [WP-08 Brief](./WP-08_Brief.md) |
-| WP-09 | Resolution | запланирован | — |
+| WP-09 | Resolution | реализован, local green; CI pending | [WP-09 Brief](./WP-09_Brief.md) |
 | WP-10 | Effects | запланирован | — |
 | WP-11 | Fighters | запланирован | — |
 | WP-12 | Batch | запланирован | — |
@@ -40,6 +41,8 @@
 - [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md)
 - [Завершённый WP-08 Decisions](./WP-08_Brief.md)
 - [Combat Test Plan WP-08 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-08_v0.1.md)
+- [Реализованный WP-09 Resolution — local green, CI pending](./WP-09_Brief.md)
+- [Combat Test Plan WP-09 v0.1 — EXECUTED / LOCAL PASSED](./Combat_Test_Plan_WP-09_v0.1.md)
 
 ## Правила
 

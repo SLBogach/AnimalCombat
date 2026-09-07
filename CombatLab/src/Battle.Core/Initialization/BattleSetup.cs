@@ -1,5 +1,6 @@
 using Battle.Core.Decisions;
 using Battle.Core.Engine;
+using Battle.Core.Resolution;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Replay;
 using Battle.Contracts.Results;
@@ -17,6 +18,7 @@ internal sealed record RuntimeBattleSettings(
     SystemActionDefinition SystemWait,
     IReadOnlyList<StableId> AllowedSystemActionIds,
     DecisionRuntimeSettings Decisions,
+    ResolutionRuntimeSettings Resolution,
     IReadOnlyList<FighterId> InitiativeOrder)
 {
     internal SystemActionDefinition GetSystemAction(StableId actionId)

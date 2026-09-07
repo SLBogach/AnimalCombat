@@ -63,6 +63,10 @@ jobs:
         shell: pwsh
         run: ./scripts/verify-wp08-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
 
+      - name: Verify WP-09 target determinism
+        shell: pwsh
+        run: ./scripts/verify-wp09-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
+
       - name: Verify WP-04 generated balance artifacts
         shell: pwsh
         run: ./scripts/verify-wp04-generated.ps1 -Configuration ${{ matrix.configuration }}
@@ -81,6 +85,14 @@ jobs:
           --no-build
           --no-restore
           --filter "WorkPackage=WP08"
+
+      - name: Enforce WP-09 blocking test inventory
+        run: >-
+          dotnet test CombatLab.sln
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+          --filter "WorkPackage=WP09"
 
       - name: Collect Battle.Core coverage
         if: matrix.configuration == 'Release'
@@ -105,6 +117,29 @@ jobs:
           --settings coverage.wp08-replay.runsettings
           --results-directory TestResults/Coverage/WP08Replay
 
+      - name: Collect WP-09 replay and contract coverage
+        if: matrix.configuration == 'Release'
+        run: >-
+          dotnet test tests/Battle.ConformanceTests/Battle.ConformanceTests.csproj
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+          --filter "WorkPackage=WP09"
+          --collect:"XPlat Code Coverage"
+          --settings coverage.wp09-replay.runsettings
+          --results-directory TestResults/Coverage/WP09Replay
+
+      - name: Collect WP-09 integration engine coverage
+        if: matrix.configuration == 'Release'
+        run: >-
+          dotnet test tests/CombatLab.IntegrationTests/CombatLab.IntegrationTests.csproj
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+          --collect:"XPlat Code Coverage"
+          --settings coverage.runsettings
+          --results-directory TestResults/Coverage/WP09Integration
+
       - name: Enforce WP-02 branch coverage
         if: matrix.configuration == 'Release'
         shell: pwsh
@@ -123,7 +158,10 @@ jobs:
       - name: Enforce WP-07 coverage
         if: matrix.configuration == 'Release'
         shell: pwsh
-        run: ./scripts/verify-wp07-coverage.ps1 -ResultsDirectory ./TestResults/Coverage/Core
+        run: >-
+          ./scripts/verify-wp07-coverage.ps1
+          -ResultsDirectory ./TestResults/Coverage/Core
+          -IntegrationResultsDirectory ./TestResults/Coverage/WP09Integration
 
       - name: Enforce WP-08 coverage
         if: matrix.configuration == 'Release'
@@ -132,6 +170,16 @@ jobs:
           ./scripts/verify-wp08-coverage.ps1
           -CoreResultsDirectory ./TestResults/Coverage/Core
           -ReplayResultsDirectory ./TestResults/Coverage/WP08Replay
+          -IntegrationResultsDirectory ./TestResults/Coverage/WP09Integration
+
+      - name: Enforce WP-09 coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: >-
+          ./scripts/verify-wp09-coverage.ps1
+          -CoreResultsDirectory ./TestResults/Coverage/Core
+          -IntegrationResultsDirectory ./TestResults/Coverage/WP09Integration
+          -ReplayResultsDirectory ./TestResults/Coverage/WP09Replay
 
       - name: Publish coverage
         if: always() && matrix.configuration == 'Release'

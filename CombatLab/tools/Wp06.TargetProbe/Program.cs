@@ -26,7 +26,8 @@ internal static class Program
         {
             Console.Error.WriteLine(
                 "Usage: Wp06.TargetProbe <CombatLab root> <netstandard2.1|net10.0> " +
-                "[wait|approach|decision] [create-output-path]");
+                "[wait|approach|decision|resolution-basic|resolution-double-ko|resolution-wall-grab] " +
+                "[create-output-path]");
             return 2;
         }
 
@@ -121,6 +122,10 @@ internal static class Program
         settings["battle.time_limit_ticks"] = scenario.TimeLimitTicks;
         settings["global.arena.start_position_a"] = scenario.StartPositionA;
         settings["global.arena.start_position_b"] = scenario.StartPositionB;
+        if (scenario.ResolutionKind.HasValue)
+        {
+            PatchResolutionConfig(root, scenario.ResolutionKind.Value);
+        }
 
         var compilation = new BattleConfigCompiler().Compile(
             Encoding.UTF8.GetBytes(root.ToJsonString()));
@@ -144,6 +149,11 @@ internal static class Program
         if (scenario.DecisionWeighted)
         {
             return CreateWeightedDecisionRequest(config, scenario);
+        }
+
+        if (scenario.ResolutionKind.HasValue)
+        {
+            return CreateResolutionRequest(config, scenario);
         }
 
         var buildA = new FighterBuildSnapshot(
@@ -271,6 +281,195 @@ internal static class Program
             buildB);
     }
 
+    private static BattleRequest CreateResolutionRequest(
+        CompiledBattleConfig config,
+        ProbeScenario scenario)
+    {
+        var buildA = Build(
+            FighterId.FighterA,
+            FighterSide.A,
+            "bear",
+            "bear_earthbreaker",
+            "bear_rampage_charge",
+            "bear_thick_hide",
+            "tactic_pressure");
+        var buildB = Build(
+            FighterId.FighterB,
+            FighterSide.B,
+            "kangaroo",
+            "kangaroo_flying_kick",
+            "kangaroo_tail_counter",
+            "kangaroo_never_still",
+            "tactic_position");
+        var allowed = new[]
+        {
+            new StableId("bear_earthbreaker"),
+            new StableId("bear_rampage_charge"),
+            new StableId("kangaroo_flying_kick"),
+            new StableId("kangaroo_tail_counter"),
+            RetreatActionId,
+            WaitActionId,
+        };
+        var modeRules = new ModeRulesSnapshot(
+            scenario.ModeRulesId,
+            ContractVersions.ModeRules,
+            NormalizationMode.None,
+            new[] { buildA.AnimalId, buildB.AnimalId },
+            allowed,
+            new[] { buildA.PassiveId, buildB.PassiveId },
+            new[] { buildA.Gear.Offense, buildA.Gear.Defense, buildA.Gear.Utility },
+            new[] { buildA.TacticId, buildB.TacticId });
+
+        return new BattleRequest(
+            scenario.BattleId,
+            ContractVersions.Engine,
+            config.Reference.ConfigHash,
+            modeRules,
+            scenario.MasterSeed,
+            buildA,
+            buildB);
+
+        static FighterBuildSnapshot Build(
+            FighterId fighterId,
+            FighterSide side,
+            string animal,
+            string special1,
+            string special2,
+            string passive,
+            string tactic) => new(
+            fighterId,
+            side,
+            new StableId(animal),
+            null,
+            new[] { new StableId(special1), new StableId(special2) },
+            new StableId(passive),
+            new GearSelection(
+                new StableId("gear_offense_power_wraps"),
+                new StableId("gear_defense_reinforced_hide"),
+                new StableId("gear_utility_sprint_soles")),
+            new StableId(tactic));
+    }
+
+    private static void PatchResolutionConfig(JsonObject root, ResolutionProbeKind kind)
+    {
+        var fighters = root["fighters"]!.AsArray();
+        PatchFighter(fighters, "bear", "max_health", 100);
+        PatchFighter(fighters, "kangaroo", "max_health", 100);
+        var actions = root["actions"]!.AsArray();
+        foreach (var action in actions.Select(item => item!.AsObject()))
+        {
+            if (action["slot_type"]!.GetValue<string>() != "System")
+            {
+                action["base_weight"] = 1;
+                action["energy_cost"] = 2_000;
+                action["resource_cost"] = 0;
+            }
+        }
+
+        PatchAction(actions, "sys_wait", action => action["base_weight"] = 1);
+        if (kind is ResolutionProbeKind.Basic or ResolutionProbeKind.DoubleKo)
+        {
+            MakeLethalStrike(actions, "bear_earthbreaker");
+        }
+
+        if (kind == ResolutionProbeKind.DoubleKo)
+        {
+            MakeLethalStrike(actions, "kangaroo_flying_kick");
+        }
+
+        if (kind == ResolutionProbeKind.WallGrab)
+        {
+            PatchAction(actions, "bear_earthbreaker", action =>
+            {
+                action["active_ticks"] = 2;
+                action["base_damage"] = 600;
+                action["base_knockback"] = 1_000;
+                action["base_stagger"] = 60;
+                action["base_stun_ticks"] = 6;
+                action["base_weight"] = 100_000_000;
+                action["chip_min"] = 10;
+                action["clash_priority"] = 10;
+                action["energy_cost"] = 0;
+                action["hit_count"] = 1;
+                action["hit_range_min"] = 0;
+                action["hit_range_max"] = 1_000;
+                action["hit_schedule"] = "grab:0|throw:1";
+                action["knockback_min"] = 0;
+                action["knockback_max"] = 1_000;
+                action["min_damage"] = 600;
+                action["movement_mode"] = "Push";
+                action["power_ratio_fp"] = 0;
+                action["recovery_base_ticks"] = 0;
+                action["recovery_min_ticks"] = 0;
+                action["recovery_max_ticks"] = 0;
+                action["startup_base_ticks"] = 0;
+                action["startup_min_ticks"] = 0;
+                action["startup_max_ticks"] = 0;
+                action["tags"] = "grab|wall_impact";
+                action["undodgeable"] = true;
+                action["wall_impact"] = true;
+                action["wall_damage_per_unit_fp"] = 100;
+                action["wall_damage_min"] = 10;
+                action["wall_damage_max"] = 100;
+            });
+        }
+    }
+
+    private static void MakeLethalStrike(JsonArray actions, string id) =>
+        PatchAction(actions, id, action =>
+        {
+            action["active_ticks"] = 1;
+            action["base_damage"] = 600;
+            action["base_knockback"] = 0;
+            action["base_stagger"] = 0;
+            action["base_stun_ticks"] = 0;
+            action["base_weight"] = 100_000_000;
+            action["clash_priority"] = 10;
+            action["energy_cost"] = 0;
+            action["hit_count"] = 1;
+            action["hit_range_min"] = 0;
+            action["hit_range_max"] = 1_000;
+            action["hit_schedule"] = "0";
+            action["knockback_min"] = 0;
+            action["knockback_max"] = 0;
+            action["min_damage"] = 600;
+            action["movement_mode"] = "None";
+            action["power_ratio_fp"] = 0;
+            action["recovery_base_ticks"] = 0;
+            action["recovery_min_ticks"] = 0;
+            action["recovery_max_ticks"] = 0;
+            action["startup_base_ticks"] = 0;
+            action["startup_min_ticks"] = 0;
+            action["startup_max_ticks"] = 0;
+            action["tags"] = "strike";
+            action["undodgeable"] = true;
+            action["wall_impact"] = false;
+            action["wall_damage_per_unit_fp"] = 0;
+            action["wall_damage_min"] = 0;
+            action["wall_damage_max"] = 0;
+        });
+
+    private static void PatchFighter(JsonArray fighters, string id, string field, int value)
+    {
+        var fighter = fighters.Select(item => item!.AsObject())
+            .Single(item => item["animal_id"]!.GetValue<string>() == id);
+        fighter[field] = value;
+    }
+
+    private static void PatchAction(JsonArray actions, string id, Action<JsonObject> patch)
+    {
+        var action = actions.Select(item => item!.AsObject())
+            .Single(item => item["action_id"]!.GetValue<string>() == id);
+        patch(action);
+    }
+
+    private enum ResolutionProbeKind
+    {
+        Basic,
+        DoubleKo,
+        WallGrab,
+    }
+
     private sealed record ProbeScenario(
         string Name,
         ExternalId BattleId,
@@ -282,6 +481,7 @@ internal static class Program
         bool IncludeMovementActions,
         ulong MasterSeed,
         bool DecisionWeighted,
+        ResolutionProbeKind? ResolutionKind,
         DateTimeOffset CreatedAtUtc,
         ExternalId Producer,
         string Notes)
@@ -297,6 +497,7 @@ internal static class Program
             false,
             2_026_072_901,
             false,
+            null,
             new DateTimeOffset(2026, 7, 29, 12, 0, 0, TimeSpan.Zero),
             new ExternalId("combat-lab-wp06-target-probe"),
             "Current-engine wait_equal_l1 determinism probe");
@@ -312,6 +513,7 @@ internal static class Program
             true,
             2_026_072_901,
             false,
+            null,
             new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero),
             new ExternalId("combat-lab-wp07-target-probe"),
             "WP-07 approach_band_l3 target determinism probe");
@@ -327,16 +529,53 @@ internal static class Program
             false,
             0,
             true,
+            null,
             new DateTimeOffset(2026, 8, 11, 12, 0, 0, TimeSpan.Zero),
             new ExternalId("combat-lab-wp08-target-probe"),
             "WP-08 decision_weighted_l1 target determinism probe");
+
+        internal static ProbeScenario ResolutionBasic { get; } = Resolution(
+            "resolution-basic-l1", ResolutionProbeKind.Basic, 2, 4_000, 5_200);
+
+        internal static ProbeScenario ResolutionDoubleKo { get; } = Resolution(
+            "resolution-double-ko-l1", ResolutionProbeKind.DoubleKo, 2, 4_000, 5_200);
+
+        internal static ProbeScenario ResolutionWallGrab { get; } = Resolution(
+            "resolution-wall-grab-l1", ResolutionProbeKind.WallGrab, 3, 8_000, 9_500);
+
+        private static ProbeScenario Resolution(
+            string slug,
+            ResolutionProbeKind kind,
+            int timeLimitTicks,
+            int startPositionA,
+            int startPositionB) => new(
+            slug,
+            new ExternalId("battle-wp09-" + slug),
+            new ExternalId("replay-wp09-" + slug),
+            new StableId("wp09_" + slug.Replace('-', '_') + "_v01"),
+            timeLimitTicks,
+            startPositionA,
+            startPositionB,
+            false,
+            0,
+            false,
+            kind,
+            new DateTimeOffset(2026, 9, 7, 12, 0, 0, TimeSpan.Zero),
+            new ExternalId("combat-lab-wp09-tests"),
+            "WP-09 " + slug + " resolution oracle");
 
         internal static ProbeScenario Parse(string value) => value switch
         {
             "wait" => Wait,
             "approach" => Approach,
             "decision" => Decision,
-            _ => throw new ArgumentException("Probe scenario must be wait, approach, or decision.", nameof(value)),
+            "resolution-basic" => ResolutionBasic,
+            "resolution-double-ko" => ResolutionDoubleKo,
+            "resolution-wall-grab" => ResolutionWallGrab,
+            _ => throw new ArgumentException(
+                "Probe scenario must be wait, approach, decision, resolution-basic, " +
+                "resolution-double-ko, or resolution-wall-grab.",
+                nameof(value)),
         };
     }
 }

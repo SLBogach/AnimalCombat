@@ -547,8 +547,12 @@ public sealed class CanonicalReplayJournal : ICombatEventJournal, ICombatDecisio
 
     private static bool IsWp08CompatibleEngine(string value)
     {
-        const string prefix = "battle.core/0.3.";
-        if (!value.StartsWith(prefix, StringComparison.Ordinal))
+        const string prefix03 = "battle.core/0.3.";
+        const string prefix04 = "battle.core/0.4.";
+        var prefix = value.StartsWith(prefix03, StringComparison.Ordinal)
+            ? prefix03
+            : value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04 : null;
+        if (prefix is null)
         {
             return false;
         }

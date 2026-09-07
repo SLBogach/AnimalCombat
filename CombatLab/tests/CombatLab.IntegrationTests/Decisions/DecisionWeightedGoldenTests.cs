@@ -24,10 +24,10 @@ public sealed class DecisionWeightedGoldenTests
             "sha256:26c53cf464539e2ebf1eb37f90d73715adb0842e29e6b7a9eeaede8336d49227",
             run.Journal.Start!.Config.ConfigHash.Value);
         Assert.Equal(
-            "sha256:eaee293a90e5fc432ab1822965b3f632abc803bd79b23ae401a8fc9fd8a2b021",
+            "sha256:b625ac1b3a061c4db082aac50f56174c3e54db6e36e14ac3fc3c7f481220d771",
             run.Journal.InputDigest!.Value.Value);
         Assert.Equal(
-            "sha256:6ed4f34aa845096ee63d125d306fbef64ff469773e14389bfe1152146a007f3f",
+            "sha256:a1d97c73457bb7aaf1d0754bde3ea787be2ad80b89ce2a47504b450a82b19b3d",
             run.Journal.FinalDigest!.Value.Value);
 
         var events = run.Journal.Events;

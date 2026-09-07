@@ -128,3 +128,44 @@
 - Engine повышен до `battle.core/0.3.0`; weighted fixture и current wait pinned отдельными artifacts. Current wait: config `sha256:f7524a127ca0ec085562d1ca43fc91d384b7f713f1ddb323be53bc701f6d0dc3`, input `sha256:4155833aa33fd60fee5f034dc8f4050afb957682af5141701d6dca463bbc7a08`, final `sha256:bcc34972a33aadd5da02f3c5d3996ecd76c0037fbfe5e94e25cdf883ca9177f9`, file `8793101a52a2d261ba29e03453bff97298c8cefb16f81e76a76fb357ad684bdd`, events `8`; historical fixture bytes сохранены.
 - Consolidated local verification от `2026-08-19` green: locked restore, Release build `0/0`, full solution `875/875`, filtered WP-08 `347/347`, generated/target/historical replay и coverage gates. GitHub Actions от `2026-08-19` для code head `26e151f`: `windows-latest`/`ubuntu-latest` × Debug/Release — все четыре jobs green; completion gate закрыт.
 - `UnityClient` и canonical generated balance artifacts не изменены.
+
+## WP-09 Resolution
+
+### Принятые решения
+
+Полный scope и формулы находятся в [WP-09 Brief](./WP-09_Brief.md), exact acceptance — в [Combat Test Plan WP-09 v0.1](./Combat_Test_Plan_WP-09_v0.1.md). Решения приняты владельцем 2026-09-07 и имеют статус `CLOSED`.
+
+- `OPEN-WP09-01 — CLOSED`: Brief задаёт scope, Combat Test Plan WP-09 является обязательной exact blocking matrix из `128` unique IDs; код начинается только после owner approval.
+- `OPEN-WP09-02 — CLOSED`: baseline — WP-08-complete. `BLOCK-WP09-BASE-01 — CLOSED`: `feature/wp-09-resolution` синхронизирована с `origin/master@73a31bd`.
+- `OPEN-WP09-03 — CLOSED`: WP-09 владеет defense/damage/stagger/MoveSelf/force/wall/grab/outcome seams; generic effects и advanced control filters — WP-10, full kits/passives/resources — WP-11.
+- `OPEN-WP09-04 — CLOSED`: Engine `battle.core/0.4.0`; event/replay/balance/RNG/ordering versions сохраняются; workbook/generated artifacts не меняются.
+- `OPEN-WP09-05 — CLOSED`: resolution profiles materialize в typed immutable form до `journal.Begin`; runtime parsing/defaults запрещены.
+- `OPEN-WP09-06 — CLOSED`: hit schedule хранит `Hit/Counter/Grab/Throw/Wall`, tick, ordinal и Stable IDs; `AttackPrepared.impact_ticks` остаётся numeric projection.
+- `OPEN-WP09-07 — CLOSED`: phases 7–11 и snapshot rules фиксированы Brief; collect/sort не мутируют authoritative state/RNG.
+- `OPEN-WP09-08 — CLOSED`: один schedule entry — одна group; multi-hit entries раздельны; equal legal strike trade использует одну group/pre-impact snapshot; defeat отменяет future groups.
+- `OPEN-WP09-09 — CLOSED`: class/priority key фиксирован; exact exclusive tie использует один Resolution/TieBreak draw, strike trade draw не использует; Stable IDs не заменяют требуемый draw.
+- `OPEN-WP09-10 — CLOSED`: target/direction frozen на commit; state/body-aware gap live на impact; ranges inclusive; TrackTarget не меняет направление.
+- `OPEN-WP09-11 — CLOSED`: precedence `invalid → miss → Counter → Dodge → Block → hit`. CDS как gameplay source имеет приоритет: matching Counter deterministic, no RNG; Dodge/Block success iff `draw < chance` в `[0,fp_scale)`.
+- `OPEN-WP09-12 — CLOSED`: fixed-point damage/floor order из Brief; только DamageApplied меняет HP; `final` pre-HP-clamp, `overkill=final-(before-after)`, lethal iff after=0.
+- `OPEN-WP09-13 — CLOSED`: Block применяет chip и подавляет normal stagger/force; effective GuardBreak участвует в chance, exact tag добавляет failed-block reason; `effect_guard_broken` — WP-10.
+- `OPEN-WP09-14 — CLOSED`: stagger threshold inclusive, Stunned создаётся без RNG, meter reset `0`; обычный hit не interrupt-ит action. Counter/hard control/defeat/current-group UninterruptibleImpact — WP-09; advanced strength filters — WP-10.
+- `OPEN-WP09-15 — CLOSED`: combat MoveSelf выполняется в phase 6 по total `move_distance`, quotient/remainder over active ticks и exact stop truth table Brief; forced Push/Pull/Swap — phase 10.
+- `OPEN-WP09-16 — CLOSED`: `ActionKnockback` и `BaseKnockback` означают existing `base_knockback`; Push/Pull используют force formula, Swap — atomic legal center exchange; wall threshold `BlockedByWall>0`, wall stagger повторяет action StaggerGain, wall damage direct.
+- `OPEN-WP09-17 — CLOSED`: grab mutates ActiveGrabId; terminal primitive/control/defeat/end Active закрывает его один раз; max-hold/lockout используют exact half-open boundaries; full KnockedDown — WP-10.
+- `OPEN-WP09-18 — CLOSED`: costs/cooldowns не возвращаются; generic effects, fatigue/immunity application и fighter resource gains не входят в WP-09.
+- `OPEN-WP09-19 — CLOSED`: resolution External IDs используют culture-invariant templates Brief/Test Plan; checked per-battle counters начинаются с `0`.
+- `OPEN-WP09-20 — CLOSED`: полный ResolutionPlan атомарен для RNG/state/events; event cap preflight учитывает всю group; progress — только committed authoritative mutation.
+- `OPEN-WP09-21 — CLOSED`: existing wire vocabulary достаточен; resolution semantic validator включается для `0.4.x`, WP-08 decision semantics наследуются `0.4.x`; historical interpretation не меняется.
+- `OPEN-WP09-22 — CLOSED`: blocking gates включают Unit/Conformance/Integration, tamper, safety, historical, repeat/culture/mirror/TFM/OS, Debug/Release и coverage.
+- `OPEN-WP09-23 — CLOSED`: найденные DATA gaps закрываются exact v0.1 policies Brief без workbook/schema migration. Любое новое обязательное число останавливает реализацию до отдельного решения; fallback запрещён.
+
+### Статус готовности
+
+- `BLOCK-WP09-BASE-01 — CLOSED`.
+- `BLOCK-WP09-DATA-01 — CLOSED`: утверждённые rules используют current `combat.balance/0.1`; generated bytes остаются прежними.
+- Combat Test Plan WP-09 v0.1 утверждён как обязательная blocking matrix.
+- Production-код WP-09 реализован; `UnityClient`, workbook и canonical generated balance artifacts не изменялись.
+- Engine повышен до `battle.core/0.4.0`; event/replay/balance/RNG/ordering versions сохранены.
+- Созданы отдельные current Engine `0.4.0` fixtures для wait, decision-weighted, resolution-basic, resolution-double-ko и resolution-wall-grab. Historical `0.1.0`/`0.2.0`/`0.3.0` bytes сохранены.
+- Все `128` blocking acceptance IDs обнаруживаются без пропусков/дубликатов и проходят локально; Debug/Release, generated, replay, target determinism и coverage gates green.
+- WP-09 имеет статус `IMPLEMENTED / LOCAL GATES GREEN`; `COMPLETED` будет установлен только после green GitHub Actions Windows/Linux × Debug/Release.

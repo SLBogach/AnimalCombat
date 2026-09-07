@@ -40,7 +40,7 @@ internal sealed class CombatEventEmitter
         ? null
         : EventId.FromSequence(_nextSequence - 1);
 
-    internal void PreflightNonterminalBatch(int eventCount)
+    internal void PreflightNonterminalBatch(int eventCount, TickPhase phase = TickPhase.Decisions)
     {
         if (eventCount < 0)
         {
@@ -59,7 +59,7 @@ internal sealed class CombatEventEmitter
         {
             throw new EngineInvariantException(
                 EngineFailureCodes.EventCapExceeded,
-                TickPhase.Decisions.ToString(),
+                phase.ToString(),
                 $"The event cap of {_maximumEvents} cannot fit an atomic batch of {eventCount} events while reserving BattleEnded.");
         }
     }

@@ -102,7 +102,7 @@ public sealed class Wp08ArchitectureGuardsTests
             phaseMatches.Select(match =>
                 match.Groups["name"].Value + "=" + match.Groups["value"].Value));
         Assert.Equal("tick-pipeline/1", ContractVersions.Ordering.ToString());
-        Assert.Equal("battle.core/0.3.0", ContractVersions.Engine.ToString());
+        Assert.Equal("battle.core/0.4.0", ContractVersions.Engine.ToString());
     }
 
     [Fact]
@@ -138,23 +138,14 @@ public sealed class Wp08ArchitectureGuardsTests
     [Fact]
     [Trait("Category", "WP08")]
     [Trait("WorkPackage", "WP08")]
-    public void WP08_ARCH_006_ResolutionPhasesRemainNoOpAndUnityIsOutsideCombatLabScope()
+    public void WP08_ARCH_006_ResolutionPhasesAreNowOwnedByWp09AndUnityRemainsOutsideCombatLabScope()
     {
         var root = RepositoryLocator.FindCombatLabRoot();
         var coordinator = File.ReadAllText(
             Path.Combine(root, "src", "Battle.Core", "Engine", "TickCoordinator.cs"));
-        var noOpResolution = @"
-            Observe\(state,\s*TickPhase\.CollectIntents\);\s*
-            Observe\(state,\s*TickPhase\.SortIntents\);\s*
-            Observe\(state,\s*TickPhase\.Resolve\);\s*
-            Observe\(state,\s*TickPhase\.WallsAndGrabs\);\s*
-            Observe\(state,\s*TickPhase\.Outcome\);";
-
-        Assert.Matches(
-            new Regex(
-                noOpResolution,
-                RegexOptions.CultureInvariant | RegexOptions.IgnorePatternWhitespace),
-            coordinator);
+        Assert.Contains("ImpactIntentCollector.Collect(state)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("ImpactIntentOrderer.BuildGroups", coordinator, StringComparison.Ordinal);
+        Assert.Contains("ResolutionSystem.ResolveTick", coordinator, StringComparison.Ordinal);
         Assert.DoesNotContain(
             "UnityClient",
             File.ReadAllText(Path.Combine(root, "CombatLab.sln")),

@@ -3,6 +3,7 @@ using Battle.Core.Initialization;
 using Battle.Core.Movement;
 using Battle.Core.Outcome;
 using Battle.Core.Random;
+using Battle.Core.Resolution;
 using Battle.Core.Safety;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
@@ -71,6 +72,7 @@ internal sealed class TickCoordinator
         snapshot = state.CreateSnapshot();
 
         Observe(state, TickPhase.Expiry);
+        RunExpiry(state, settings, emitter);
         Observe(state, TickPhase.Resource);
         state.FighterA.DecrementCooldowns();
         state.FighterB.DecrementCooldowns();
@@ -79,13 +81,18 @@ internal sealed class TickCoordinator
         RunActionLifecycle(state, settings, emitter);
 
         Observe(state, TickPhase.Decisions);
+        UpdateEmergencies(state);
         RunDecisions(state, snapshot, settings, emitter);
 
         Observe(state, TickPhase.VoluntaryMovement);
         RunVoluntaryMovement(state, settings, emitter);
+        RunCombatMoveSelf(state, settings, emitter);
         Observe(state, TickPhase.CollectIntents);
+        var impactIntents = ImpactIntentCollector.Collect(state);
         Observe(state, TickPhase.SortIntents);
+        var resolutionGroups = ImpactIntentOrderer.BuildGroups(impactIntents, state.Tick);
         Observe(state, TickPhase.Resolve);
+        _ = ResolutionSystem.ResolveTick(state, settings, emitter, resolutionGroups);
         Observe(state, TickPhase.WallsAndGrabs);
 
         Observe(state, TickPhase.Outcome);
@@ -108,6 +115,90 @@ internal sealed class TickCoordinator
         }
 
         return immediateOutcome;
+    }
+
+    private static void RunExpiry(
+        BattleState state,
+        RuntimeBattleSettings settings,
+        CombatEventEmitter emitter)
+    {
+        var expiring = settings.InitiativeOrder
+            .Select(state.Get)
+            .Where(fighter => fighter.State == FighterState.Stunned && fighter.StateTicksRemaining == 1)
+            .ToArray();
+        var grabExpires = state.ActiveGrab is { } grab && state.Tick >= grab.EndExclusiveTick;
+        emitter.PreflightNonterminalBatch(expiring.Length + (grabExpires ? 1 : 0), TickPhase.Expiry);
+
+        foreach (var fighterId in settings.InitiativeOrder)
+        {
+            var fighter = state.Get(fighterId);
+            var before = fighter.ToFrame();
+            var transition = fighter.AdvanceControlExpiry();
+            if (!transition.HasValue)
+            {
+                continue;
+            }
+
+            var source = emitter.LastEventId;
+            var related = source.HasValue ? new[] { source.Value } : Array.Empty<EventId>();
+            _ = emitter.Emit(
+                state.Tick,
+                new StateChangedPayload(
+                    related,
+                    transition.Value.From,
+                    transition.Value.To,
+                    transition.Value.DurationTicks,
+                    null,
+                    null,
+                    ImmunityResult.NotChecked),
+                fighterId,
+                sourceEventId: source,
+                reasonCodes: new[] { new ReasonCode("ControlExpired") },
+                before: new FramePair(before, null),
+                after: new FramePair(fighter.ToFrame(), null));
+        }
+
+        if (grabExpires)
+        {
+            _ = ResolutionSystem.EndActiveGrab(
+                state,
+                settings,
+                emitter,
+                GrabEndReason.MaxHoldReached,
+                emitter.LastEventId,
+                preflight: false);
+        }
+    }
+
+    private static void UpdateEmergencies(BattleState state)
+    {
+        state.FighterA.SetEmergency(false);
+        state.FighterB.SetEmergency(false);
+        foreach (var intent in ImpactIntentCollector.Collect(state))
+        {
+            var actor = state.Get(intent.ActorId);
+            var target = state.Get(intent.TargetId);
+            if (target.Health == 0 || target.State == FighterState.Defeated)
+            {
+                continue;
+            }
+
+            var directionValid = actor.CommitDirection switch
+            {
+                CommitDirection.Left => target.Position < actor.Position,
+                CommitDirection.Right => target.Position > actor.Position,
+                _ => false,
+            };
+            var gap = ArenaGeometry.SurfaceGap(
+                actor.Position,
+                actor.CollisionRadius,
+                target.Position,
+                target.CollisionRadius);
+            if (directionValid && gap >= intent.Action.HitRangeMinimum && gap <= intent.Action.HitRangeMaximum)
+            {
+                target.SetEmergency(true);
+            }
+        }
     }
 
     private void RunDecisions(
@@ -470,10 +561,31 @@ internal sealed class TickCoordinator
             action.ActiveTicks,
             recovery,
             action.CooldownTicks,
-            action.HitScheduleTicks,
+            settings.Resolution.GetAction(action.Id),
             action.TrackTarget,
+            MovesTowardTarget(action, actor, opponent, direction),
             tick);
         return FrozenCommitDescriptor.Combat(action, descriptor);
+    }
+
+    private static bool MovesTowardTarget(
+        DecisionActionProfile action,
+        DecisionFighterView actor,
+        DecisionFighterView opponent,
+        CommitDirection direction)
+    {
+        if (action.MovementMode is DecisionMovementMode.Approach or DecisionMovementMode.Follow)
+        {
+            return true;
+        }
+
+        if (action.MovementMode == DecisionMovementMode.Retreat)
+        {
+            return false;
+        }
+
+        var toward = opponent.Position > actor.Position ? CommitDirection.Right : CommitDirection.Left;
+        return direction == toward;
     }
 
     private static int ScaleTiming(
@@ -627,6 +739,7 @@ internal sealed class TickCoordinator
         RuntimeBattleSettings settings,
         CombatEventEmitter emitter)
     {
+        var activeGrab = state.ActiveGrab;
         foreach (var fighterId in settings.InitiativeOrder)
         {
             var fighter = state.Get(fighterId);
@@ -663,6 +776,20 @@ internal sealed class TickCoordinator
             else
             {
                 fighter.RecordActionEvent(changed.EventId);
+            }
+        }
+
+        if (activeGrab.HasValue && state.ActiveGrab == activeGrab)
+        {
+            var grabber = state.Get(activeGrab.Value.GrabberId);
+            if (grabber.ActionPhase != ActionPhase.Active)
+            {
+                _ = ResolutionSystem.EndActiveGrab(
+                    state,
+                    settings,
+                    emitter,
+                    GrabEndReason.Release,
+                    emitter.LastEventId);
             }
         }
     }
@@ -803,6 +930,229 @@ internal sealed class TickCoordinator
             fighter.IsActiveMovement ? fighter.FrozenMoveSpeed ?? fighter.MoveSpeed : 0,
             fighter.IsActiveMovement);
     }
+
+    private static void RunCombatMoveSelf(
+        BattleState state,
+        RuntimeBattleSettings settings,
+        CombatEventEmitter emitter)
+    {
+        var movers = settings.InitiativeOrder
+            .Select(state.Get)
+            .Where(fighter =>
+                fighter.ActiveCombatAction is not null &&
+                fighter.ActionPhase == ActionPhase.Active &&
+                fighter.ActiveCombatAction.ResolutionProfile.MoveDistance > 0 &&
+                fighter.ActiveCombatAction.ResolutionProfile.MovementMode is
+                    ResolutionMovementMode.Approach or ResolutionMovementMode.Retreat or
+                    ResolutionMovementMode.Adaptive or ResolutionMovementMode.Follow)
+            .ToArray();
+        if (movers.Length == 0)
+        {
+            return;
+        }
+
+        var arena = new ArenaInterval(settings.Arena.MinimumPosition, settings.Arena.MaximumPosition);
+        var ordered = new[] { state.FighterA, state.FighterB }
+            .OrderBy(fighter => fighter.Position)
+            .ThenBy(fighter => fighter.FighterId)
+            .ToArray();
+        var left = ordered[0];
+        var right = ordered[1];
+        var requests = new Dictionary<FighterId, CombatMoveRequest>();
+        foreach (var fighter in movers)
+        {
+            var action = fighter.ActiveCombatAction!;
+            var profile = action.ResolutionProfile;
+            var target = state.Get(action.TargetFighterId ?? state.GetOpponent(fighter.FighterId).FighterId);
+            var activeIndex = checked(profile.ActiveTicks - fighter.StateTicksRemaining!.Value);
+            var budget = ResolutionMath.ActiveTickBudget(profile.MoveDistance, profile.ActiveTicks, activeIndex);
+            var gap = ArenaGeometry.SurfaceGap(
+                fighter.Position,
+                fighter.CollisionRadius,
+                target.Position,
+                target.CollisionRadius);
+            var decision = settings.Decisions.GetAction(action.ActionId);
+            var toward = action.MovesTowardTarget;
+            var targetGap = toward
+                ? profile.Schedule.Count != 0 ? profile.HitRangeMaximum : decision.PreferredRangeMaximum
+                : decision.PreferredRangeMinimum;
+            var needed = toward
+                ? System.Math.Max(0, gap - targetGap)
+                : System.Math.Max(0, targetGap - gap);
+            var magnitude = System.Math.Min(budget, needed);
+            var signed = action.CommitDirection switch
+            {
+                CommitDirection.Left => -magnitude,
+                CommitDirection.Right => magnitude,
+                _ => 0,
+            };
+            requests[fighter.FighterId] = new CombatMoveRequest(signed, budget, targetGap, toward);
+        }
+
+        var leftRequest = requests.TryGetValue(left.FighterId, out var leftMove)
+            ? leftMove.SignedDelta
+            : 0;
+        var rightRequest = requests.TryGetValue(right.FighterId, out var rightMove)
+            ? rightMove.SignedDelta
+            : 0;
+        LimitSharedGapBudget(inward: true, ref leftRequest, ref rightRequest);
+        LimitSharedGapBudget(inward: false, ref leftRequest, ref rightRequest);
+        if (leftRequest == 0 && rightRequest == 0)
+        {
+            return;
+        }
+
+        SeparationPairResult resolved;
+        try
+        {
+            resolved = SeparationResolver.Resolve(
+                arena,
+                Participant(left, leftRequest),
+                leftRequest,
+                Participant(right, rightRequest),
+                rightRequest,
+                settings.InitiativeOrder);
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or InvalidOperationException or OverflowException)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.InvalidStateTransition,
+                TickPhase.VoluntaryMovement.ToString(),
+                "Combat MoveSelf resolution failed: " + exception.Message);
+        }
+
+        var results = new[] { resolved.Left, resolved.Right };
+        var eventCount = results.Count(item => item.VoluntaryActualDelta != 0) +
+                         results.Count(item => item.SeparationDelta != 0);
+        emitter.PreflightNonterminalBatch(eventCount, TickPhase.VoluntaryMovement);
+        var voluntaryEvents = new Dictionary<FighterId, EventId>();
+        foreach (var item in results.Where(result => result.VoluntaryActualDelta != 0))
+        {
+            var fighter = state.Get(item.FighterId);
+            var source = fighter.CombatLifecycleEventId ?? emitter.LastEventId;
+            var related = source.HasValue ? new[] { source.Value } : Array.Empty<EventId>();
+            var before = fighter.ToFrame();
+            fighter.ApplyPosition(item.ProvisionalPosition);
+            var changed = emitter.Emit(
+                state.Tick,
+                new PositionChangedPayload(
+                    related,
+                    item.FromPosition,
+                    item.ProvisionalPosition,
+                    item.RequestedDelta,
+                    item.VoluntaryActualDelta,
+                    item.BlockedByWall,
+                    PositionChangeKind.Voluntary),
+                item.FighterId,
+                actionId: fighter.ActionId,
+                decisionId: fighter.ActiveDecisionId,
+                sourceEventId: source,
+                reasonCodes: new[] { new ReasonCode("CombatMoveSelf") },
+                before: new FramePair(before, null),
+                after: new FramePair(fighter.ToFrame(), null));
+            voluntaryEvents[item.FighterId] = changed.EventId;
+            fighter.RecordCombatLifecycleEvent(changed.EventId);
+        }
+
+        var relatedMovement = voluntaryEvents.Values.OrderBy(id => id).ToArray();
+        foreach (var item in results.Where(result => result.SeparationDelta != 0))
+        {
+            var fighter = state.Get(item.FighterId);
+            var before = fighter.ToFrame();
+            fighter.ApplyPosition(item.FinalPosition);
+            var source = voluntaryEvents.TryGetValue(item.FighterId, out var own)
+                ? own
+                : relatedMovement[0];
+            var separated = emitter.Emit(
+                state.Tick,
+                new PositionChangedPayload(
+                    relatedMovement,
+                    item.ProvisionalPosition,
+                    item.FinalPosition,
+                    item.SeparationDelta,
+                    item.SeparationDelta,
+                    0,
+                    PositionChangeKind.Separation),
+                item.FighterId,
+                actionId: fighter.ActionId,
+                decisionId: fighter.ActiveDecisionId,
+                sourceEventId: source,
+                reasonCodes: new[] { new ReasonCode("SeparationCorrection") },
+                before: new FramePair(before, null),
+                after: new FramePair(fighter.ToFrame(), null));
+            fighter.RecordCombatLifecycleEvent(separated.EventId);
+        }
+
+        state.Get(resolved.Left.FighterId).ApplyPosition(resolved.Left.FinalPosition);
+        state.Get(resolved.Right.FighterId).ApplyPosition(resolved.Right.FinalPosition);
+        state.Get(resolved.Left.FighterId).SetFacing(resolved.Left.Facing);
+        state.Get(resolved.Right.FighterId).SetFacing(resolved.Right.Facing);
+
+        void LimitSharedGapBudget(bool inward, ref int leftDelta, ref int rightDelta)
+        {
+            var leftCapacity = inward ? System.Math.Max(0, leftDelta) : System.Math.Max(0, -leftDelta);
+            var rightCapacity = inward ? System.Math.Max(0, -rightDelta) : System.Math.Max(0, rightDelta);
+            var sum = checked(leftCapacity + rightCapacity);
+            if (sum == 0)
+            {
+                return;
+            }
+
+            var relevant = requests.Values.Where(request => request.Toward == inward).ToArray();
+            if (relevant.Length == 0)
+            {
+                return;
+            }
+
+            var currentGap = ArenaGeometry.OrderedSurfaceGap(
+                left.Position,
+                left.CollisionRadius,
+                right.Position,
+                right.CollisionRadius);
+            var desiredGap = inward
+                ? relevant.Max(request => request.TargetGap)
+                : relevant.Min(request => request.TargetGap);
+            var permitted = inward
+                ? System.Math.Max(0, currentGap - desiredGap)
+                : System.Math.Max(0, desiredGap - currentGap);
+            if (sum <= permitted)
+            {
+                return;
+            }
+
+            var allocation = ProportionalAllocator.Allocate(
+                permitted,
+                left.FighterId,
+                leftCapacity,
+                right.FighterId,
+                rightCapacity,
+                settings.InitiativeOrder);
+            if (inward)
+            {
+                if (leftCapacity > 0) leftDelta = allocation.FirstAmount;
+                if (rightCapacity > 0) rightDelta = -allocation.SecondAmount;
+            }
+            else
+            {
+                if (leftCapacity > 0) leftDelta = -allocation.FirstAmount;
+                if (rightCapacity > 0) rightDelta = allocation.SecondAmount;
+            }
+        }
+
+        static MovementParticipant Participant(FighterRuntimeState fighter, int requestedDelta) => new(
+            fighter.FighterId,
+            fighter.Position,
+            fighter.CollisionRadius,
+            requestedDelta == 0 ? 0 : checked((int)ArenaGeometry.Magnitude(requestedDelta)),
+            requestedDelta != 0);
+    }
+
+    private readonly record struct CombatMoveRequest(
+        int SignedDelta,
+        int Budget,
+        int TargetGap,
+        bool Toward);
 
     internal static void EmitResolvedPositionChanges(
         BattleState state,

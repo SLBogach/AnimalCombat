@@ -171,9 +171,38 @@ GitHub Actions execution от `2026-08-19` для code head `26e151f`: `ubuntu-l
 
 `UnityClient` и generated balance artifacts не изменены.
 
+## WP-09 Resolution
+
+**WP-09 Resolution — `IMPLEMENTED / LOCAL GATES GREEN`; GitHub Actions pending.**
+
+Реализованы:
+
+1. Engine повышен до `battle.core/0.4.0`; event/replay/balance/RNG/ordering versions сохранены.
+2. Resolution DATA материализуется до `journal.Begin` в immutable typed profiles; runtime parsing/defaults отсутствуют.
+3. Фазы 7–11 исполняют canonical intent collection/order, geometry, Counter/Dodge/Block, damage/chip, stagger/control, MoveSelf, Push/Pull/Swap, wall, grab/throw и group-aware defeat/Double KO.
+4. `ResolutionPlan` использует preview/preflight/commit для атомарности state, RNG и event cap; watchdog учитывает только authoritative progress.
+5. `ResolutionReplaySemanticValidator` проверяет Engine `0.4.x`, не переинтерпретируя historical `0.1.x`/`0.2.x`/`0.3.x` replay.
+6. Созданы отдельные current fixtures `wait`, `decision-weighted`, `resolution-basic`, `resolution-double-ko`, `resolution-wall-grab` для Engine `0.4.0`; historical fixture bytes сохранены.
+7. Все `128` unique blocking acceptance IDs имеют автоматически обнаруживаемые тесты; inventory запрещает пропуски и дубли.
+
+Локальная проверка `2026-09-07`:
+
+- locked restore — green;
+- Release и Debug build — `0` warnings / `0` errors;
+- полный solution — `907` passed / `0` failed / `0` skipped (`537` Core, `329` Conformance, `41` Integration; Performance project пока не содержит тестов);
+- filtered `WorkPackage=WP09` — `32` passed / `0` failed (`15` Core, `12` Conformance, `5` Integration), inventory — ровно `128` acceptance IDs;
+- WP-04 generated reproducibility и WP-06/WP-07/WP-08/WP-09 target determinism — green;
+- пять Engine `0.4.0` fixtures совпадают byte-for-byte между `netstandard2.1` и `net10.0` в Debug/Release;
+- historical SHA pins `0.1.0`/`0.2.0`/`0.3.0` — green;
+- selected critical arithmetic/order/transition/safety branches — `100%`; combined Battle.Core line coverage — `88.02%` при gate `>=85%`.
+
+Canonical balance JSON, workbook и generated artifacts не изменены. `UnityClient` не изменён.
+
+WP-09 ещё не помечен `COMPLETED`, потому что Definition of Done требует фактическую green GitHub Actions matrix Windows/Linux × Debug/Release.
+
 ## Следующее действие
 
-Зафиксировать это документальное обновление, дождаться зелёной CI matrix на новом docs head и объединить Pull Request в `master`. После merge следующий этап разработки — подготовка WP-09 Resolution.
+Проверить diff, создать commit/push/PR и дождаться четырёх green CI jobs. После этого обновить WP-09 до `COMPLETED` и переходить к подготовке WP-10 Effects.
 
 ## Ограничения
 

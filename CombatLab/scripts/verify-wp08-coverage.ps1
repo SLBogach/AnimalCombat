@@ -3,7 +3,9 @@ param(
     [string]$CoreResultsDirectory,
 
     [Parameter(Mandatory = $true)]
-    [string]$ReplayResultsDirectory
+    [string]$ReplayResultsDirectory,
+
+    [string]$IntegrationResultsDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -178,16 +180,45 @@ $coreDocuments = Get-CoverageDocuments `
 $replayDocuments = Get-CoverageDocuments `
     -ResultsDirectory $ReplayResultsDirectory `
     -Label 'Battle.Replay/Battle.Contracts'
+$integrationDocuments = @()
+if (-not [string]::IsNullOrWhiteSpace($IntegrationResultsDirectory)) {
+    $integrationDocuments = @(
+        Get-CoverageDocuments `
+            -ResultsDirectory $IntegrationResultsDirectory `
+            -Label 'integration Battle.Core'
+    )
+}
 $failures = [System.Collections.Generic.List[string]]::new()
 
 $corePackage = Get-Package `
     -Documents $coreDocuments `
     -PackageName 'Battle.Core' `
     -Failures $failures
-if ($null -ne $corePackage) {
-    $coreLineRate = [decimal]::Parse(
-        $corePackage.'line-rate',
-        [System.Globalization.CultureInfo]::InvariantCulture)
+$lineCoveragePackages = @($corePackage)
+if ($integrationDocuments.Count -gt 0) {
+    $integrationCorePackage = Get-Package `
+        -Documents $integrationDocuments `
+        -PackageName 'Battle.Core' `
+        -Failures $failures
+    $lineCoveragePackages += $integrationCorePackage
+}
+if ($lineCoveragePackages.Count -gt 0 -and -not ($lineCoveragePackages -contains $null)) {
+    $combinedLines = @{}
+    foreach ($package in $lineCoveragePackages) {
+        foreach ($class in $package.classes.class) {
+            foreach ($line in $class.lines.line) {
+                $key = $class.filename + ':' + $line.number
+                if (-not $combinedLines.ContainsKey($key)) {
+                    $combinedLines[$key] = $false
+                }
+                if ([int]$line.hits -gt 0) {
+                    $combinedLines[$key] = $true
+                }
+            }
+        }
+    }
+    $coveredLines = @($combinedLines.Values | Where-Object { $_ }).Count
+    $coreLineRate = [decimal]$coveredLines / [decimal]$combinedLines.Count
     if ($coreLineRate -lt [decimal]0.85) {
         $failures.Add("Battle.Core line coverage is $($coreLineRate * 100)%, expected at least 85%.")
     }
@@ -219,4 +250,4 @@ if ($failures.Count -gt 0) {
     throw ($failures -join [Environment]::NewLine)
 }
 
-Write-Output 'WP-08 critical decision/replay branch coverage: 100%; Battle.Core line coverage: at least 85%.'
+Write-Output 'WP-08 critical decision/replay branch coverage: 100%; current combined Battle.Core line coverage: at least 85%.'

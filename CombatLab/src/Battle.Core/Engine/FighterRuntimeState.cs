@@ -27,6 +27,59 @@ internal sealed class FighterRuntimeState
         int actionSpeed,
         int moveSpeed,
         int collisionRadius)
+        : this(
+            fighterId,
+            side,
+            animalId,
+            position,
+            facing,
+            maximumHealth,
+            maximumEnergy,
+            resourceId,
+            resource,
+            maximumResource,
+            staggerThreshold,
+            initiative,
+            actionSpeed,
+            moveSpeed,
+            collisionRadius,
+            power: 0,
+            armor: 0,
+            precision: 0,
+            evasion: 0,
+            guard: 0,
+            guardBreak: 0,
+            controlPower: 0,
+            controlResistance: 0,
+            mass: 1)
+    {
+    }
+
+    internal FighterRuntimeState(
+        FighterId fighterId,
+        FighterSide side,
+        StableId animalId,
+        int position,
+        Facing facing,
+        int maximumHealth,
+        int maximumEnergy,
+        StableId resourceId,
+        int resource,
+        int maximumResource,
+        int staggerThreshold,
+        int initiative,
+        int actionSpeed,
+        int moveSpeed,
+        int collisionRadius,
+        int power,
+        int armor,
+        int precision,
+        int evasion,
+        int guard,
+        int guardBreak,
+        int controlPower,
+        int controlResistance,
+        int mass)
     {
         FighterId = fighterId;
         Side = side;
@@ -45,6 +98,15 @@ internal sealed class FighterRuntimeState
         ActionSpeed = actionSpeed;
         MoveSpeed = moveSpeed;
         CollisionRadius = collisionRadius;
+        Power = power;
+        Armor = armor;
+        Precision = precision;
+        Evasion = evasion;
+        Guard = guard;
+        GuardBreak = guardBreak;
+        ControlPower = controlPower;
+        ControlResistance = controlResistance;
+        Mass = mass;
         State = FighterState.DecisionReady;
     }
 
@@ -91,6 +153,24 @@ internal sealed class FighterRuntimeState
     internal int MoveSpeed { get; }
 
     internal int CollisionRadius { get; }
+
+    internal int Power { get; }
+
+    internal int Armor { get; }
+
+    internal int Precision { get; }
+
+    internal int Evasion { get; }
+
+    internal int Guard { get; }
+
+    internal int GuardBreak { get; }
+
+    internal int ControlPower { get; }
+
+    internal int ControlResistance { get; }
+
+    internal int Mass { get; }
 
     internal DecisionId? ActiveDecisionId { get; private set; }
 
@@ -299,9 +379,11 @@ internal sealed class FighterRuntimeState
         FrozenMoveSpeed = null;
         MovementStarted = false;
         MovementCompleted = false;
-        State = descriptor.StartupTicks > 0
-            ? FighterState.AttackPrepare
-            : FighterState.AttackActive;
+        State = CombatStateForPhase(
+            descriptor.ResolutionProfile,
+            descriptor.StartupTicks > 0
+                ? global::Battle.Contracts.Events.ActionPhase.Startup
+                : global::Battle.Contracts.Events.ActionPhase.Active);
         ActionPhase = descriptor.StartupTicks > 0
             ? global::Battle.Contracts.Events.ActionPhase.Startup
             : global::Battle.Contracts.Events.ActionPhase.Active;
@@ -487,7 +569,7 @@ internal sealed class FighterRuntimeState
                     return null;
                 }
 
-                State = FighterState.AttackActive;
+                State = CombatStateForPhase(action.ResolutionProfile, global::Battle.Contracts.Events.ActionPhase.Active);
                 ActionPhase = global::Battle.Contracts.Events.ActionPhase.Active;
                 StateTicksRemaining = action.ActiveTicks;
                 return new ActionLifecycleTransition(
@@ -508,7 +590,7 @@ internal sealed class FighterRuntimeState
 
                 if (action.RecoveryTicks > 0)
                 {
-                    State = FighterState.Recovery;
+                    State = CombatStateForPhase(action.ResolutionProfile, global::Battle.Contracts.Events.ActionPhase.Recovery);
                     ActionPhase = global::Battle.Contracts.Events.ActionPhase.Recovery;
                     StateTicksRemaining = action.RecoveryTicks;
                     return new ActionLifecycleTransition(
@@ -730,6 +812,177 @@ internal sealed class FighterRuntimeState
         Position = position;
     }
 
+    internal HealthMutation ApplyDamage(int amount)
+    {
+        if (amount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount));
+        }
+
+        var before = Health;
+        Health = System.Math.Max(0, checked(Health - amount));
+        return new HealthMutation(before, Health, checked(before - Health));
+    }
+
+    internal ResourceMutation? ApplyStagger(int amount)
+    {
+        if (amount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount));
+        }
+
+        if (amount == 0 || State == FighterState.Defeated)
+        {
+            return null;
+        }
+
+        var before = Stagger;
+        var candidate = checked((long)Stagger + amount);
+        Stagger = checked((int)System.Math.Min(candidate, StaggerThreshold));
+        return new ResourceMutation(
+            ResourceKind.Stagger,
+            null,
+            before,
+            checked(Stagger - before),
+            Stagger,
+            0,
+            StaggerThreshold);
+    }
+
+    internal ResourceMutation? ResetStagger()
+    {
+        if (Stagger == 0)
+        {
+            return null;
+        }
+
+        var before = Stagger;
+        Stagger = 0;
+        return new ResourceMutation(
+            ResourceKind.Stagger,
+            null,
+            before,
+            -before,
+            0,
+            0,
+            StaggerThreshold);
+    }
+
+    internal CancelledAction? ApplyHardControl(int durationTicks)
+    {
+        if (durationTicks < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(durationTicks));
+        }
+
+        var cancelled = CaptureCancelledAction();
+        ClearAction();
+        State = FighterState.Stunned;
+        StateTicksRemaining = durationTicks;
+        return cancelled;
+    }
+
+    internal CancelledAction? CancelCurrentAction()
+    {
+        var cancelled = CaptureCancelledAction();
+        if (cancelled.HasValue)
+        {
+            ClearAction();
+        }
+
+        return cancelled;
+    }
+
+    internal FighterStateTransition? AdvanceControlExpiry()
+    {
+        if (State != FighterState.Stunned)
+        {
+            return null;
+        }
+
+        if (!StateTicksRemaining.HasValue || StateTicksRemaining.Value < 1 || ActionId.HasValue)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.InvalidStateTransition,
+                TickPhase.Expiry.ToString(),
+                $"{FighterId} has an inconsistent hard-control state.");
+        }
+
+        if (StateTicksRemaining.Value > 1)
+        {
+            StateTicksRemaining = StateTicksRemaining.Value - 1;
+            return null;
+        }
+
+        var old = State;
+        State = FighterState.DecisionReady;
+        StateTicksRemaining = null;
+        return new FighterStateTransition(old, State, null);
+    }
+
+    internal CancelledAction? ApplyDefeat()
+    {
+        if (Health != 0)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.InvalidStateTransition,
+                TickPhase.Outcome.ToString(),
+                "A fighter can be defeated only at zero health.");
+        }
+
+        var cancelled = CaptureCancelledAction();
+        ClearAction();
+        State = FighterState.Defeated;
+        return cancelled;
+    }
+
+    internal CancelledAction? ApplyGrabbed()
+    {
+        var cancelled = CaptureCancelledAction();
+        ClearAction();
+        State = FighterState.Grabbed;
+        return cancelled;
+    }
+
+    internal void ApplyGrabbing()
+    {
+        if (ActiveCombatAction is null)
+        {
+            throw new EngineInvariantException(
+                EngineFailureCodes.InvalidStateTransition,
+                TickPhase.WallsAndGrabs.ToString(),
+                "A grabber requires an active combat action.");
+        }
+
+        State = FighterState.Grabbing;
+    }
+
+    internal void ClearGrabState()
+    {
+        if (State == FighterState.Grabbed)
+        {
+            State = FighterState.DecisionReady;
+            StateTicksRemaining = null;
+            return;
+        }
+
+        if (State != FighterState.Grabbing)
+        {
+            return;
+        }
+
+        State = ActiveCombatAction is null ? FighterState.DecisionReady : ActionPhase switch
+        {
+            global::Battle.Contracts.Events.ActionPhase.Startup =>
+                CombatStateForPhase(ActiveCombatAction.ResolutionProfile, global::Battle.Contracts.Events.ActionPhase.Startup),
+            global::Battle.Contracts.Events.ActionPhase.Active =>
+                CombatStateForPhase(ActiveCombatAction.ResolutionProfile, global::Battle.Contracts.Events.ActionPhase.Active),
+            global::Battle.Contracts.Events.ActionPhase.Recovery =>
+                CombatStateForPhase(ActiveCombatAction.ResolutionProfile, global::Battle.Contracts.Events.ActionPhase.Recovery),
+            _ => FighterState.DecisionReady,
+        };
+    }
+
     internal void SetFacing(Facing facing)
     {
         Facing = facing;
@@ -748,6 +1001,24 @@ internal sealed class FighterRuntimeState
         MovementCompleted = true;
         LastActionEventId = eventId;
     }
+
+    private CancelledAction? CaptureCancelledAction() => ActionId.HasValue
+        ? new CancelledAction(ActionId.Value, ActiveDecisionId, ActionPhase, LastActionEventId ?? CombatLifecycleEventId)
+        : null;
+
+    private static FighterState CombatStateForPhase(
+        Battle.Core.Resolution.ResolutionActionProfile profile,
+        global::Battle.Contracts.Events.ActionPhase phase) => phase switch
+        {
+            global::Battle.Contracts.Events.ActionPhase.Startup => FighterState.AttackPrepare,
+            global::Battle.Contracts.Events.ActionPhase.Active when profile.HasTag("block") => FighterState.Block,
+            global::Battle.Contracts.Events.ActionPhase.Active when profile.HasTag("dodge") => FighterState.Dodge,
+            global::Battle.Contracts.Events.ActionPhase.Active when profile.HasTag("counter") => FighterState.CounterWindow,
+            global::Battle.Contracts.Events.ActionPhase.Active => FighterState.AttackActive,
+            global::Battle.Contracts.Events.ActionPhase.Recovery when profile.HasTag("dodge") => FighterState.DodgeRecovery,
+            global::Battle.Contracts.Events.ActionPhase.Recovery => FighterState.Recovery,
+            _ => throw new ArgumentOutOfRangeException(nameof(phase)),
+        };
 
     private void ClearAction()
     {
@@ -880,6 +1151,18 @@ internal sealed class FighterRuntimeState
         Resource = resource;
     }
 
+    internal void SetStaggerForTesting(int stagger)
+    {
+        if (stagger < 0 || stagger > StaggerThreshold)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stagger));
+        }
+
+        Stagger = stagger;
+    }
+
+    internal void SetPositionForTesting(int position) => Position = position;
+
     internal void SetCooldownForTesting(StableId actionId, int ticks)
     {
         if (ticks < 0)
@@ -914,7 +1197,9 @@ internal sealed class FighterRuntimeState
         }
     }
 
-    internal void SetEmergencyForTesting(bool emergency) => Emergency = emergency;
+    internal void SetEmergency(bool emergency) => Emergency = emergency;
+
+    internal void SetEmergencyForTesting(bool emergency) => SetEmergency(emergency);
 
     internal void SetDecisionHistoryForTesting(
         int decisionCount,
@@ -959,6 +1244,19 @@ internal sealed class FighterRuntimeState
         TickPhase.Decisions.ToString(),
         message + ": " + exception.Message);
 }
+
+internal readonly record struct HealthMutation(int Before, int After, int ActualLoss);
+
+internal readonly record struct CancelledAction(
+    StableId ActionId,
+    DecisionId? DecisionId,
+    ActionPhase? Phase,
+    EventId? SourceEventId);
+
+internal readonly record struct FighterStateTransition(
+    FighterState From,
+    FighterState To,
+    int? DurationTicks);
 
 internal readonly record struct ActionLifecycleTransition(
     StableId ActionId,

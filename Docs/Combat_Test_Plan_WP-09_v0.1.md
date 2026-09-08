@@ -1,8 +1,8 @@
 # Combat Test Plan WP-09 v0.1 — Resolution
 
-> Статус: `EXECUTED / LOCAL PASSED`; GitHub Actions pending.
+> Статус: `EXECUTED / PASSED`; WP-09 — `COMPLETED`.
 >
-> Все `128` acceptance cases реализованы и проходят локально. `OPEN-WP09-01..23` закрыты. Документ не разрешает изменение `UnityClient` и не меняет canonical DATA artifacts. Финальный `COMPLETED` ожидает green Windows/Linux × Debug/Release CI.
+> Все `128` acceptance cases реализованы и проходят локально и в CI. `OPEN-WP09-01..23` закрыты. Документ не разрешает изменение `UnityClient` и не меняет canonical DATA artifacts. Windows/Linux × Debug/Release matrix подтверждена green.
 
 ## 1. Назначение и gate
 
@@ -595,8 +595,10 @@ Owner approval получен `2026-09-07`:
 
 - `OPEN-WP09-01..23 — CLOSED`;
 - Test Plan имеет статус `APPROVED / BLOCKING`;
-- WP-09 имеет статус `IMPLEMENTED / LOCAL GATES GREEN`;
+- WP-09 имеет статус `COMPLETED`;
 - реализация закрывает все `128` IDs без изменения scope;
 - fixtures, workbook и generated artifacts изменяются только в явно разрешённых этим планом границах; `UnityClient` остаётся неизменным.
 
-Локальное исполнение `2026-09-07`: `128/128` IDs обнаружены inventory; Release/Debug build/test, replay/historical/generated/target-determinism gates green; selected critical branch coverage `100%`, combined Battle.Core line coverage `88.02%`. Остаётся CI completion gate.
+Локальное исполнение `2026-09-07`: `128/128` IDs обнаружены inventory; Release/Debug build/test, replay/historical/generated/target-determinism gates green; selected critical branch coverage `100%`, combined Battle.Core line coverage `88.02%`.
+
+GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest`/`windows-latest` × Debug/Release — все четыре jobs green. Completion gate закрыт; WP-09 — `COMPLETED`.

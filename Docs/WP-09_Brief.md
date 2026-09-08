@@ -1,8 +1,8 @@
 # WP-09 Brief — Resolution
 
-> Статус: `IMPLEMENTED / LOCAL GATES GREEN`; GitHub Actions pending.
+> Статус: `COMPLETED`.
 >
-> [Combat Test Plan WP-09 v0.1](./Combat_Test_Plan_WP-09_v0.1.md) исполнен как обязательная exact blocking matrix. `OPEN-WP09-01..23` закрыты. Все локальные gates green; статус `COMPLETED` ожидает Windows/Linux × Debug/Release CI.
+> [Combat Test Plan WP-09 v0.1](./Combat_Test_Plan_WP-09_v0.1.md) исполнен как обязательная exact blocking matrix. `OPEN-WP09-01..23` закрыты. Все локальные gates и Windows/Linux × Debug/Release CI green.
 >
 > `BLOCK-WP09-BASE-01 — CLOSED`: `feature/wp-09-resolution` синхронизирована с `origin/master@73a31bd` и содержит завершённый WP-08 baseline.
 
@@ -675,14 +675,14 @@ Battle.Replay/
 5. **Core:** `DONE` — phases 7–11, atomic ResolutionPlan и group-aware outcome реализованы.
 6. **Replay:** `DONE` — resolution semantic validator активен для `0.4.x`; historical interpretation не изменена.
 7. **Tests/fixtures:** `DONE` — 128/128 IDs, пять новых `0.4.0` fixtures и immutable historical pins.
-8. **Verification:** `LOCAL DONE` — restore, Debug/Release build/test, generated, TFM, coverage, historical и determinism gates green; CI pending.
-9. **Closure:** `PENDING CI` — объявить WP-09 `COMPLETED` после green Windows/Linux matrix.
+8. **Verification:** `DONE` — restore, Debug/Release build/test, generated, TFM, coverage, historical и determinism gates green локально и в CI.
+9. **Closure:** `DONE` — GitHub Actions Windows/Linux × Debug/Release green; WP-09 объявлен `COMPLETED`.
 
 ## 19. Readiness и Definition of Done
 
-Текущее состояние: `IMPLEMENTED / LOCAL GATES GREEN`.
+Текущее состояние: `COMPLETED`.
 
-Все условия реализации выполнены локально:
+Все условия реализации и завершения выполнены:
 
 - `BLOCK-WP09-BASE-01 — CLOSED`: ветка содержит WP-08-complete baseline;
 - `OPEN-WP09-01..23 — CLOSED`;
@@ -690,9 +690,9 @@ Battle.Replay/
 - Combat Test Plan WP-09 принят как blocking matrix.
 - Engine `battle.core/0.4.0` и все 128 acceptance IDs реализованы;
 - Release/Debug, replay, target determinism, generated и coverage gates green;
-- остаётся внешний completion gate: GitHub Actions Windows/Linux × Debug/Release.
+- GitHub Actions execution от `2026-09-08` для code head `9317c82`: Windows/Linux × Debug/Release — все четыре jobs green.
 
-WP-09 может стать `COMPLETED` только когда:
+Статус `COMPLETED` подтверждён следующими выполненными условиями:
 
 - все blocking acceptance IDs имеют автоматические тесты и green;
 - Engine `0.4.0` replay детерминирован и semantic-verifiable;
@@ -702,3 +702,5 @@ WP-09 может стать `COMPLETED` только когда:
 - deterministic/coverage/target/historical gates проходят;
 - GitHub Actions Windows/Linux matrix green;
 - `UnityClient` не изменён.
+
+Все перечисленные условия подтверждены; следующий work package — WP-10 Effects.

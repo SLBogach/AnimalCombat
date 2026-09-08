@@ -171,9 +171,9 @@ GitHub Actions execution от `2026-08-19` для code head `26e151f`: `ubuntu-l
 
 `UnityClient` и generated balance artifacts не изменены.
 
-## WP-09 Resolution
+## Завершённый WP-09 Resolution
 
-**WP-09 Resolution — `IMPLEMENTED / LOCAL GATES GREEN`; GitHub Actions pending.**
+**WP-09 Resolution — `COMPLETED`.**
 
 Реализованы:
 
@@ -198,11 +198,11 @@ GitHub Actions execution от `2026-08-19` для code head `26e151f`: `ubuntu-l
 
 Canonical balance JSON, workbook и generated artifacts не изменены. `UnityClient` не изменён.
 
-WP-09 ещё не помечен `COMPLETED`, потому что Definition of Done требует фактическую green GitHub Actions matrix Windows/Linux × Debug/Release.
+GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest` и `windows-latest`, Debug и Release — все четыре jobs green. CI подтвердил полный test suite и обязательные generated, target-determinism, historical replay и coverage gates на обеих ОС. Все completion conditions WP-09 выполнены.
 
 ## Следующее действие
 
-Проверить diff, создать commit/push/PR и дождаться четырёх green CI jobs. После этого обновить WP-09 до `COMPLETED` и переходить к подготовке WP-10 Effects.
+Зафиксировать документальное закрытие WP-09, объединить ветку с `master` и переходить к подготовке WP-10 Effects: создать brief, exact blocking matrix и закрыть DATA/stat-clamp решения до начала production-кода.
 
 ## Ограничения
 

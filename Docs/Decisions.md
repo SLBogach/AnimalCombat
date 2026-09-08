@@ -168,4 +168,5 @@
 - Engine повышен до `battle.core/0.4.0`; event/replay/balance/RNG/ordering versions сохранены.
 - Созданы отдельные current Engine `0.4.0` fixtures для wait, decision-weighted, resolution-basic, resolution-double-ko и resolution-wall-grab. Historical `0.1.0`/`0.2.0`/`0.3.0` bytes сохранены.
 - Все `128` blocking acceptance IDs обнаруживаются без пропусков/дубликатов и проходят локально; Debug/Release, generated, replay, target determinism и coverage gates green.
-- WP-09 имеет статус `IMPLEMENTED / LOCAL GATES GREEN`; `COMPLETED` будет установлен только после green GitHub Actions Windows/Linux × Debug/Release.
+- GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest`/`windows-latest` × Debug/Release — все четыре jobs green.
+- WP-09 имеет статус `COMPLETED`; все blocking и completion gates закрыты.

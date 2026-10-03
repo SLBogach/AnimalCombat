@@ -11,6 +11,7 @@
 - WP-06 Engine shell
 - WP-07 Movement
 - WP-08 Decisions
+- WP-09 Resolution
 
 WP-05 завершил typed event journal, canonical JSON, SHA-256 event chain и replay verifier. Его требования сохранены в [WP-05_Brief.md](./WP-05_Brief.md).
 
@@ -200,9 +201,27 @@ Canonical balance JSON, workbook и generated artifacts не изменены. `
 
 GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest` и `windows-latest`, Debug и Release — все четыре jobs green. CI подтвердил полный test suite и обязательные generated, target-determinism, historical replay и coverage gates на обеих ОС. Все completion conditions WP-09 выполнены.
 
+## Подготовленный WP-10 Effects
+
+**WP-10 — `PREPARED / AWAITING APPROVAL`; preparation checkpoint `2026-10-03`.**
+
+Подготовка выполнена в `feature/wp-10-effects` от локального `master@81b1488`: completed WP-09 и сохранённый Unity Viewer checkpoint. Read-only проверка GitHub в этот момент показала remote `master@e610c76`; локальный master опережал remote на один commit. Merge/commit Viewer не закрывает его отдельную acceptance matrix.
+
+Созданы:
+
+- [WP-10 Brief](./WP-10_Brief.md) — source sections, implementation boundaries, exact runtime semantics, DATA proposals и план;
+- [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — `132` unique proposed blocking acceptance IDs;
+- предложения `OPEN-WP10-01..28` — ещё не приняты и не CLOSED.
+
+Предлагается Engine `battle.core/0.5.0`, новый баланс `combat.balance/0.2`/`v0.2`, отдельные versioned workbook/schema/generated artifacts. v0.1 и replay Engine0.1–0.4 сохраняются. Обязательство `OPEN-WP07-13` переносится в физический gate WP-10: 15 stat min/max pairs должны быть в validated DATA до runtime movement modifiers. Дополнительно требуются queue caps, explicit effect rules/metadata и knockdown/interrupt DATA.
+
+`BLOCK-WP10-APPROVAL-01`, `BLOCK-WP10-DATA-01..04`, `BLOCK-WP10-ARTIFACT-01`, `BLOCK-WP10-HISTORY-01` остаются OPEN. Подготовка WP-10 не изменяла production code, Workbook/generated artifacts, fixtures и UnityClient; существующие и появляющиеся локальные Unity-изменения сохраняются вне patch. Acceptance execution `0/132`, build/test не заявлены как выполненные.
+
 ## Следующее действие
 
-На текущей feature-ветке продолжить WP-UI-01 после реализованного game-first presentation slice: расширить PlayMode до полной three-fixture/negative acceptance matrix, добавить внешний read-only path UX и выполнить Windows Standalone build/smoke. Основной Combat roadmap после WP-09 остаётся WP-10 Effects и не переносится в Unity Viewer.
+Утвердить `OPEN-WP10-01..28` и Combat Test Plan WP-10 как обязательную blocking matrix. Затем закрепить historical Engine0.4 pins, выполнить v0.2 DATA/tooling slice, закрыть physical artifact gates и реализовать WP-10 Effects по матрице. После него — WP-11 Fighters с full passive/resource/kit semantics.
+
+WP-UI-01 можно продолжать отдельной веткой: full three-fixture/negative PlayMode matrix, external-path UX, Windows Standalone smoke и static checks остаются его собственными условиями завершения. Они не блокируют подготовку основного combat roadmap.
 
 ## WP-UI-01 Unity Replay Viewer
 

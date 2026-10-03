@@ -171,6 +171,53 @@
 - GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest`/`windows-latest` × Debug/Release — все четыре jobs green.
 - WP-09 имеет статус `COMPLETED`; все blocking и completion gates закрыты.
 
+## WP-10 Effects
+
+### Предложения для утверждения — 2026-10-03
+
+Все перечисленные `OPEN-WP10-01..28` имеют статус **PROPOSED**, а не CLOSED. Точные условия, DATA values и source precedence находятся в [WP-10 Brief](./WP-10_Brief.md); предложенная [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) содержит `132` unique blocking acceptance IDs. Решения предыдущих WP сохраняются; полный stat-clamp defer из `OPEN-WP07-13` должен быть исполнен в WP-10.
+
+| ID | Предложение |
+|---|---|
+| `OPEN-WP10-01` | Обязательная exact matrix/inventory, code после approval. |
+| `OPEN-WP10-02` | Baseline local master81b1488 с WP-09/Viewer; remote synchronization отдельна. |
+| `OPEN-WP10-03` | Generic effects/control — WP-10; full fighter passives/resources — WP-11. |
+| `OPEN-WP10-04` | Engine0.5/balance0.2 и отдельные DATA files; wire/RNG/ordering/mode unchanged. |
+| `OPEN-WP10-05` | 15 stat bound pairs и explicit queue/knockdown values Brief§4.2–4.3. |
+| `OPEN-WP10-06` | Aggregate Add, sorted FP product, ordered Override, final clamp; signed floor. |
+| `OPEN-WP10-07` | Post-expiry shared decision snapshot, frozen commits/segments/intents, effects видны следующей group. |
+| `OPEN-WP10-08` | Explicit effect_rules catalog, typed conditions/primitives, пять generic bindings. |
+| `OPEN-WP10-09` | 12 phases unchanged; bounded closure before defeat, end-tick then after-expiry. |
+| `OPEN-WP10-10` | Before expiry t+D; After expiry end t+D-1; ResetDuration/KeepLonger. |
+| `OPEN-WP10-11` | Exact Reject/Refresh/Replace/StrongestWins/AddStacks, atomic mutation/event deltas. |
+| `OPEN-WP10-12` | One group occupant, explicit CompareKey, stable identity tie-break. |
+| `OPEN-WP10-13` | Proposed depth8/triggers128/instances32 и deterministic causal-level order. |
+| `OPEN-WP10-14` | Rule admission и effect mutation budgets раздельны; cooldown/once/caps explicit. |
+| `OPEN-WP10-15` | Semantic repeated-root cycle suppression diagnostic; hard-cap excess fatal. |
+| `OPEN-WP10-16` | Typed stat/damage/chance/tag-weight/grab consumers; reserved resource targets unreachable until WP-11. |
+| `OPEN-WP10-17` | Guard-broken only after failed eligible Block plus guard_break tag. |
+| `OPEN-WP10-18` | Fatigue after ControlEnded, stack lookup, threshold-crossing immunity, no immunity refresh. |
+| `OPEN-WP10-19` | One authoritative target grab-lockout interval, same-source control refresh prohibited. |
+| `OPEN-WP10-20` | Data-driven Fall/Grounded/GetUp, fatigue per stage, GroundHit-only and wakeup immunity. |
+| `OPEN-WP10-21` | Explicit strengths/phases/control filters; Armored threshold3, Unstoppable categories; costs retained. |
+| `OPEN-WP10-22` | Affected actor/source target, backward lineage, exact frames; no canonical no-op markers. |
+| `OPEN-WP10-23` | Whole closure preview/preflight/rollback, reserve cleanup plus BattleEnded. |
+| `OPEN-WP10-24` | Authoritative progress only, typed failures и bounded causal diagnostics. |
+| `OPEN-WP10-25` | Trigger-free terminal cleanup, no late effects, BattleEnded last. |
+| `OPEN-WP10-26` | Engine0.4 historical pins before bump; preserve all old bytes; separate0.5 goldens. |
+| `OPEN-WP10-27` | Unit/conformance/integration132 IDs, process/TFM/OS/profile/historical/generated/coverage gates. |
+| `OPEN-WP10-28` | v0.1 reader retained; engine0.5 requires explicit v0.2; Unity changes outside scope. |
+
+### Готовность этапа
+
+- WP-10 `PREPARED / AWAITING APPROVAL`; implementation/tests not run.
+- `BLOCK-WP10-APPROVAL-01` OPEN: owner review exact proposals/matrix.
+- `BLOCK-WP10-DATA-01..04` OPEN: stat bounds, queue caps, rules/metadata/registry, knockdown/interrupt fields.
+- `BLOCK-WP10-ARTIFACT-01` OPEN: physical v0.2 source/schema/generated migration and reproducible0-error/0-warning export.
+- `BLOCK-WP10-HISTORY-01` OPEN: automated0.4 historical pin/verify gate before bump.
+- Approval закрывает проектное согласование, не physical DATA/artifact/history gates. Runtime fallback запрещён.
+- Подготовка изменила только Docs; existing Unity ProjectSettings/untracked files не являются частью WP-10 patch.
+
 ## WP-UI-01 visual revision
 
 - `2026-10-01 — APPROVED`: [Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) заменяет тёмное broadcast-оформление v0.1 на тёплую иллюстрированную арену, две красные HP-полосы, центральное `VS` и компактную нижнюю панель. Cyan/orange остаются малыми маркерами A/B; прежний v0.1 spec сохраняется как история решения.

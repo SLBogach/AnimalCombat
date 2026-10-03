@@ -10,6 +10,9 @@
 6. [Combat Test Plan WP-07 v0.1](./Combat_Test_Plan_WP-07_v0.1.md) — исполненная exact pass/fail-матрица Movement; закрывает `OPEN-WP07-01..13`, Windows/Linux CI green.
 7. [Combat Test Plan WP-08 v0.1](./Combat_Test_Plan_WP-08_v0.1.md) — исполненная blocking exact pass/fail-матрица Decisions: `107` unique IDs; local и Windows/Linux CI gates green.
 8. [Combat Test Plan WP-09 v0.1](./Combat_Test_Plan_WP-09_v0.1.md) — исполненная exact blocking matrix Resolution: `128/128` unique IDs; Windows/Linux CI green.
+9. [Unity Replay Viewer Test Plan v0.1](./Unity_Replay_Viewer_Test_Plan_v0.1.md) — approved blocking matrix отдельного read-only WP-UI-01; execution in progress.
+10. [Unity Replay Viewer Game-First UI Spec v0.1](./Unity_Replay_Viewer_UI_Spec_v0.1.md) — историческая утверждённая визуальная ревизия WP-UI-01.
+11. [Unity Replay Viewer Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) — текущий утверждённый визуальный контракт; v0.1 сохранён как история решения.
 
 ## Рабочие этапы
 
@@ -25,6 +28,7 @@
 | WP-07 | Movement | завершён | [WP-07 Brief](./WP-07_Brief.md) |
 | WP-08 | Decisions | завершён | [WP-08 Brief](./WP-08_Brief.md) |
 | WP-09 | Resolution | завершён | [WP-09 Brief](./WP-09_Brief.md) |
+| WP-UI-01 | Unity Replay Viewer v0.1 | в работе | [WP-UI-01 Brief](./WP-UI-01_Brief.md) |
 | WP-10 | Effects | запланирован | — |
 | WP-11 | Fighters | запланирован | — |
 | WP-12 | Batch | запланирован | — |
@@ -43,10 +47,14 @@
 - [Combat Test Plan WP-08 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-08_v0.1.md)
 - [Завершённый WP-09 Resolution](./WP-09_Brief.md)
 - [Combat Test Plan WP-09 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-09_v0.1.md)
+- [WP-UI-01 Unity Replay Viewer — IN PROGRESS](./WP-UI-01_Brief.md)
+- [Unity Replay Viewer Test Plan v0.1 — APPROVED / BLOCKING](./Unity_Replay_Viewer_Test_Plan_v0.1.md)
+- [Unity Replay Viewer Game-First UI Spec v0.1 — historical approved revision](./Unity_Replay_Viewer_UI_Spec_v0.1.md)
+- [Unity Replay Viewer Illustrated Fight Screen v0.2 — APPROVED / IN PROGRESS](./Unity_Replay_Viewer_UI_Spec_v0.2.md)
 
 ## Правила
 
 - При конфликте действует порядок источников истины выше; уже написанный код не становится нормативным источником.
 - Конфликт требования нельзя разрешать молча: решение фиксируется в [Decisions.md](./Decisions.md), а блокирующий конфликт останавливает реализацию этапа.
-- `UnityClient` не изменять до отдельного этапа.
+- `UnityClient` изменяется только в отдельном WP-UI-01 и остаётся read-only consumer replay; gameplay calculations и зависимость `Battle.Core → UnityClient` запрещены.
 - Оригинальные документы читать только по разделам, перечисленным в brief текущего WP.

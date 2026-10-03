@@ -1,0 +1,11 @@
+{
+  "name": "AnimalCombat.ReplayViewer.Presentation",
+  "rootNamespace": "AnimalCombat.ReplayViewer.Presentation",
+  "references": [
+    "AnimalCombat.ReplayViewer.Contracts",
+    "AnimalCombat.ReplayViewer.Runtime",
+    "Unity.Newtonsoft.Json",
+    "UnityEngine.UIElementsModule"
+  ],
+  "autoReferenced": true
+}

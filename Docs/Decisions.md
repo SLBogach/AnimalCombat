@@ -170,3 +170,9 @@
 - Все `128` blocking acceptance IDs обнаруживаются без пропусков/дубликатов и проходят локально; Debug/Release, generated, replay, target determinism и coverage gates green.
 - GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest`/`windows-latest` × Debug/Release — все четыре jobs green.
 - WP-09 имеет статус `COMPLETED`; все blocking и completion gates закрыты.
+
+## WP-UI-01 visual revision
+
+- `2026-10-01 — APPROVED`: [Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) заменяет тёмное broadcast-оформление v0.1 на тёплую иллюстрированную арену, две красные HP-полосы, центральное `VS` и компактную нижнюю панель. Cyan/orange остаются малыми маркерами A/B; прежний v0.1 spec сохраняется как история решения.
+- Начальные звери отображаются без оружия и брони. Существующий cutout rig и replay-driven animation сохраняются; будущие equipment layers не выводятся из fixture без отдельного решения.
+- Изменение только presentation: Unity остаётся read-only consumer `combat.replay/0.1`; Battle.Core, CombatLab production code и historical replay fixtures не меняются. Согласование визуального макета не означает готовности Android/iOS build.

@@ -1,0 +1,143 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="ReplayViewerStyles.uss" />
+    <Style src="ReplayViewerIllustrated.uss" />
+    <ui:VisualElement name="app" class="app">
+        <ui:VisualElement class="game-frame">
+            <ui:VisualElement class="broadcast-hud">
+                <ui:VisualElement class="fighter-hud fighter-a-hud">
+                    <ui:VisualElement class="fighter-hud-copy">
+                        <ui:VisualElement class="health-track">
+                            <ui:VisualElement name="fighter-a-health-fill" class="health-fill health-a">
+                                <ui:VisualElement class="health-gloss" />
+                                <ui:VisualElement class="health-depth" />
+                            </ui:VisualElement>
+                            <ui:Label name="fighter-a-health" text="100 / 100 HP" class="health-label" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="fighter-identity">
+                            <ui:VisualElement class="identity-accent identity-accent-a" />
+                            <ui:Label name="fighter-a-name" text="BEAR" class="fighter-name" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="fighter-status-line">
+                            <ui:Label name="fighter-a-state" text="DECISION READY" class="state-badge" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="replay-scoreboard">
+                    <ui:VisualElement class="vs-burst" />
+                    <ui:Label text="VS" class="vs-label" />
+                    <ui:Label name="tick-label" text="TICK 0" class="tick-label" />
+                    <ui:Label name="sequence-label" text="SEQ 0 / 0" class="sequence-label" />
+                    <ui:Label name="playback-state-label" text="PAUSED" class="playback-state-label" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="fighter-hud fighter-b-hud">
+                    <ui:VisualElement class="fighter-hud-copy fighter-hud-copy-b">
+                        <ui:VisualElement class="health-track health-track-b">
+                            <ui:VisualElement name="fighter-b-health-fill" class="health-fill health-b">
+                                <ui:VisualElement class="health-gloss" />
+                                <ui:VisualElement class="health-depth" />
+                            </ui:VisualElement>
+                            <ui:Label name="fighter-b-health" text="100 / 100 HP" class="health-label" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="fighter-identity fighter-identity-b">
+                            <ui:Label name="fighter-b-name" text="KANGAROO" class="fighter-name fighter-name-b" />
+                            <ui:VisualElement class="identity-accent identity-accent-b" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="fighter-status-line fighter-status-line-b">
+                            <ui:Label name="fighter-b-state" text="DECISION READY" class="state-badge state-badge-b" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:Label name="status-label" text="Loading replay…" class="status-label" />
+
+            <ui:VisualElement name="arena-stage" class="arena-stage">
+                <ui:VisualElement name="grab-link" class="grab-link">
+                    <ui:Label text="GRAB" class="grab-link-label" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="fighter-a-marker" class="fighter-presenter fighter-a-presenter">
+                    <ui:VisualElement class="fighter-nameplate fighter-a-nameplate">
+                        <ui:Label name="fighter-a-facing" text="▶" class="facing-arrow" />
+                        <ui:Label name="fighter-a-marker-name" text="BEAR" class="marker-name" />
+                        <ui:Label name="fighter-a-position" text="4000" class="fighter-position" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement name="fighter-b-marker" class="fighter-presenter fighter-b-presenter">
+                    <ui:VisualElement class="fighter-nameplate fighter-b-nameplate">
+                        <ui:Label name="fighter-b-facing" text="◀" class="facing-arrow" />
+                        <ui:Label name="fighter-b-marker-name" text="KANGAROO" class="marker-name" />
+                        <ui:Label name="fighter-b-position" text="5200" class="fighter-position" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement name="event-cue-layer" class="event-cue-layer cue-neutral">
+                    <ui:VisualElement class="telegraph-ring" />
+                    <ui:VisualElement class="impact-burst">
+                        <ui:VisualElement class="impact-core" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="motion-streak streak-one" />
+                    <ui:VisualElement class="motion-streak streak-two" />
+                    <ui:Label name="event-type-label" text="FIGHT" class="event-title" />
+                    <ui:Label name="event-value-label" text="" class="event-value" />
+                    <ui:Label name="event-details-label" text="Waiting for replay" class="event-details" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="wall-flash-left" class="wall-flash wall-flash-left" />
+                <ui:VisualElement name="wall-flash-right" class="wall-flash wall-flash-right" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="transport-panel">
+                <ui:DropdownField name="replay-picker" class="replay-picker" />
+                <ui:VisualElement class="transport-center">
+                    <ui:Button name="restart-button" text="RESTART" class="transport-button restart-button" />
+                    <ui:Button name="play-button" text="PLAY" class="transport-button primary-button" />
+                    <ui:Button name="pause-button" text="PAUSE" class="transport-button primary-button" />
+                    <ui:VisualElement class="speed-control">
+                        <ui:Label text="SPEED" class="micro-label" />
+                        <ui:Slider name="speed-slider" low-value="0.25" high-value="4" value="1" class="speed-slider" />
+                        <ui:Label name="speed-value" text="1.00×" class="speed-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="transport-actions">
+                    <ui:Button name="debug-button" text="DETAILS" class="transport-button debug-button" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="telemetry-scrim" class="telemetry-scrim" />
+        <ui:VisualElement name="telemetry-drawer" class="telemetry-drawer">
+            <ui:VisualElement class="telemetry-header">
+                <ui:VisualElement>
+                    <ui:Label text="DEBUG / TELEMETRY" class="drawer-title" />
+                    <ui:Label text="READ-ONLY REPLAY INSPECTOR" class="drawer-kicker" />
+                </ui:VisualElement>
+                <ui:Button name="telemetry-close-button" text="×" class="close-button" />
+            </ui:VisualElement>
+            <ui:Label name="telemetry-replay-label" text="No replay loaded" class="telemetry-replay-label" />
+            <ui:VisualElement class="telemetry-current-card">
+                <ui:Label text="CURRENT EVENT" class="micro-label" />
+                <ui:Label name="telemetry-event-type-label" text="BattleStarted" class="telemetry-event-title" />
+                <ui:Label name="telemetry-event-details-label" text="Waiting for replay" class="telemetry-event-details" />
+            </ui:VisualElement>
+            <ui:Label text="EVENT STREAM" class="micro-label event-stream-title" />
+            <ui:ScrollView name="event-scroll" class="event-scroll" />
+            <ui:Label text="Integrity: not verified · combat.replay/0.1" class="integrity-label" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="result-overlay" class="result-overlay">
+            <ui:VisualElement class="result-card">
+                <ui:Label text="BATTLE ENDED" class="result-kicker" />
+                <ui:Label name="result-label" text="FIGHTER A WINS" class="result-label" />
+                <ui:Label name="result-details-label" text="Defeat · tick 0" class="result-details" />
+                <ui:VisualElement class="result-actions">
+                    <ui:Button name="result-restart-button" text="↺  WATCH AGAIN" class="result-button" />
+                    <ui:Button name="result-debug-button" text="OPEN TELEMETRY" class="result-button result-button-secondary" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,10 @@
+{
+  "name": "AnimalCombat.ReplayViewer.Tests.PlayMode",
+  "rootNamespace": "AnimalCombat.ReplayViewer.Tests.PlayMode",
+  "references": [
+    "AnimalCombat.ReplayViewer.Presentation"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

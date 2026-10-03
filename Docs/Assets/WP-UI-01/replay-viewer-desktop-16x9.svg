@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Animal Combat Replay Viewer — game-first desktop 16:9 reference</title>
+  <desc id="desc">Approved WP-UI-01 desktop mockup with fighter HUD at the top, a dominant arena, combat effects, compact replay controls, and telemetry closed by default.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b2832"/>
+      <stop offset="0.62" stop-color="#17414a"/>
+      <stop offset="1" stop-color="#18272d"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#24343a"/>
+      <stop offset="1" stop-color="#0c151a"/>
+    </linearGradient>
+    <linearGradient id="hpA" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#29d7e5"/>
+      <stop offset="1" stop-color="#66e38f"/>
+    </linearGradient>
+    <linearGradient id="hpB" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff8b3d"/>
+      <stop offset="1" stop-color="#ffcf5a"/>
+    </linearGradient>
+    <radialGradient id="impact" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
+      <stop offset="0.22" stop-color="#ffd166" stop-opacity="0.9"/>
+      <stop offset="0.7" stop-color="#ff5d44" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#ff5d44" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="scan" width="12" height="12" patternUnits="userSpaceOnUse">
+      <path d="M0 12L12 0" stroke="#8de7e8" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="11" flood-color="#000000" flood-opacity="0.52"/>
+    </filter>
+    <filter id="glowA" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowB" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="roundClip"><rect width="1600" height="900" rx="24"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#roundClip)" font-family="Segoe UI, Arial, sans-serif">
+    <rect width="1600" height="900" fill="#071018"/>
+    <rect x="24" y="24" width="1552" height="852" rx="22" fill="url(#sky)" stroke="#32545e" stroke-width="2"/>
+    <rect x="24" y="24" width="1552" height="852" rx="22" fill="url(#scan)"/>
+
+    <!-- Atmospheric arena -->
+    <circle cx="800" cy="300" r="245" fill="#71d5d4" opacity="0.055"/>
+    <path d="M24 388 C210 338 330 376 478 334 C642 288 764 362 924 316 C1124 258 1282 352 1576 278 L1576 520 L24 520 Z" fill="#081a20" opacity="0.68"/>
+    <path d="M24 440 C182 390 316 452 472 402 C652 345 800 430 968 374 C1162 310 1348 408 1576 344 L1576 552 L24 552 Z" fill="#0b2025"/>
+    <g fill="#132c31" opacity="0.95">
+      <circle cx="95" cy="430" r="18"/><circle cx="137" cy="418" r="22"/><circle cx="184" cy="433" r="17"/>
+      <circle cx="1240" cy="407" r="20"/><circle cx="1288" cy="424" r="17"/><circle cx="1340" cy="400" r="24"/>
+      <circle cx="1430" cy="433" r="19"/><circle cx="1490" cy="414" r="25"/><circle cx="1536" cy="437" r="16"/>
+    </g>
+
+    <!-- HUD backdrop -->
+    <path d="M24 24 H1576 V151 L1304 134 H296 L24 151 Z" fill="#071018" fill-opacity="0.91"/>
+    <path d="M24 151 L296 134 H1304 L1576 151" fill="none" stroke="#4f727a" stroke-width="2" opacity="0.8"/>
+
+    <!-- Fighter A HUD -->
+    <g filter="url(#shadow)">
+      <path d="M55 48 H612 L662 98 L612 129 H55 Z" fill="#101c26" fill-opacity="0.96" stroke="#29d7e5" stroke-width="2"/>
+      <circle cx="102" cy="88" r="31" fill="#14343a" stroke="#29d7e5" stroke-width="3"/>
+      <path d="M83 102 C78 90 81 76 91 69 L89 60 L99 66 C105 63 112 63 118 66 L128 60 L126 71 C136 80 137 94 128 104 C117 113 94 113 83 102 Z" fill="#29d7e5" opacity="0.86"/>
+      <circle cx="99" cy="84" r="2.5" fill="#071018"/><circle cx="117" cy="84" r="2.5" fill="#071018"/>
+      <text x="148" y="72" fill="#f4f7fa" font-size="25" font-weight="800" letter-spacing="1">BEAR</text>
+      <text x="148" y="98" fill="#9fb5bf" font-size="14" font-weight="600">FIGHTER A · DECISION READY</text>
+      <rect x="148" y="108" width="450" height="13" rx="6.5" fill="#29333a"/>
+      <rect x="148" y="108" width="450" height="13" rx="6.5" fill="url(#hpA)"/>
+      <text x="610" y="121" fill="#f4f7fa" font-size="13" font-weight="800" text-anchor="end">100 / 100 HP</text>
+    </g>
+
+    <!-- Fighter B HUD -->
+    <g filter="url(#shadow)">
+      <path d="M1545 48 H988 L938 98 L988 129 H1545 Z" fill="#101c26" fill-opacity="0.96" stroke="#ff8b3d" stroke-width="2"/>
+      <circle cx="1498" cy="88" r="31" fill="#3c281d" stroke="#ff8b3d" stroke-width="3"/>
+      <path d="M1484 106 C1477 94 1479 81 1487 73 L1489 54 L1497 70 L1505 51 L1511 73 C1520 81 1522 95 1514 106 C1506 113 1492 113 1484 106 Z" fill="#ff8b3d" opacity="0.9"/>
+      <circle cx="1493" cy="85" r="2.5" fill="#071018"/><circle cx="1507" cy="85" r="2.5" fill="#071018"/>
+      <text x="1452" y="72" fill="#f4f7fa" font-size="25" font-weight="800" letter-spacing="1" text-anchor="end">KANGAROO</text>
+      <text x="1452" y="98" fill="#9fb5bf" font-size="14" font-weight="600" text-anchor="end">FIGHTER B · STAGGER 75</text>
+      <rect x="1002" y="108" width="450" height="13" rx="6.5" fill="#29333a"/>
+      <rect x="1227" y="108" width="225" height="13" rx="6.5" fill="url(#hpB)"/>
+      <text x="990" y="121" fill="#f4f7fa" font-size="13" font-weight="800">50 / 100 HP</text>
+    </g>
+
+    <!-- Broadcast center -->
+    <g filter="url(#shadow)">
+      <path d="M688 43 H912 L938 74 L912 126 H688 L662 74 Z" fill="#0b151d" stroke="#67838a" stroke-width="2"/>
+      <text x="800" y="69" fill="#a9b7c3" font-size="12" font-weight="700" letter-spacing="2" text-anchor="middle">REPLAY</text>
+      <text x="800" y="100" fill="#f4f7fa" font-size="25" font-weight="900" text-anchor="middle">TICK 1</text>
+      <text x="800" y="119" fill="#29d7e5" font-size="12" font-weight="800" letter-spacing="1" text-anchor="middle">SEQUENCE 11 / 17</text>
+    </g>
+
+    <!-- Explicit walls -->
+    <g>
+      <rect x="54" y="210" width="26" height="535" rx="6" fill="#293b44" stroke="#7694a0" stroke-width="3"/>
+      <path d="M62 230 V725 M72 230 V725" stroke="#9cb4bd" stroke-opacity="0.35" stroke-width="3"/>
+      <rect x="1520" y="210" width="26" height="535" rx="6" fill="#55372d" stroke="#ff8b3d" stroke-width="4" filter="url(#glowB)"/>
+      <path d="M1528 230 V725 M1538 230 V725" stroke="#ffd166" stroke-opacity="0.54" stroke-width="3"/>
+    </g>
+
+    <!-- Arena floor -->
+    <path d="M80 582 L1520 582 L1576 790 L24 790 Z" fill="url(#floor)"/>
+    <path d="M80 582 H1520" stroke="#66828a" stroke-width="3"/>
+    <path d="M160 666 H1440 M92 736 H1508" stroke="#557078" stroke-opacity="0.32" stroke-width="2"/>
+    <path d="M800 582 V790 M510 582 L430 790 M1090 582 L1170 790" stroke="#557078" stroke-opacity="0.25" stroke-width="2"/>
+    <ellipse cx="800" cy="776" rx="660" ry="26" fill="#02070a" opacity="0.46"/>
+
+    <!-- Bear placeholder silhouette -->
+    <g transform="translate(405 335)" filter="url(#shadow)">
+      <ellipse cx="8" cy="354" rx="124" ry="23" fill="#02070a" opacity="0.55"/>
+      <path d="M-60 94 C-88 122 -98 182 -78 235 L-104 314 L-51 318 L-20 256 L32 259 L58 318 L112 318 L88 232 C106 174 86 117 54 91 C26 69 -35 70 -60 94 Z" fill="#17262b" stroke="#29d7e5" stroke-width="7"/>
+      <circle cx="-38" cy="65" r="25" fill="#17262b" stroke="#29d7e5" stroke-width="6"/>
+      <circle cx="44" cy="65" r="25" fill="#17262b" stroke="#29d7e5" stroke-width="6"/>
+      <ellipse cx="2" cy="91" rx="69" ry="63" fill="#1d3035" stroke="#29d7e5" stroke-width="7"/>
+      <ellipse cx="35" cy="103" rx="30" ry="22" fill="#29464b"/>
+      <circle cx="36" cy="96" r="8" fill="#29d7e5"/>
+      <path d="M52 151 C102 160 132 193 145 230" fill="none" stroke="#29d7e5" stroke-width="25" stroke-linecap="round"/>
+      <path d="M-61 157 C-116 183 -133 214 -143 250" fill="none" stroke="#17262b" stroke-width="34" stroke-linecap="round"/>
+      <path d="M-104 325 H-30 M54 325 H124" stroke="#29d7e5" stroke-width="9" stroke-linecap="round"/>
+      <path d="M130 225 L159 234 L132 246" fill="#29d7e5"/>
+      <rect x="-101" y="344" width="205" height="32" rx="16" fill="#071018" stroke="#29d7e5" stroke-width="2"/>
+      <text x="2" y="366" fill="#f4f7fa" font-size="15" font-weight="800" text-anchor="middle">BEAR · 4000  ▶</text>
+    </g>
+
+    <!-- Kangaroo placeholder silhouette at right wall -->
+    <g transform="translate(1295 329)" filter="url(#shadow)">
+      <ellipse cx="32" cy="360" rx="118" ry="22" fill="#02070a" opacity="0.55"/>
+      <path d="M18 107 C-2 150 5 201 38 239 L-2 329 L47 329 L76 264 L111 331 L159 331 L112 215 C126 163 105 118 73 96 Z" fill="#2b2420" stroke="#ff8b3d" stroke-width="7"/>
+      <path d="M39 62 L34 0 L58 53 M71 55 L88 -4 L91 70" fill="#2b2420" stroke="#ff8b3d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <ellipse cx="66" cy="86" rx="48" ry="51" fill="#352a24" stroke="#ff8b3d" stroke-width="7"/>
+      <path d="M25 93 L-18 106 L28 117" fill="#352a24" stroke="#ff8b3d" stroke-width="7" stroke-linejoin="round"/>
+      <circle cx="48" cy="77" r="6" fill="#ff8b3d"/>
+      <path d="M20 158 C-25 176 -47 205 -60 238" fill="none" stroke="#ff8b3d" stroke-width="21" stroke-linecap="round"/>
+      <path d="M104 199 C187 224 217 269 238 317" fill="none" stroke="#2b2420" stroke-width="29" stroke-linecap="round"/>
+      <path d="M-18 336 H55 M92 336 H174" stroke="#ff8b3d" stroke-width="9" stroke-linecap="round"/>
+      <path d="M-46 231 L-75 241 L-47 251" fill="#ff8b3d"/>
+      <rect x="-60" y="349" width="210" height="32" rx="16" fill="#071018" stroke="#ff8b3d" stroke-width="2"/>
+      <text x="45" y="371" fill="#f4f7fa" font-size="15" font-weight="800" text-anchor="middle">◀  9570 · KANGAROO</text>
+    </g>
+
+    <!-- Recorded wall impact cue -->
+    <g transform="translate(1455 420)" filter="url(#glowB)">
+      <circle r="112" fill="url(#impact)"/>
+      <path d="M-74 -24 L-20 -10 L-53 25 L-5 18 L-27 67 L25 33 L42 80 L62 28 L104 56 L79 7 L119 -9 L69 -24 L92 -66 L43 -45 L27 -94 L5 -48 L-41 -79 L-27 -37 Z" fill="#ffd166" opacity="0.83"/>
+    </g>
+    <g filter="url(#shadow)">
+      <text x="1118" y="294" fill="#ffd166" font-size="19" font-weight="900" letter-spacing="4">WALL IMPACT</text>
+      <text x="1118" y="347" fill="#f4f7fa" font-size="54" font-weight="900">−93</text>
+      <text x="1120" y="373" fill="#ffb078" font-size="15" font-weight="700">BLOCKED 930 · STAGGER +75</text>
+    </g>
+
+    <!-- Bottom broadcast controls -->
+    <g filter="url(#shadow)">
+      <path d="M24 790 H1576 V876 H24 Z" fill="#071018" fill-opacity="0.94"/>
+      <path d="M24 790 H1576" stroke="#4d7078" stroke-width="2"/>
+      <rect x="52" y="811" width="330" height="43" rx="11" fill="#101c26" stroke="#3b5962"/>
+      <text x="72" y="829" fill="#91a6af" font-size="10" font-weight="700" letter-spacing="1.4">REPLAY FIXTURE</text>
+      <text x="72" y="847" fill="#f4f7fa" font-size="14" font-weight="700">resolution-wall-grab-l1</text>
+      <path d="M350 829 l9 9 l9 -9" fill="none" stroke="#a9b7c3" stroke-width="2"/>
+
+      <rect x="574" y="805" width="452" height="57" rx="28.5" fill="#101c26" stroke="#5b7880"/>
+      <circle cx="800" cy="833.5" r="23" fill="#29d7e5"/>
+      <path d="M793 821 V846 M807 821 V846" stroke="#071018" stroke-width="5" stroke-linecap="round"/>
+      <path d="M620 834 l14 -11 v22 z" fill="#a9b7c3" opacity="0.9"/>
+      <text x="650" y="839" fill="#f4f7fa" font-size="14" font-weight="700">RESTART</text>
+      <text x="880" y="839" fill="#a9b7c3" font-size="13" font-weight="700">SPEED</text>
+      <rect x="937" y="817" width="70" height="33" rx="16.5" fill="#243640"/>
+      <text x="972" y="839" fill="#f4f7fa" font-size="14" font-weight="800" text-anchor="middle">1.0×</text>
+
+      <rect x="1240" y="811" width="166" height="43" rx="11" fill="#101c26" stroke="#3b5962"/>
+      <text x="1323" y="838" fill="#c7d3d9" font-size="14" font-weight="800" text-anchor="middle">DEBUG / TELEMETRY</text>
+      <circle cx="1434" cy="832" r="5" fill="#66e38f"/>
+      <text x="1450" y="837" fill="#9fb5bf" font-size="12" font-weight="700">READ ONLY</text>
+    </g>
+
+    <!-- Reference metadata -->
+    <text x="800" y="891" fill="#65818a" font-size="9" font-weight="700" letter-spacing="2" text-anchor="middle">WP-UI-01 · GAME-FIRST DESKTOP REFERENCE · 16:9 · APPROVED 2026-09-08</text>
+  </g>
+</svg>

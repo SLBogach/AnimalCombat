@@ -1,0 +1,780 @@
+fileFormatVersion: 2
+guid: be7c514960f50b24b8e30f6da65f1698
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3482078965235904679
+    second: bear-rig-atlas-v0.1_0
+  - first:
+      213: 4004701226207282384
+    second: bear-rig-atlas-v0.1_1
+  - first:
+      213: 2071501368885155004
+    second: bear-rig-atlas-v0.1_2
+  - first:
+      213: -3451594220893824308
+    second: bear-rig-atlas-v0.1_3
+  - first:
+      213: 1104315778336865434
+    second: bear-rig-atlas-v0.1_4
+  - first:
+      213: -5532584722293687868
+    second: bear-rig-atlas-v0.1_5
+  - first:
+      213: -5200636632317367474
+    second: bear-rig-atlas-v0.1_6
+  - first:
+      213: 4809279685765658567
+    second: bear-rig-atlas-v0.1_7
+  - first:
+      213: -7343063549057393225
+    second: bear-rig-atlas-v0.1_8
+  - first:
+      213: 6048686893063832416
+    second: bear-rig-atlas-v0.1_9
+  - first:
+      213: 1063857583984279791
+    second: bear-rig-atlas-v0.1_10
+  - first:
+      213: 8893691206940146974
+    second: bear-rig-atlas-v0.1_11
+  - first:
+      213: -4327858795782913466
+    second: bear-rig-atlas-v0.1_12
+  - first:
+      213: -2463108536399455431
+    second: bear-rig-atlas-v0.1_13
+  - first:
+      213: 171717945645193003
+    second: bear-rig-atlas-v0.1_14
+  - first:
+      213: -574555498982071785
+    second: bear-rig-atlas-v0.1_15
+  - first:
+      213: 7338446270608077889
+    second: bear-rig-atlas-v0.1_16
+  - first:
+      213: -3223407540159126929
+    second: bear-rig-atlas-v0.1_17
+  - first:
+      213: 4911755864542641834
+    second: bear-rig-atlas-v0.1_18
+  - first:
+      213: 375004747859593641
+    second: bear-rig-atlas-v0.1_19
+  - first:
+      213: -2001790490408757302
+    second: bear-rig-atlas-v0.1_20
+  - first:
+      213: -4450312023628039313
+    second: bear-rig-atlas-v0.1_21
+  - first:
+      213: -7594507583874952495
+    second: bear-rig-atlas-v0.1_22
+  - first:
+      213: 2498677134129862638
+    second: bear-rig-atlas-v0.1_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 167
+        width: 659
+        height: 849
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a0febabe54d25030800000000000000
+      internalID: 3482078965235904679
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_1
+      rect:
+        serializedVersion: 2
+        x: 660
+        y: 935
+        width: 139
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d408a32c8e839730800000000000000
+      internalID: 4004701226207282384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_2
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 915
+        width: 171
+        height: 91
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb4922c05837fbc10800000000000000
+      internalID: 2071501368885155004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_3
+      rect:
+        serializedVersion: 2
+        x: 1116
+        y: 479
+        width: 409
+        height: 528
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cca15dae7597910d0800000000000000
+      internalID: -3451594220893824308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_4
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 881
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9cb0a77951535f00800000000000000
+      internalID: 1104315778336865434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_5
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 352
+        width: 458
+        height: 531
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c97ee9028f4833b0800000000000000
+      internalID: -5532584722293687868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_6
+      rect:
+        serializedVersion: 2
+        x: 574
+        y: 513
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4be6dc7980a3d7b0800000000000000
+      internalID: -5200636632317367474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_7
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 16
+        width: 419
+        height: 454
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c7709fb46efdb240800000000000000
+      internalID: 4809279685765658567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_8
+      rect:
+        serializedVersion: 2
+        x: 652
+        y: 58
+        width: 282
+        height: 410
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bd905b7b92381a90800000000000000
+      internalID: -7343063549057393225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_9
+      rect:
+        serializedVersion: 2
+        x: 1028
+        y: 0
+        width: 403
+        height: 471
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06381a29ea041f350800000000000000
+      internalID: 6048686893063832416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_10
+      rect:
+        serializedVersion: 2
+        x: 1056
+        y: 431
+        width: 13
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe00df806d493ce00800000000000000
+      internalID: 1063857583984279791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_11
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 375
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1dbeab280dbc6b70800000000000000
+      internalID: 8893691206940146974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_12
+      rect:
+        serializedVersion: 2
+        x: 968
+        y: 356
+        width: 39
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6424f4fea5b50f3c0800000000000000
+      internalID: -4327858795782913466
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_13
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 287
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93b9da416d741ddd0800000000000000
+      internalID: -2463108536399455431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_14
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 215
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b27ddbfcf80126200800000000000000
+      internalID: 171717945645193003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_15
+      rect:
+        serializedVersion: 2
+        x: 990
+        y: 167
+        width: 63
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7122d6b51d4c608f0800000000000000
+      internalID: -574555498982071785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_16
+      rect:
+        serializedVersion: 2
+        x: 1064
+        y: 265
+        width: 25
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14472ea900667d560800000000000000
+      internalID: 7338446270608077889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_17
+      rect:
+        serializedVersion: 2
+        x: 1440
+        y: 219
+        width: 77
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f62ef7aabe72443d0800000000000000
+      internalID: -3223407540159126929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_18
+      rect:
+        serializedVersion: 2
+        x: 1078
+        y: 195
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aae71896fef0a2440800000000000000
+      internalID: 4911755864542641834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_19
+      rect:
+        serializedVersion: 2
+        x: 1452
+        y: 165
+        width: 17
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a98141d4d8443500800000000000000
+      internalID: 375004747859593641
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_20
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 95
+        width: 21
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac75e68a7263834e0800000000000000
+      internalID: -2001790490408757302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_21
+      rect:
+        serializedVersion: 2
+        x: 1075
+        y: 106
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6b30041bc05d32c0800000000000000
+      internalID: -4450312023628039313
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_22
+      rect:
+        serializedVersion: 2
+        x: 575
+        y: 69
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d29f130793ea9690800000000000000
+      internalID: -7594507583874952495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bear-rig-atlas-v0.1_23
+      rect:
+        serializedVersion: 2
+        x: 1056
+        y: 69
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee7933c6d951da220800000000000000
+      internalID: 2498677134129862638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      bear-rig-atlas-v0.1_0: 3482078965235904679
+      bear-rig-atlas-v0.1_1: 4004701226207282384
+      bear-rig-atlas-v0.1_10: 1063857583984279791
+      bear-rig-atlas-v0.1_11: 8893691206940146974
+      bear-rig-atlas-v0.1_12: -4327858795782913466
+      bear-rig-atlas-v0.1_13: -2463108536399455431
+      bear-rig-atlas-v0.1_14: 171717945645193003
+      bear-rig-atlas-v0.1_15: -574555498982071785
+      bear-rig-atlas-v0.1_16: 7338446270608077889
+      bear-rig-atlas-v0.1_17: -3223407540159126929
+      bear-rig-atlas-v0.1_18: 4911755864542641834
+      bear-rig-atlas-v0.1_19: 375004747859593641
+      bear-rig-atlas-v0.1_2: 2071501368885155004
+      bear-rig-atlas-v0.1_20: -2001790490408757302
+      bear-rig-atlas-v0.1_21: -4450312023628039313
+      bear-rig-atlas-v0.1_22: -7594507583874952495
+      bear-rig-atlas-v0.1_23: 2498677134129862638
+      bear-rig-atlas-v0.1_3: -3451594220893824308
+      bear-rig-atlas-v0.1_4: 1104315778336865434
+      bear-rig-atlas-v0.1_5: -5532584722293687868
+      bear-rig-atlas-v0.1_6: -5200636632317367474
+      bear-rig-atlas-v0.1_7: 4809279685765658567
+      bear-rig-atlas-v0.1_8: -7343063549057393225
+      bear-rig-atlas-v0.1_9: 6048686893063832416
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

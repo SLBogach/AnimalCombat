@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+  <title id="title">Animal Combat — proposed illustrated mobile landscape screen v0.2</title>
+  <desc id="desc">20:9 landscape design reference with safe-area spacing, red HP bars, two unequipped fighters, a compact replay menu, large Pause control, speed menu, and no permanent telemetry.</desc>
+  <defs>
+    <linearGradient id="topShade" x2="0" y2="1">
+      <stop stop-color="#2d221a" stop-opacity=".66"/>
+      <stop offset="1" stop-color="#2d221a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="healthRed" x2="0" y2="1">
+      <stop stop-color="#ffad52"/>
+      <stop offset=".2" stop-color="#ff5439"/>
+      <stop offset=".8" stop-color="#e52c25"/>
+      <stop offset="1" stop-color="#ae1b1a"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dy="4"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".5"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <image href="arena-savanna-v0.2.png" width="1600" height="720" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1600" height="225" fill="url(#topShade)"/>
+  <ellipse cx="475" cy="571" rx="167" ry="19" fill="#654022" opacity=".30"/>
+  <ellipse cx="1103" cy="574" rx="158" ry="18" fill="#654022" opacity=".29"/>
+  <image href="../../../UnityClient/AnimalCombat/Assets/Resources/ReplayViewer/Characters/bear-base.png"
+         x="293" y="214" width="370" height="370" preserveAspectRatio="xMidYMid meet" filter="url(#shadow)"/>
+  <image href="../../../UnityClient/AnimalCombat/Assets/Resources/ReplayViewer/Characters/kangaroo-base.png"
+         x="946" y="212" width="370" height="370" preserveAspectRatio="xMidYMid meet"
+         transform="translate(2262 0) scale(-1 1)" filter="url(#shadow)"/>
+
+  <!-- All essential HUD and controls remain inside nominal left/right safe-area insets. -->
+  <path d="M67 28 L686 28 L669 95 L79 95 Z" fill="#422421" stroke="#271817" stroke-width="10" filter="url(#shadow)"/>
+  <path d="M67 28 L686 28 L669 95 L79 95 Z" fill="#f8dfb0" stroke="#fff1cc" stroke-width="5"/>
+  <path d="M82 39 L672 39 L657 84 L90 84 Z" fill="url(#healthRed)"/>
+  <path d="M914 28 L1533 28 L1521 95 L931 95 Z" fill="#422421" stroke="#271817" stroke-width="10" filter="url(#shadow)"/>
+  <path d="M914 28 L1533 28 L1521 95 L931 95 Z" fill="#f8dfb0" stroke="#fff1cc" stroke-width="5"/>
+  <path d="M928 39 L1518 39 L1509 84 L942 84 Z" fill="url(#healthRed)"/>
+  <g font-family="Arial, sans-serif" font-weight="900" font-size="30" fill="#fff7df" paint-order="stroke" stroke="#59251d" stroke-width="3">
+    <text x="104" y="72">100 / 100</text>
+    <text x="1496" y="72" text-anchor="end">100 / 100</text>
+  </g>
+  <g font-family="Arial, sans-serif" font-weight="900" font-size="23" paint-order="stroke" stroke="#2b1c1a" stroke-width="4" fill="#fff4d4">
+    <text x="90" y="130">BEAR</text>
+    <text x="1510" y="130" text-anchor="end">KANGAROO</text>
+  </g>
+  <rect x="72" y="106" width="8" height="25" rx="4" fill="#29d7e5" stroke="#271817" stroke-width="2"/>
+  <rect x="1520" y="106" width="8" height="25" rx="4" fill="#ff8b3d" stroke="#271817" stroke-width="2"/>
+  <g filter="url(#shadow)">
+    <path d="M799 14 L814 37 L838 26 L831 55 L858 69 L829 78 L828 106 L803 92 L778 107 L778 78 L752 68 L779 55 L773 27 L798 39 Z"
+          fill="#ffb932" stroke="#5f2618" stroke-width="7"/>
+    <text x="803" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-style="italic" font-weight="900"
+          font-size="42" fill="#ffec7d" stroke="#96341d" stroke-width="4" paint-order="stroke">VS</text>
+  </g>
+  <rect x="690" y="110" width="220" height="34" rx="17" fill="#2a211d" fill-opacity=".75" stroke="#e9c287" stroke-width="2"/>
+  <text x="800" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="17" fill="#fff3d9">TICK 0  ·  SEQ 5 / 10</text>
+  <g filter="url(#shadow)">
+    <path d="M692 178 L909 178 L920 197 L910 231 L690 231 L681 198 Z" fill="#3b271f" stroke="#f4d789" stroke-width="4"/>
+    <text x="800" y="214" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="32" fill="#fff2c2">PREPARE!</text>
+  </g>
+  <path d="M603 461 Q635 417 658 408" fill="none" stroke="#fff0a0" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+  <g font-family="Arial, sans-serif" font-size="17" font-weight="800" fill="#fff8e4">
+    <rect x="375" y="576" width="178" height="32" rx="16" fill="#34251e" fill-opacity=".84" stroke="#fff1ce" stroke-opacity=".7"/>
+    <text x="464" y="598" text-anchor="middle">4000  →</text>
+    <rect x="1040" y="576" width="178" height="32" rx="16" fill="#34251e" fill-opacity=".84" stroke="#fff1ce" stroke-opacity=".7"/>
+    <text x="1129" y="598" text-anchor="middle">←  5200</text>
+  </g>
+
+  <rect x="56" y="620" width="1488" height="80" rx="24" fill="#241d1b" fill-opacity=".94" stroke="#ecc993" stroke-width="3"/>
+  <g font-family="Arial, sans-serif" font-weight="800" fill="#fff4d7">
+    <rect x="77" y="631" width="217" height="58" rx="15" fill="#624232" stroke="#d9b578" stroke-width="2"/>
+    <text x="185" y="668" text-anchor="middle" font-size="22">REPLAY  ▾</text>
+    <rect x="394" y="631" width="177" height="58" rx="15" fill="#493225" stroke="#d9b578" stroke-width="2"/>
+    <text x="482" y="668" text-anchor="middle" font-size="21">↺  RESTART</text>
+    <rect x="617" y="626" width="278" height="68" rx="18" fill="#e6552d" stroke="#ffe1a0" stroke-width="3"/>
+    <text x="756" y="669" text-anchor="middle" font-size="30">Ⅱ  PAUSE</text>
+    <rect x="942" y="631" width="174" height="58" rx="15" fill="#493225" stroke="#d9b578" stroke-width="2"/>
+    <text x="1029" y="668" text-anchor="middle" font-size="23">1.00×  ▾</text>
+    <rect x="1220" y="631" width="302" height="58" rx="15" fill="#493225" stroke="#d9b578" stroke-width="2"/>
+    <text x="1371" y="668" text-anchor="middle" font-size="21">☰  DETAILS</text>
+  </g>
+</svg>

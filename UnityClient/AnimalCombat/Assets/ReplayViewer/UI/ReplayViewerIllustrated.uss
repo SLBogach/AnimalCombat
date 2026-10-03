@@ -1,0 +1,400 @@
+/* Illustrated Fight Screen v0.2. This layer replaces the dark v0.1 art treatment
+   while retaining the replay controller's existing UXML bindings and effects. */
+
+.app {
+    padding: 0;
+    background-color: transparent;
+    color: rgb(255, 245, 218);
+}
+
+.game-frame {
+    background-color: transparent;
+    border-width: 0;
+    border-radius: 0;
+}
+
+/* The arena and character sprites render behind the transparent UI panel. */
+
+.broadcast-hud {
+    height: 132px;
+    padding: 20px 35px 0 35px;
+    align-items: flex-start;
+    background-color: transparent;
+    border-width: 0;
+}
+
+.fighter-hud {
+    height: 110px;
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background-color: transparent;
+    border-width: 0;
+}
+
+.fighter-hud-copy {
+    width: 100%;
+    flex-grow: 0;
+}
+
+.fighter-b-hud { justify-content: flex-start; }
+
+.health-track {
+    position: relative;
+    height: 58px;
+    margin-top: 0;
+    overflow: hidden;
+    background-color: rgb(80, 36, 29);
+    border-width: 5px;
+    border-color: rgb(255, 235, 188);
+    border-radius: 12px;
+}
+
+.health-fill {
+    position: relative;
+    height: 100%;
+    border-radius: 0;
+    background-color: rgb(235, 62, 43);
+}
+
+.health-a, .health-b { background-color: rgb(235, 62, 43); }
+.health-b { align-self: flex-end; }
+
+.health-gloss {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 13px;
+    background-color: rgba(255, 195, 111, 0.55);
+}
+
+.health-depth {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 7px;
+    background-color: rgba(117, 23, 25, 0.47);
+}
+
+.health-label {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 0;
+    bottom: 0;
+    color: rgb(255, 248, 225);
+    font-size: 25px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+}
+
+.fighter-identity {
+    height: 34px;
+    margin-top: 4px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.fighter-identity-b { justify-content: flex-end; }
+
+.identity-accent {
+    width: 9px;
+    height: 27px;
+    flex-shrink: 0;
+    border-width: 2px;
+    border-color: rgb(52, 31, 24);
+    border-radius: 4px;
+}
+
+.identity-accent-a {
+    margin-right: 8px;
+    background-color: rgb(41, 215, 229);
+}
+
+.identity-accent-b {
+    margin-left: 8px;
+    background-color: rgb(255, 139, 61);
+}
+
+.fighter-name {
+    color: rgb(255, 247, 223);
+    font-size: 26px;
+    letter-spacing: 0.3px;
+    -unity-font-style: bold;
+}
+
+.fighter-status-line {
+    height: 17px;
+    margin-top: 0;
+}
+
+.fighter-status-line-b { justify-content: flex-end; }
+.state-badge {
+    color: rgb(255, 237, 201);
+    font-size: 10px;
+    letter-spacing: 0.7px;
+}
+
+.replay-scoreboard {
+    position: relative;
+    width: 200px;
+    height: 112px;
+    margin-left: 15px;
+    margin-right: 15px;
+    justify-content: flex-start;
+    background-color: transparent;
+    border-width: 0;
+}
+
+.vs-burst {
+    position: absolute;
+    width: 67px;
+    height: 67px;
+    left: 50%;
+    top: -3px;
+    margin-left: -34px;
+    rotate: 24deg;
+    background-color: rgb(255, 181, 54);
+    border-width: 5px;
+    border-color: rgb(93, 42, 27);
+    border-radius: 12px;
+}
+
+.vs-label {
+    color: rgb(91, 39, 26);
+    font-size: 52px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-top: -10px;
+    width: 90px;
+    height: 70px;
+}
+
+.tick-label {
+    color: rgb(255, 245, 213);
+    background-color: rgba(51, 37, 29, 0.84);
+    border-radius: 10px;
+    padding: 2px 11px;
+    font-size: 14px;
+}
+
+.sequence-label {
+    color: rgb(255, 235, 187);
+    font-size: 12px;
+    letter-spacing: 0;
+    margin-top: 2px;
+}
+
+.playback-state-label {
+    color: rgb(255, 235, 187);
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+.status-label { display: none; }
+.status-label.status-error {
+    display: flex;
+    top: 134px;
+    left: 24px;
+    color: rgb(255, 246, 220);
+    background-color: rgba(146, 36, 29, 0.96);
+    border-color: rgb(255, 202, 118);
+    font-size: 13px;
+}
+
+.arena-stage {
+    min-height: 330px;
+    border-width: 0;
+    overflow: hidden;
+}
+
+.wall-flash {
+    background-color: rgba(255, 204, 78, 0.56);
+    border-radius: 13px;
+}
+
+.fighter-presenter {
+    width: 240px;
+    height: 290px;
+    margin-left: -120px;
+    bottom: 44px;
+    scale: 1.16 1.16;
+}
+
+.fighter-nameplate {
+    min-width: 145px;
+    height: 31px;
+    background-color: rgba(54, 35, 27, 0.88);
+    border-color: rgb(255, 233, 186);
+    border-width: 2px;
+    border-radius: 15px;
+}
+
+.fighter-a-nameplate { border-color: rgb(41, 215, 229); }
+.fighter-b-nameplate { border-color: rgb(255, 139, 61); }
+.marker-name, .facing-arrow, .fighter-position { color: rgb(255, 245, 218); }
+.marker-name { font-size: 12px; }
+.fighter-position { font-size: 11px; }
+
+.event-cue-layer {
+    top: 13%;
+    min-height: 104px;
+}
+
+.event-title {
+    color: rgb(255, 245, 215);
+    background-color: rgba(59, 39, 30, 0.92);
+    border-width: 3px;
+    border-color: rgb(250, 217, 143);
+    border-radius: 12px;
+    padding: 7px 20px;
+    font-size: 34px;
+    letter-spacing: 1px;
+}
+
+.event-details { display: none; }
+.event-value {
+    color: rgb(255, 244, 206);
+    font-size: 48px;
+}
+
+.cue-prepared .event-title,
+.cue-wall .event-title,
+.cue-unknown .event-title { color: rgb(255, 245, 215); }
+.cue-hit .event-title,
+.cue-damage .event-title,
+.cue-defeat .event-title { color: rgb(255, 224, 147); }
+.cue-intent .event-title,
+.cue-move .event-title,
+.cue-grab .event-title,
+.cue-miss .event-title { color: rgb(255, 245, 215); }
+
+.telegraph-ring { border-color: rgb(255, 219, 113); }
+.impact-burst { border-color: rgb(255, 215, 123); }
+.grab-link { background-color: rgb(255, 215, 123); }
+.grab-link-label {
+    color: rgb(255, 240, 203);
+    background-color: rgba(53, 34, 26, 0.93);
+}
+
+.transport-panel {
+    height: 86px;
+    padding: 10px 24px;
+    background-color: rgba(44, 30, 24, 0.96);
+    border-top-width: 3px;
+    border-top-color: rgb(243, 206, 144);
+}
+
+.replay-picker {
+    width: 230px;
+    height: 54px;
+    background-color: rgb(89, 59, 43);
+    border-width: 2px;
+    border-color: rgb(219, 181, 120);
+    border-radius: 14px;
+}
+
+.replay-picker .unity-base-field__input { background-color: transparent; }
+.replay-picker .unity-base-popup-field__text {
+    color: rgb(255, 241, 209);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.transport-button {
+    height: 54px;
+    min-width: 125px;
+    color: rgb(255, 242, 212);
+    background-color: rgb(82, 54, 39);
+    border-width: 2px;
+    border-color: rgb(220, 184, 125);
+    border-radius: 14px;
+    font-size: 15px;
+}
+
+.transport-button:hover { border-color: rgb(255, 229, 160); }
+.primary-button {
+    width: 132px;
+    min-width: 132px;
+    height: 62px;
+    color: rgb(255, 249, 221);
+    background-color: rgb(230, 82, 44);
+    border-width: 3px;
+    border-color: rgb(255, 225, 160);
+    border-radius: 17px;
+    font-size: 22px;
+}
+
+.speed-control {
+    width: 230px;
+    height: 54px;
+    margin-left: 12px;
+    background-color: rgb(82, 54, 39);
+    border-width: 2px;
+    border-color: rgb(220, 184, 125);
+    border-radius: 14px;
+}
+
+.speed-control .micro-label,
+.speed-value { color: rgb(255, 242, 212); }
+.speed-value { width: 51px; font-size: 14px; }
+.debug-button { min-width: 150px; }
+
+.result-overlay { background-color: rgba(36, 23, 19, 0.70); }
+.result-card {
+    background-color: rgb(74, 46, 34);
+    border-width: 5px;
+    border-color: rgb(255, 219, 151);
+    border-radius: 23px;
+}
+.result-kicker { color: rgb(255, 210, 105); }
+.result-label { color: rgb(255, 244, 213); }
+.result-details { color: rgb(244, 212, 164); }
+.result-button {
+    color: rgb(75, 39, 27);
+    background-color: rgb(255, 205, 98);
+    border-color: rgb(255, 230, 164);
+    border-width: 2px;
+}
+.result-button-secondary {
+    color: rgb(255, 244, 213);
+    background-color: rgb(103, 69, 48);
+}
+
+@media (max-width: 1250px) {
+    .broadcast-hud { padding-left: 20px; padding-right: 20px; }
+    .replay-scoreboard { width: 150px; margin-left: 9px; margin-right: 9px; }
+    .health-label { font-size: 20px; }
+    .fighter-name { font-size: 22px; }
+    .replay-picker { width: 195px; }
+    .transport-button { min-width: 105px; font-size: 13px; }
+    .primary-button { width: 112px; min-width: 112px; }
+    .speed-control { width: 190px; }
+    .debug-button { min-width: 110px; }
+}
+
+@media (max-height: 720px) {
+    .broadcast-hud { height: 110px; padding-top: 10px; }
+    .fighter-hud { height: 100px; }
+    .health-track { height: 47px; }
+    .health-label { font-size: 20px; }
+    .fighter-name { font-size: 21px; }
+    .fighter-identity { height: 27px; margin-top: 2px; }
+    .identity-accent { height: 23px; }
+    .replay-scoreboard { height: 100px; }
+    .vs-label { font-size: 43px; margin-top: -8px; }
+    .vs-burst { width: 58px; height: 58px; margin-left: -29px; }
+    .tick-label { font-size: 12px; }
+    .sequence-label { font-size: 10px; }
+    .playback-state-label { font-size: 9px; }
+    .arena-stage { min-height: 265px; }
+    .fighter-presenter { scale: 0.94 0.94; bottom: 20px; }
+    .event-cue-layer { top: 10%; scale: 0.85 0.85; }
+    .transport-panel { height: 70px; padding-top: 5px; padding-bottom: 5px; }
+    .replay-picker, .transport-button, .speed-control { height: 54px; }
+    .primary-button { height: 60px; }
+    .status-label.status-error { top: 112px; }
+}

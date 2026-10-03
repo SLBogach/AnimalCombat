@@ -1,0 +1,15 @@
+{
+  "name": "AnimalCombat.ReplayViewer.Tests.EditMode",
+  "rootNamespace": "AnimalCombat.ReplayViewer.Tests.EditMode",
+  "references": [
+    "AnimalCombat.ReplayViewer.Contracts",
+    "AnimalCombat.ReplayViewer.Runtime",
+    "AnimalCombat.ReplayViewer.Presentation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

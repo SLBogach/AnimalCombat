@@ -202,11 +202,37 @@ GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-l
 
 ## Следующее действие
 
-Зафиксировать документальное закрытие WP-09, объединить ветку с `master` и переходить к подготовке WP-10 Effects: создать brief, exact blocking matrix и закрыть DATA/stat-clamp решения до начала production-кода.
+На текущей feature-ветке продолжить WP-UI-01 после реализованного game-first presentation slice: расширить PlayMode до полной three-fixture/negative acceptance matrix, добавить внешний read-only path UX и выполнить Windows Standalone build/smoke. Основной Combat roadmap после WP-09 остаётся WP-10 Effects и не переносится в Unity Viewer.
+
+## WP-UI-01 Unity Replay Viewer
+
+**WP-UI-01 — `IN PROGRESS`; first vertical slice implemented `2026-09-08`.**
+
+Создан read-only UI Toolkit Viewer в `UnityClient/AnimalCombat` на Unity `6000.4.0f1`. Viewer не зависит от `Battle.Core` и не рассчитывает gameplay transitions: presentation state копируется только из replay `initial_frames`, event `after` и `final_frames`.
+
+Текущий checkpoint:
+
+- отдельная `ReplayViewer` scene и assemblies Contracts/Runtime/Presentation/EditMode/PlayMode tests;
+- bundled byte-identical copies basic, double-KO и wall-grab Engine `0.4.0` fixtures;
+- game-first UXML/USS с arena-first кадром, broadcast HUD, fighter silhouettes, transport bar, opt-in telemetry и result overlay;
+- Play/Pause/Restart/speed, exact recorded position/facing, HP/state, tick/sequence, event stream и result;
+- presentation-only required event cue mapping и safe unknown-event fallback;
+- Unity compilation `0 errors / 0 warnings`;
+- EditMode `13 passed / 0 failed / 0 skipped`;
+- минимальный PlayMode game-first gate `3 passed / 0 failed / 0 skipped`;
+- три runtime smoke green, fixture source/copy parity green.
+
+Владелец `2026-09-08` утвердил [Game-First UI Spec v0.1](./Unity_Replay_Viewer_UI_Spec_v0.1.md), desktop/mobile-landscape mockups и `WPUI01-UX-001..014`. Game-first composition и presentation effects реализованы; Unity отображает записанные replay values/state и не рассчитывает gameplay.
+
+Владелец `2026-10-01` утвердил [Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md): тёплая иллюстрированная арена, красные HP-полосы, `VS`, компактные игровые controls и бойцы без экипировки. В Unity перенесены UXML/USS и фоновый asset с сохранением replay bindings; isolated Unity 6000.4.0f1 PlayMode gate — `5/5 passed`. Фактический visual screenshot из открытого Editor и мобильный device/build gate ещё не подтверждены; batchmode не поддержал `WaitForEndOfFrame` для тестового захвата кадра.
+
+В следующем presentation pass позы обоих cutout-бойцов привязаны к записанным `DecisionMade`, `ActionCommitted`, `AttackPrepared`, `AttackHit`, `AttackMissed`, `DamageApplied`, `PositionChanged`, `KnockbackApplied`, `GrabStarted`, `GrabEnded`, `WallImpact`, `ResourceChanged` (Stagger), `StateChanged`, `FighterDefeated` и `BattleEnded`. Скорость управляет только визуальным временем, Pause замораживает позы, Restart их сбрасывает; HP, координаты и результат по-прежнему берутся только из replay. В сцену добавлена фоновая Camera для Game View, а подписи бойцов подняты над transport bar. Isolated Unity `6000.4.0f1` PlayMode: `8/8 passed` на трёх обязательных fixtures и проверке границ подписей. Художественная проверка в открытом Editor и уникальные анимации для будущих `action_id` остаются отдельной работой.
+
+До `COMPLETED` остаются полная three-fixture PlayMode/negative automation, external-path UX, Windows Standalone smoke и оставшиеся static dependency checks. Inventory уже green: `96` rows / `96` unique IDs / `0` duplicates. CombatLab production-код и canonical fixture bytes не менялись.
 
 ## Ограничения
 
-- `UnityClient` пока не изменять.
+- Изменения `UnityClient` ограничивать WP-UI-01; не добавлять gameplay calculations или зависимость от `Battle.Core`.
 - `Battle.Core` не зависит от Unity, `Battle.Config`, `Battle.Replay`, Runner/CLI или инфраструктуры.
 - Не использовать недетерминированные источники случайности, времени и порядка коллекций.
 - Все игровые числа, technical limits и system actions брать из `CompiledBattleConfig`, а не хардкодить в Core.

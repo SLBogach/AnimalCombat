@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Animal Combat — proposed illustrated desktop fight screen v0.2</title>
+  <desc id="desc">Concept mockup: warm cartoon arena, unequipped bear and kangaroo, red HP bars, central VS, a compact replay control strip, and no permanent telemetry panel.</desc>
+  <defs>
+    <linearGradient id="topShade" x2="0" y2="1">
+      <stop stop-color="#2d221a" stop-opacity=".57"/>
+      <stop offset="1" stop-color="#2d221a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="healthRed" x2="0" y2="1">
+      <stop stop-color="#ffad52"/>
+      <stop offset=".19" stop-color="#ff5439"/>
+      <stop offset=".78" stop-color="#e52c25"/>
+      <stop offset="1" stop-color="#ae1b1a"/>
+    </linearGradient>
+    <linearGradient id="controlShade" x2="0" y2="1">
+      <stop stop-color="#382b24" stop-opacity=".90"/>
+      <stop offset="1" stop-color="#211b1a" stop-opacity=".97"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+      <feOffset dy="5"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".52"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <image href="arena-savanna-v0.2.png" width="1600" height="900" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1600" height="290" fill="url(#topShade)"/>
+  <ellipse cx="497" cy="735" rx="206" ry="29" fill="#654022" opacity=".30"/>
+  <ellipse cx="1090" cy="738" rx="208" ry="26" fill="#654022" opacity=".28"/>
+
+  <!-- Existing approved unequipped character concepts are composited for layout only. -->
+  <image href="../../../UnityClient/AnimalCombat/Assets/Resources/ReplayViewer/Characters/bear-base.png"
+         x="250" y="247" width="510" height="510" preserveAspectRatio="xMidYMid meet" filter="url(#shadow)"/>
+  <image href="../../../UnityClient/AnimalCombat/Assets/Resources/ReplayViewer/Characters/kangaroo-base.png"
+         x="876" y="245" width="510" height="510" preserveAspectRatio="xMidYMid meet"
+         transform="translate(2262 0) scale(-1 1)" filter="url(#shadow)"/>
+
+  <!-- Comic-style fighter HUD, both fills are replay-driven despite the red art direction. -->
+  <path d="M35 33 L682 33 L665 113 L51 113 Z" fill="#422421" stroke="#271817" stroke-width="12" filter="url(#shadow)"/>
+  <path d="M35 33 L682 33 L665 113 L51 113 Z" fill="#f8dfb0" stroke="#fff1cc" stroke-width="6"/>
+  <path d="M51 45 L667 45 L653 101 L62 101 Z" fill="url(#healthRed)"/>
+  <path d="M918 33 L1565 33 L1549 113 L935 113 Z" fill="#422421" stroke="#271817" stroke-width="12" filter="url(#shadow)"/>
+  <path d="M918 33 L1565 33 L1549 113 L935 113 Z" fill="#f8dfb0" stroke="#fff1cc" stroke-width="6"/>
+  <path d="M933 45 L1549 45 L1538 101 L947 101 Z" fill="url(#healthRed)"/>
+  <g font-family="Arial, sans-serif" font-weight="900" fill="#fff7df" paint-order="stroke" stroke="#59251d" stroke-width="3">
+    <text x="72" y="86" font-size="37">100 / 100</text>
+    <text x="1527" y="86" font-size="37" text-anchor="end">100 / 100</text>
+  </g>
+  <g font-family="Arial, sans-serif" font-weight="900" font-size="26" paint-order="stroke" stroke="#2b1c1a" stroke-width="4" fill="#fff4d4">
+    <text x="56" y="151">BEAR</text>
+    <text x="1544" y="151" text-anchor="end">KANGAROO</text>
+  </g>
+  <rect x="37" y="124" width="9" height="27" rx="4" fill="#29d7e5" stroke="#271817" stroke-width="2"/>
+  <rect x="1555" y="124" width="9" height="27" rx="4" fill="#ff8b3d" stroke="#271817" stroke-width="2"/>
+  <g filter="url(#shadow)">
+    <path d="M798 18 L814 46 L849 31 L834 66 L866 80 L833 91 L837 125 L806 104 L778 127 L779 92 L747 80 L782 65 L770 32 L799 47 Z"
+          fill="#ffb932" stroke="#5f2618" stroke-width="8"/>
+    <text x="804" y="94" text-anchor="middle" font-family="Arial, sans-serif" font-style="italic" font-weight="900"
+          font-size="48" fill="#ffec7d" stroke="#96341d" stroke-width="4" paint-order="stroke">VS</text>
+  </g>
+  <rect x="670" y="140" width="260" height="38" rx="19" fill="#2a211d" fill-opacity=".74" stroke="#e9c287" stroke-width="2"/>
+  <text x="800" y="166" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="19" fill="#fff3d9">TICK 0  ·  SEQ 5 / 10</text>
+
+  <g filter="url(#shadow)">
+    <path d="M689 228 L911 228 L926 250 L911 289 L690 289 L673 250 Z" fill="#3b271f" stroke="#f4d789" stroke-width="5"/>
+    <text x="800" y="269" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="38" fill="#fff2c2">PREPARE!</text>
+  </g>
+  <path d="M617 609 Q653 551 685 531" fill="none" stroke="#fff0a0" stroke-width="11" stroke-linecap="round" opacity=".77"/>
+  <path d="M641 622 Q680 569 703 555" fill="none" stroke="#d44d27" stroke-width="5" stroke-linecap="round" opacity=".77"/>
+
+  <g font-family="Arial, sans-serif" font-size="18" font-weight="800" fill="#fff8e4">
+    <rect x="375" y="747" width="207" height="35" rx="16" fill="#34251e" fill-opacity=".82" stroke="#fff1ce" stroke-opacity=".65"/>
+    <text x="478" y="771" text-anchor="middle">BEAR   4000  →</text>
+    <rect x="1010" y="747" width="222" height="35" rx="16" fill="#34251e" fill-opacity=".82" stroke="#fff1ce" stroke-opacity=".65"/>
+    <text x="1121" y="771" text-anchor="middle">←  5200   KANGAROO</text>
+  </g>
+
+  <!-- Bottom controls are intentionally visually secondary to the arena. -->
+  <rect x="16" y="801" width="1568" height="82" rx="26" fill="url(#controlShade)" stroke="#ecc993" stroke-width="3"/>
+  <g font-family="Arial, sans-serif" font-weight="800" fill="#fff4d7">
+    <rect x="38" y="815" width="240" height="54" rx="16" fill="#624232" stroke="#d9b578" stroke-width="2"/>
+    <text x="158" y="850" text-anchor="middle" font-size="21">REPLAY 01  ▾</text>
+    <rect x="340" y="815" width="175" height="54" rx="16" fill="#493225" stroke="#d9b578" stroke-width="2"/>
+    <text x="427" y="850" text-anchor="middle" font-size="21">↺  RESTART</text>
+    <rect x="530" y="810" width="194" height="62" rx="18" fill="#e6552d" stroke="#ffe1a0" stroke-width="3"/>
+    <text x="627" y="850" text-anchor="middle" font-size="26">Ⅱ  PAUSE</text>
+    <text x="808" y="850" text-anchor="middle" font-size="21">SPEED</text>
+    <rect x="871" y="821" width="170" height="12" rx="6" fill="#b69062"/>
+    <rect x="871" y="821" width="67" height="12" rx="6" fill="#ffe095"/>
+    <circle cx="938" cy="827" r="16" fill="#fff0bf" stroke="#8d522e" stroke-width="3"/>
+    <text x="1078" y="850" font-size="22">1.00×</text>
+    <rect x="1279" y="815" width="269" height="54" rx="16" fill="#493225" stroke="#d9b578" stroke-width="2"/>
+    <text x="1413" y="850" text-anchor="middle" font-size="20">☰  REPLAY DETAILS</text>
+  </g>
+</svg>

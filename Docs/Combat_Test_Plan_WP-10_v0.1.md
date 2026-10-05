@@ -1,6 +1,6 @@
 # Combat Test Plan WP-10 v0.1 — Effects
 
-> Статус: `APPROVED / BLOCKING`; local execution `132/132 PASSED`; implementation `IN PROGRESS / CI PENDING`.
+> Статус: `APPROVED / BLOCKING — EXECUTED / PASSED`; `132/132` acceptance IDs; implementation `COMPLETED`, `2026-10-05`. Windows/Linux × Debug/Release CI green подтверждён владельцем; последний code head `620ebed`.
 >
 > Подготовлено и утверждено `2026-10-03`. Обязательная blocking matrix: `132` unique acceptance IDs.
 > Все `OPEN-WP10-01..28` приняты владельцем 2026-10-03 и имеют статус `CLOSED`. Утверждение не означает, что WP-10 реализован или DATA migration уже выполнена.
@@ -467,8 +467,14 @@ Windows generated schema mismatch и Linux WP10-REG-002/DATA-009 SHA failures о
 
 Generated WP04/WP10 в Release/Debug green; Git checkout filters при `core.autocrlf=true/false` сохраняют оба pinned schema SHA. Full suites также повторно исполнили process/actual-target/profile/culture/historical/golden gates. Saved coverage для unchanged Core/Replay снова green: critical100%, combined Core line92.74%; новая collection не требовалась для schema writer fix вне этих scopes. Remote confirmation для нового fix commit pending, поэтому статус не COMPLETED. UnityClient unchanged; commit/push не выполнялись.
 
-## 13. Current execution evidence — target gate without Get-FileHash, 2026-10-05
+## 13. Previous execution evidence — target gate without Get-FileHash, 2026-10-05
 
 Windows Debug remote run после740fd91 прошёл schema/conformance, затем DET004 упал на отсутствующем Get-FileHash в child Windows PowerShell. Gate заменяет оба cmdlet calls на .NET stream/SHA256, без изменения алгоритма, manifest pins или требований к actual loaded TFMs. DET004 теперь2-row theory: normal host и throwing global Get-FileHash guard. Каждый row исполняет полный9×2 target gate; success marker и exit0 обязательны. Skip/platform-conditional pass не добавлены; acceptance ID остаётся одним, inventory132/132 unchanged.
 
 Фактические проверки: locked restore; Release/Debug build0 warnings/errors; по1446 full-suite passed (864U/471C/111I),0 failed/skipped. Targeted DET0042/2 green в каждой конфигурации, оба rows green и в full suite. WP10 total539 (327U/142C/70I); process/profile/culture/golden/historical/inventory gates в полных suites green. WP04/WP10 generated Release/Debug green. Saved coverage unchanged critical Core/Replay scopes100%, combined line92.74%; новая collection не выполнялась. Fixtures/hashes/DATA unchanged, UnityClient unchanged, commit/push не выполнялись. COMPLETED только после нового four-job remote green run.
+
+## 14. Completion evidence — 2026-10-05
+
+Все132 acceptance IDs §6 исполнены, discovery inventory clean без missing/unknown/duplicate IDs и skips. Локальное evidence сохранено в §13: Release/Debug по1446 passed, WP10539 executions, critical coverage100%, Core line92.74%, required generated/historical/golden/determinism gates green. Матрица/пороги не менялись.
+
+Remote gate закрыт по сообщению владельца: `ubuntu-latest / Debug`, `ubuntu-latest / Release`, `windows-latest / Debug`, `windows-latest / Release` — все green после последнего fix. Последняя локальная code revision620ebed. Run URL/ID не предоставлены; agent не выполнял отдельную GitHub проверку в этой status-update сессии. WP10=COMPLETED / matrix EXECUTED-PASSED. Previous checkpoints — история прежних состояний; незавершённых WP10 blocking условий нет. Этот patch только документационный, без нового build/test run, изменения code/DATA/fixtures или UnityClient; inventory после правок проверяется отдельно.

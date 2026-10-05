@@ -1,6 +1,8 @@
 # WP-10 — native XLSX migration checkpoint
 
-Дата: `2026-10-03`. Owner разрешил `.NET/OpenXML мигратор` вместо отсутствующего authoring runtime Spreadsheets. WP-10 остаётся **IN PROGRESS**, не COMPLETED; этот workflow закрывает physical DATA/tooling/artifact gates, не всю blocking matrix.
+> Текущий статус WP-10: `COMPLETED`, `2026-10-05`; blocking matrix132/132 passed, четыре Windows/Linux × Debug/Release CI jobs green по подтверждению владельца. Последний code head620ebed. Ниже сохранена история implementation/checkpoints; итоговое закрытие — в последнем разделе.
+
+Дата исходного migration checkpoint: `2026-10-03`. Owner разрешил `.NET/OpenXML мигратор` вместо отсутствующего authoring runtime Spreadsheets. На этом начальном checkpoint WP-10 был **IN PROGRESS**, не COMPLETED; этот workflow закрывал physical DATA/tooling/artifact gates, не всю blocking matrix.
 
 ## Что создано
 
@@ -351,3 +353,11 @@ Patch ограничен tooling/test и status docs:
 После fix locked restore и Release/Debug build0 warnings/errors. Targeted DET0042 passed в каждой конфигурации, normal и forbidden variants проверены и в полном suite. Release/Debug full suites по1446 passed (864U/471C/111I),0 failed/skipped. WP10 total539 (327U/142C/70I), inventory132/132. WP04/WP10 generated Release/Debug green; process/target/golden/historical regressions green. Saved coverage unchanged critical Core/Replay100%, line92.74%; новая collection не выполнялась, production Core/Replay не изменены. Manifest/SHA pins/source/generated/schema/fixtures не менялись.
 
 Commit/push не выполнялись; UnityClient и посторонние changes сохранены. Отправить reviewed fix в ту же ветку/PR, затем дождаться четырёх Windows/Linux × Debug/Release green jobs для нового commit. Локальный Windows run не является Linux/remote evidence; WP10 остаётся CI PENDING.
+
+## Completion — 2026-10-05
+
+Владелец сообщил: «Все четыре CI jobs WP-10 зелёные, обнови WP-10 до COMPLETED». Подтверждены ubuntu-latest и windows-latest, Debug и Release после последнего target hash fix; локальная ветка feature/wp-10-effects имеет последний code commit620ebed. Run URL/ID не предоставлены, самостоятельная проверка GitHub в status-update сессии не выполнялась. Источник remote evidence явно фиксируется как сообщение владельца.
+
+Все completion gates закрыты:132/132 blocking IDs, actual discovery/no skips, latest local Release/Debug1446 passed (864U/471C/111I), WP10539 executions (327U/142C/70I), critical coverage100%/Core line92.74%, generated0.1/0.2, historical replay и nine goldens/process/TFM/profile/culture checks. Code/fixture/DATA/hash changes в этом patch отсутствуют. WP10=COMPLETED; ограничения fighter resources/passive kits, batch/deployment и Unity presentation относятся к следующим/отдельным этапам, а не remaining WP10 blockers.
+
+Обновлены только шесть Markdown-документов: Implementation Status, Brief, Test Plan, Decisions, Index и Migration. Previous checkpoints и CI failures/fixes сохранены как история. UnityClient/посторонние изменения сохранены; staging/commit/push агент не выполнял. Docs-only patch не требует повторного full build/test; blocking inventory и diff проверяются отдельно. Следующее действие: reviewed docs commit/push, green CI для последнего commit перед merge существующего PR, затем подготовка WP11 Fighters Brief/Test Plan. Саму реализацию WP11 этот запрос не запускает.

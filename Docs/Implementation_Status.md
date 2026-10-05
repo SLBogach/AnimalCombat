@@ -12,6 +12,7 @@
 - WP-07 Movement
 - WP-08 Decisions
 - WP-09 Resolution
+- WP-10 Effects
 
 WP-05 завершил typed event journal, canonical JSON, SHA-256 event chain и replay verifier. Его требования сохранены в [WP-05_Brief.md](./WP-05_Brief.md).
 
@@ -71,7 +72,7 @@ Historical Engine `battle.core/0.2.0`:
 
 Оба artifacts дают `Draw / TimeoutEqualHealthFraction` на tick `1`; historical bytes сохранены до Engine bump и не перезаписывались.
 
-## Последний завершённый этап
+## Завершённый WP-07 Movement
 
 **WP-07 Movement — `COMPLETED`.**
 
@@ -201,9 +202,15 @@ Canonical balance JSON, workbook и generated artifacts не изменены. `
 
 GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest` и `windows-latest`, Debug и Release — все четыре jobs green. CI подтвердил полный test suite и обязательные generated, target-determinism, historical replay и coverage gates на обеих ОС. Все completion conditions WP-09 выполнены.
 
-## Реализация WP-10 Effects
+## Завершённый WP-10 Effects
 
-**WP-10 — `IN PROGRESS / LOCAL ACCEPTANCE PASSED / CI PENDING`; checkpoint `2026-10-04`, `132/132` blocking IDs исполнены локально.**
+**WP-10 Effects — `COMPLETED`, `2026-10-05`.** Все `132/132` blocking IDs реализованы и проверены; владелец подтвердил четыре green Windows/Linux × Debug/Release CI jobs после последнего fix. Последний зафиксированный code head: `620ebed`.
+
+Итог: public Engine `battle.core/0.5.0` с explicit balance `combat.balance/0.2`; strict pre-Begin materialization/arithmetic proof, stat modifiers, пять stacking policies, expiry/trigger queue/anti-loop, control protections/fatigue/immunity/knockdown, atomic closure/terminal cleanup, replay0.5 verifier и девять golden replay/config pairs. Historical0.1–0.4 и v0.1 DATA сохранены. Локальный финальный suite: Release/Debug по1446 passed (864U/471C/111I),0 failures/skips; WP10=539 executions (327U/142C/70I). Critical coverage100%, Core line92.74%; generated/historical/determinism gates green.
+
+Основание закрытия remote gate — сообщение владельца `2026-10-05`; URL/run ID не предоставлены, самостоятельная проверка GitHub в этой status-update сессии не выполнялась. Согласованные ограничения scope остаются: fighter passives/Rage/Tempo/Grip/kit rules — WP11, Unity presentation — отдельный WP-UI-01. Невыполненных blocking пунктов WP10 нет.
+
+### История подготовки и реализации WP-10
 
 Подготовка выполнена в `feature/wp-10-effects` от локального `master@81b1488`: completed WP-09 и сохранённый Unity Viewer checkpoint. Read-only проверка GitHub в этот момент показала remote `master@e610c76`; локальный master опережал remote на один commit. Merge/commit Viewer не закрывает его отдельную acceptance matrix.
 
@@ -373,7 +380,7 @@ CLI smoke `effects-knockdown` создал новую ignored replay/config па
 
 Commit/push не выполнялись. Необходим новый remote прогон для fix commit: WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED. UnityClient/посторонние changes сохранены; причина и точный patch list — [WP-10 Migration](./WP-10_Migration.md).
 
-### Текущий checkpoint — CI target hash helper fix, 2026-10-05
+### Предыдущий checkpoint — CI target hash helper fix, 2026-10-05
 
 После740fd91 schema/conformance checks в remote Windows Debug прошли; `WP10-DET-004` остановился на недоступном `Get-FileHash` в дочернем Windows PowerShell. Target probe уже успешно собрался, поэтому это host/tooling failure, не golden mismatch. Тест запускает legacy Windows PowerShell на Windows и pwsh на Linux; наличие module function в локальном host не гарантирует её наличие в child runner. Конкретная причина недоступности модуля из remote log не установлена.
 
@@ -381,9 +388,13 @@ Target gate теперь вычисляет тот же SHA-256 через .NET 
 
 Locked restore, Release/Debug build0 warnings/errors; по1446 passed (864U/471C/111I),0 failed/skipped. Targeted DET0042/2 green в каждой конфигурации; оба варианта также прошли в полном suite. WP04/WP10 generated Release/Debug green; inventory132/132. WP10 всего539 executions (327U/142C/70I). Saved coverage unchanged critical Core/Replay:100%, line92.74%. UnityClient и посторонние changes сохранены, commit/push не выполнялись. Необходим новый remote green run fix commit; WP10 остаётся CI PENDING.
 
+### Закрытие этапа — 2026-10-05
+
+Владелец подтвердил `ubuntu-latest / Debug`, `ubuntu-latest / Release`, `windows-latest / Debug`, `windows-latest / Release` — все green. Последний remote completion gate закрыт, статус WP10 обновлён до COMPLETED. Этот patch меняет только шесть документов; код/DATA/fixtures/UnityClient не менялись, посторонние changes сохранены, commit/push агентом не выполнялись. Предыдущие checkpoints выше являются историей, а не текущими blockers.
+
 ## Следующее действие
 
-Проверить diff, сделать отдельный CI portability fix commit без UnityClient и отправить в существующую WP10 ветку/PR. Дождаться Windows/Linux × Debug/Release CI именно для нового commit. Все132 cases/local build/test/coverage/determinism/generated/historical gates green. После четырёх green jobs обновить WP10 до COMPLETED; затем подготовить WP11 Fighters (passives, Rage/Tempo/Grip, resource/kit rules). До remote evidence статус остаётся CI PENDING.
+Проверить и закоммитить только status/docs patch, отправить в существующую WP10 ветку/PR. Docs push также запускает workflow: перед merge дождаться green jobs для последнего документационного commit, затем объединить PR с master. Следующий этап — подготовка WP11 Fighters Brief/Test Plan: passives, Rage/Tempo/Grip, resource/kit rules; реализацию WP11 начинать после согласования его решений/matrix. Этот запрос не запускает WP11 и не меняет UnityClient.
 
 WP-UI-01 можно продолжать отдельной веткой: full three-fixture/negative PlayMode matrix, external-path UX, Windows Standalone smoke и static checks остаются его собственными условиями завершения. Они не блокируют подготовку основного combat roadmap.
 

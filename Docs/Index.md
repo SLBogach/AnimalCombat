@@ -13,7 +13,7 @@
 9. [Unity Replay Viewer Test Plan v0.1](./Unity_Replay_Viewer_Test_Plan_v0.1.md) — approved blocking matrix отдельного read-only WP-UI-01; execution in progress.
 10. [Unity Replay Viewer Game-First UI Spec v0.1](./Unity_Replay_Viewer_UI_Spec_v0.1.md) — историческая утверждённая визуальная ревизия WP-UI-01.
 11. [Unity Replay Viewer Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) — текущий утверждённый визуальный контракт; v0.1 сохранён как история решения.
-12. [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — утверждённая blocking matrix Effects: local `132/132` passed, `OPEN-WP10-01..28 CLOSED`; `2026-10-05` исправлены schema LF/CRLF и target SHA helper portability, локально Release/Debug1446 passed; remote confirmation pending.
+12. [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — исполненная blocking matrix Effects: `132/132 PASSED`, `OPEN-WP10-01..28 CLOSED`; WP10 `COMPLETED 2026-10-05`, Windows/Linux × Debug/Release CI green по подтверждению владельца; local Release/Debug1446 passed.
 
 ## Рабочие этапы
 
@@ -30,7 +30,7 @@
 | WP-08 | Decisions | завершён | [WP-08 Brief](./WP-08_Brief.md) |
 | WP-09 | Resolution | завершён | [WP-09 Brief](./WP-09_Brief.md) |
 | WP-UI-01 | Unity Replay Viewer v0.1 | в работе | [WP-UI-01 Brief](./WP-UI-01_Brief.md) |
-| WP-10 | Effects | local acceptance passed132/132; CI pending | [WP-10 Brief](./WP-10_Brief.md) |
+| WP-10 | Effects | завершён — COMPLETED | [WP-10 Brief](./WP-10_Brief.md) |
 | WP-11 | Fighters | запланирован | — |
 | WP-12 | Batch | запланирован | — |
 | WP-13 | Acceptance | запланирован | — |
@@ -48,9 +48,9 @@
 - [Combat Test Plan WP-08 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-08_v0.1.md)
 - [Завершённый WP-09 Resolution](./WP-09_Brief.md)
 - [Combat Test Plan WP-09 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-09_v0.1.md)
-- [WP-10 Effects — IN PROGRESS](./WP-10_Brief.md)
-- [Combat Test Plan WP-10 v0.1 — LOCAL132/132 PASSED / CI PENDING](./Combat_Test_Plan_WP-10_v0.1.md)
-- [WP-10 migration, release verification, demo и Git handoff — CI PENDING](./WP-10_Migration.md)
+- [Завершённый WP-10 Effects](./WP-10_Brief.md)
+- [Combat Test Plan WP-10 v0.1 — EXECUTED / PASSED132/132](./Combat_Test_Plan_WP-10_v0.1.md)
+- [WP-10 migration, release verification, demo и Git handoff — COMPLETED](./WP-10_Migration.md)
 - [WP-UI-01 Unity Replay Viewer — IN PROGRESS](./WP-UI-01_Brief.md)
 - [Unity Replay Viewer Test Plan v0.1 — APPROVED / BLOCKING](./Unity_Replay_Viewer_Test_Plan_v0.1.md)
 - [Unity Replay Viewer Game-First UI Spec v0.1 — historical approved revision](./Unity_Replay_Viewer_UI_Spec_v0.1.md)

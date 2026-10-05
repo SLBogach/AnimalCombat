@@ -1,6 +1,6 @@
 # WP-10 Brief — Effects
 
-> Статус: `IN PROGRESS — LOCAL ACCEPTANCE PASSED / CI PENDING`; `132/132` blocking IDs исполнены локально.
+> Статус: `COMPLETED`, `2026-10-05`; `132/132` blocking IDs исполнены, четыре Windows/Linux × Debug/Release CI jobs green по подтверждению владельца. Последний code head: `620ebed`.
 >
 > Подготовлено `2026-10-03` на baseline `81b1488` (локальный `master`: WP-09 completed + Unity Replay Viewer checkpoint).
 > Владелец утвердил `OPEN-WP10-01..28` 2026-10-03; все проектные решения `CLOSED`.
@@ -439,8 +439,14 @@ Remote CI выявил OS-dependent schema formatting: Git blobs LF, Windows exp
 
 Locked restore; Release/Debug build0 warnings/errors; по1445 tests (864U/471C/110I),0 failed/skipped; affected suites7/7 в обеих конфигурациях. Generated WP04/WP10 Release/Debug green. Git filters при `core.autocrlf=true/false` сохраняют оба pinned schema SHA; conformance/inventory132/132, actual-target/process/historical/golden checks green. Saved coverage для unchanged critical Core/Replay scopes100%, combined Core line92.74%. Для COMPLETED нужен новый remote Windows/Linux × Debug/Release green run после push fix. UnityClient unchanged, commit/push не выполнялись.
 
-## 19. Current checkpoint — CI target hash helper fix, 2026-10-05
+## 19. Previous checkpoint — CI target hash helper fix, 2026-10-05
 
 Следующий Windows Debug CI прошёл schema/conformance, но target integration child host не нашёл `Get-FileHash`. Gate теперь использует .NET file stream/SHA256, сохраняя byte-exact manifest/golden comparisons. DET004 выполняется в normal host и с намеренно запрещённым Get-FileHash; оба варианта проверяют9 goldens на обеих actual target dependencies и обязательный success marker. Матрица/числа/producer/hashes/fixtures unchanged, skips/relaxed checks не добавлены.
 
 Locked restore; Release/Debug build0 warnings/errors; full suites по1446 passed (864U/471C/111I),0 failures/skips. Targeted DET0042/2 в обеих конфигурациях green; full suite/inventory132/132 и generated WP04/WP10 Release/Debug green. Saved critical Core/Replay coverage100%, Core line92.74%. Remote confirmation для нового fix commit pending; UnityClient unchanged, commit/push не выполнялись.
+
+## 20. Completion — 2026-10-05
+
+Владелец подтвердил все четыре remote jobs: ubuntu-latest и windows-latest, Debug и Release — green после последнего fix; последняя локальная code revision620ebed. Поэтому remote gate §12 закрыт, WP10 COMPLETED. Самостоятельное чтение GitHub run в этой сессии не выполнялось, run URL/ID не предоставлены; источник remote evidence — сообщение владельца.
+
+Итоговая blocking matrix132/132; latest local full suites1446 passed в каждой конфигурации (864U/471C/111I),0 failed/skipped; WP10539 executions. Generated/historical/actual-target/process/profile/culture/golden gates и critical coverage100%/Core line92.74% закрыты. Незавершённых WP10 blocking пунктов нет; WP11 passives/resources/kit rules, batch/deployment и Unity presentation не входят в этот completed scope. Нормативные решения/числа/версии/hashes не изменены этим status patch. Previous checkpoints сохранены как история; UnityClient/postоронние changes сохранены, commit не выполнялся.

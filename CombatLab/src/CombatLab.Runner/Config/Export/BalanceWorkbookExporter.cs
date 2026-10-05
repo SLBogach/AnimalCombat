@@ -36,6 +36,7 @@ public sealed class BalanceWorkbookExporter
         {
             ["action"] = "actions",
             ["effect"] = "effects",
+            ["effect_rule"] = "effect_rules",
             ["fighter"] = "fighters",
             ["gear"] = "gear",
             ["passive"] = "passives",
@@ -47,6 +48,7 @@ public sealed class BalanceWorkbookExporter
         {
             ["action"] = "action_id",
             ["effect"] = "effect_id",
+            ["effect_rule"] = "rule_id",
             ["fighter"] = "animal_id",
             ["gear"] = "gear_id",
             ["passive"] = "passive_id",
@@ -103,7 +105,13 @@ public sealed class BalanceWorkbookExporter
             StringComparer.Ordinal);
 
         PopulateRuntimeModel(workbook, rows, settings, catalogs, issues);
-        var counts = CountEntities(rows, catalogs);
+        var isV02 = settings.TryGetValue("global.sim.schema_version", out var version) &&
+            version.Kind == JsonScalarKind.String && version.StringValue == "combat.balance/0.2";
+        if (!isV02 && catalogs["effect_rule"].Count != 0)
+        {
+            issues.Add(Error("map.runtime_namespace", "effect_rules", "Effect Rules require explicit combat.balance/0.2."));
+        }
+        var counts = CountEntities(rows, catalogs, isV02);
         var json = WriteCandidateJson(settings, catalogs, issues);
         var mapCsv = WriteMapCsv(rows);
 
@@ -461,6 +469,14 @@ public sealed class BalanceWorkbookExporter
                     GreaterThanOrEqual(sheet, "Q", rowNumber, 1);
                 expectedFormula = $"IF(AND(A{row}<>\"\",C{row}>=0,G{row}>=1,P{row}>=1,Q{row}>=1),\"OK\",\"ERROR\")";
                 return true;
+            case "Effect Rules":
+                isValid = IsNonEmpty(sheet, "A", rowNumber) &&
+                    IsNonEmpty(sheet, "C", rowNumber) && IsNonEmpty(sheet, "H", rowNumber) &&
+                    GreaterThanOrEqual(sheet, "J", rowNumber, 0) &&
+                    GreaterThanOrEqual(sheet, "K", rowNumber, 1) &&
+                    GreaterThanOrEqual(sheet, "L", rowNumber, 1) && CellEquals(sheet, "M", rowNumber, "1");
+                expectedFormula = EffectRuleValidationFormula(rowNumber);
+                return true;
             case "Tactics":
                 isValid = IsNonEmpty(sheet, "A", rowNumber) &&
                     IsInside(sheet, "C", rowNumber, 250, 3000) &&
@@ -539,6 +555,12 @@ public sealed class BalanceWorkbookExporter
                 expectedFormula = string.Empty;
                 return false;
         }
+    }
+
+    internal static string EffectRuleValidationFormula(int rowNumber)
+    {
+        var row = rowNumber.ToString(CultureInfo.InvariantCulture);
+        return $"IF(AND(A{row}<>\"\",C{row}<>\"\",H{row}<>\"\",J{row}>=0,K{row}>=1,L{row}>=1,M{row}=1),\"OK\",\"ERROR\")";
     }
 
     private static bool FormulaEquals(string? actual, string expected)
@@ -767,6 +789,9 @@ public sealed class BalanceWorkbookExporter
         writer.WriteStartObject();
         foreach (var catalogName in CatalogNames
             .Where(pair => pair.Key != "tactic")
+            .Where(pair => pair.Key != "effect_rule" ||
+                (settings.TryGetValue("global.sim.schema_version", out var version) &&
+                 version.Kind == JsonScalarKind.String && version.StringValue == "combat.balance/0.2"))
             .OrderBy(pair => pair.Value, StringComparer.Ordinal))
         {
             writer.WritePropertyName(catalogName.Value);
@@ -847,7 +872,8 @@ public sealed class BalanceWorkbookExporter
 
     private static IReadOnlyDictionary<string, int> CountEntities(
         IReadOnlyList<MapRow> rows,
-        IReadOnlyDictionary<string, Dictionary<string, Dictionary<string, JsonScalar>>> catalogs)
+        IReadOnlyDictionary<string, Dictionary<string, Dictionary<string, JsonScalar>>> catalogs,
+        bool isV02)
     {
         var result = new Dictionary<string, int>(StringComparer.Ordinal)
         {
@@ -863,6 +889,7 @@ public sealed class BalanceWorkbookExporter
             ["passives"] = catalogs["passive"].Count,
             ["tactics"] = catalogs["tactic"].Count,
         };
+        if (isV02) result.Add("effect_rules", catalogs["effect_rule"].Count);
         return result;
     }
 

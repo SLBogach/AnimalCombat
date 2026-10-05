@@ -9,10 +9,11 @@ public sealed class ConfigEntityCounts
         int effects,
         int tactics,
         int gear,
-        int builds)
+        int builds,
+        int effectRules = 0)
     {
         if (fighters < 0 || actions < 0 || passives < 0 || effects < 0 ||
-            tactics < 0 || gear < 0 || builds < 0)
+            tactics < 0 || gear < 0 || builds < 0 || effectRules < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(fighters), "Entity counts must not be negative.");
         }
@@ -24,6 +25,7 @@ public sealed class ConfigEntityCounts
         Tactics = tactics;
         Gear = gear;
         Builds = builds;
+        EffectRules = effectRules;
     }
 
     public int Fighters { get; }
@@ -39,4 +41,6 @@ public sealed class ConfigEntityCounts
     public int Gear { get; }
 
     public int Builds { get; }
+
+    public int EffectRules { get; }
 }

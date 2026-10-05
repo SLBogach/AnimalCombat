@@ -173,9 +173,9 @@
 
 ## WP-10 Effects
 
-### Предложения для утверждения — 2026-10-03
+### Принятые решения — 2026-10-03
 
-Все перечисленные `OPEN-WP10-01..28` имеют статус **PROPOSED**, а не CLOSED. Точные условия, DATA values и source precedence находятся в [WP-10 Brief](./WP-10_Brief.md); предложенная [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) содержит `132` unique blocking acceptance IDs. Решения предыдущих WP сохраняются; полный stat-clamp defer из `OPEN-WP07-13` должен быть исполнен в WP-10.
+Владелец принял все `OPEN-WP10-01..28` и Combat Test Plan WP-10 как обязательную blocking matrix 2026-10-03. Все перечисленные решения имеют статус **CLOSED**. Точные условия, утверждённые DATA values и source precedence находятся в [WP-10 Brief](./WP-10_Brief.md); [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) содержит `132` unique blocking acceptance IDs. Решения предыдущих WP сохраняются; полный stat-clamp defer из `OPEN-WP07-13` должен быть исполнен в WP-10.
 
 | ID | Предложение |
 |---|---|
@@ -210,13 +210,20 @@
 
 ### Готовность этапа
 
-- WP-10 `PREPARED / AWAITING APPROVAL`; implementation/tests not run.
-- `BLOCK-WP10-APPROVAL-01` OPEN: owner review exact proposals/matrix.
-- `BLOCK-WP10-DATA-01..04` OPEN: stat bounds, queue caps, rules/metadata/registry, knockdown/interrupt fields.
-- `BLOCK-WP10-ARTIFACT-01` OPEN: physical v0.2 source/schema/generated migration and reproducible0-error/0-warning export.
-- `BLOCK-WP10-HISTORY-01` OPEN: automated0.4 historical pin/verify gate before bump.
+**Checkpoint2026-10-04: LOCAL132/132 PASSED / CI PENDING.** Public Engine0.5/balance0.2, `run-demo`, девять `.0.5` replay/config sidecars и отдельный manifest реализованы; historical bytes unchanged. Exact discovery inventory132/132, полный Release/Debug suite1443 (864U/469C/110I) и WP10 critical coverage100% green; Core combined line92.74%. Все28 CLOSED решений и blocking cases исполнены локально. Generated/actual-target/process/profile/culture/mirror/RNG/historical gates green. Для COMPLETED требуется Windows/Linux × Debug/Release remote CI с новыми WP10 gates; сессия не выполняла commit/push/remote CI. Нормативные gameplay/DATA решения не изменены; записи ниже сохраняются как предыдущие checkpoints.
+
+Возобновление `2026-10-05`: повторные locked restore, Release/Debug build/test (по1443 passed), WP10 filtered run536 passed/inventory132/132, native generated Release/Debug и gates на сохранённых final coverage reports green. Новый CLI smoke replay/config byte-identical к golden, FighterAWin на tick47. Нормативные решения не изменены; production-правки не потребовались. Актуальный статус остаётся LOCAL ACCEPTANCE PASSED / CI PENDING: без четырёх remote green jobs COMPLETED не ставится. Unity/посторонние changes сохранены; commit/push не выполнялись.
+
+- WP-10 `IN PROGRESS`: physical DATA verified; materializer/foundation, atomic/control runtime, decision/grab consumers и strict versioned v0.2 pre-Begin setup реализованы; full-loop effect/control/barrier/interrupt/terminal integration проверена production-compiled inputs. Internal versioned Engine0.5 принимает external compiled v0.2 без definition injection; public producer/CLI пока0.4 до replay/golden gates. Это последовательность implementation, не изменение approved version contract0.5/0.2.
+- `BLOCK-WP10-APPROVAL-01` CLOSED: owner принял exact proposals/matrix.
+- `BLOCK-WP10-DATA-01..04` CLOSED: stat bounds, queue caps, rules/metadata/registry и knockdown/interrupt fields внесены в physical v0.2 и проверены exporter/compiler/loader. Core materializer/conservative consumer proof подключены в versioned setup до Begin; arithmetic proof дополнен movement/geometry/event-cleanup reserve и fixed system timing. Full release integration/conformance/coverage ещё required.
+- `BLOCK-WP10-ARTIFACT-01` CLOSED: physical v0.2 source/schema/generated migration, reproducible0-error/0-warning export и v0.1 pins green.
+- `BLOCK-WP10-HISTORY-01` CLOSED: automated SHA/semantic verify десяти replay0.1–0.4 green до bump; Engine пока0.4.
 - Approval закрывает проектное согласование, не physical DATA/artifact/history gates. Runtime fallback запрещён.
-- Подготовка изменила только Docs; existing Unity ProjectSettings/untracked files не являются частью WP-10 patch.
+- WP10 checkpoint2026-10-04:408 тестов (246U/108C/54I), полный Release/Debug suite1315;108 acceptance IDs исполнены, остальные24 и full matrix/critical coverage/determinism/CI обязательны. Новые17 IDs закрывают remaining STACK/TRG/CTRL и EVT-001..008. Strict compiled v0.2 → full Engine0.5/canonical journal проверяет group replacement на32/128 slots/rollback, grab-lockout разных actions, guard-break consumers и max-hold/release/throw/lethal endings. Version-specific standalone verifier0.5 составлен с decision/resolution policies и проверяет только public deltas/lineage/lifetime/control/keyframes/cleanup;60 C tamper tests и9 I roundtrips green. Config-aware producer proof EVT-009 не подменён public verifier. Stale timeout/control before-frame countdown исправлены в effects projection; legacy0.4 policies/hashes сохранены. Public Engine/CLI пока0.4/balance0.1 до current+effect golden release gates. Legacy critical gates100%, combined Core line92.45%; new full WP10 critical branches ещё не100%. Generated/historical hashes не менялись; Unity/посторонние changes сохранены, commit/push не выполнялись.
+- `BLOCK-WP10-TOOLING-01` CLOSED: владелец явно разрешил repo-native `.NET/OpenXML мигратор` 2026-10-03. Это исключение к authoring method навыка Spreadsheets, не разрешение runtime defaults/изменения v0.1/Unity. Мигратор создаёт новый файл и проверяет SHA/формулы/styles; внешний Excel visual render не выполнялся. [Workflow](./WP-10_Migration.md).
+- v0.1 export сохраняет `operation2=Override/value2=0` без modifier_stat2 в unused slots. Эти existing placeholders сохраняются, но не активируют второй modifier и не являются runtime defaults. Непустой target требует полной target/operation/value triple.
+- Existing Unity ProjectSettings/untracked files не являются частью WP-10 patch; UnityClient не изменялся. Git commit не выполнялся.
 
 ## WP-UI-01 visual revision
 

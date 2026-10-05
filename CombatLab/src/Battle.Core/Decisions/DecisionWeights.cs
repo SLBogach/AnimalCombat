@@ -397,7 +397,8 @@ internal static class DecisionSituationMultiplierCalculator
             values.Add(tactic.TargetRecoveryFixedPoint);
         }
 
-        return DecisionMultiplierFolder.Fold(values, settings);
+        var baseline = DecisionMultiplierFolder.Fold(values, settings);
+        return actor.EffectInputs?.Situation(action, baseline, settings.FixedPointScale) ?? baseline;
     }
 
     private static bool HasAnyTag(DecisionActionProfile action, params string[] tags) =>

@@ -50,7 +50,7 @@ public sealed class Wp09ResolutionCoreTests
                     : action)));
         var journal = new RecordingJournal();
 
-        var result = new Battle.Core.CombatEngine().Simulate(
+        var result = new Battle.Core.CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             invalid,
             journal);

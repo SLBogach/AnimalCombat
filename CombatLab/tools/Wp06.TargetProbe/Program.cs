@@ -35,10 +35,21 @@ internal static class Program
         {
             var combatLabRoot = Path.GetFullPath(args[0]);
             ValidateAssemblyTargets(args[1]);
+            if (args.Length >= 3 && args[2].StartsWith("wp10:", StringComparison.Ordinal))
+            {
+                var name = args[2].Substring(5);
+                var run = CombatLab.Runner.Replays.EffectDemoCatalog.Run(args[0], name);
+                if (run.Result.Status != BattleResultStatus.Completed) throw new InvalidOperationException("WP10 probe failed: " + run.Result.Status);
+                var bytes = CombatLab.Runner.Replays.EffectDemoCatalog.Write(name, run);
+                if (args.Length == 4)
+                { using var stream = new FileStream(Path.GetFullPath(args[3]), FileMode.CreateNew, FileAccess.Write); stream.Write(bytes); }
+                else Console.Out.Write(Encoding.UTF8.GetString(bytes));
+                return 0;
+            }
             var scenario = args.Length >= 3 ? ProbeScenario.Parse(args[2]) : ProbeScenario.Wait;
             var config = CompileGoldenConfig(combatLabRoot, scenario);
             var journal = new CanonicalReplayJournal(scenario.ReplayId);
-            var result = new CombatEngine().Simulate(CreateRequest(config, scenario), config, journal);
+            var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config, scenario), config, journal);
             if (result.Status != BattleResultStatus.Completed)
             {
                 throw new InvalidOperationException(
@@ -210,7 +221,7 @@ internal static class Program
 
         return new BattleRequest(
             scenario.BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             scenario.MasterSeed,
@@ -273,7 +284,7 @@ internal static class Program
 
         return new BattleRequest(
             scenario.BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             scenario.MasterSeed,
@@ -322,7 +333,7 @@ internal static class Program
 
         return new BattleRequest(
             scenario.BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             scenario.MasterSeed,

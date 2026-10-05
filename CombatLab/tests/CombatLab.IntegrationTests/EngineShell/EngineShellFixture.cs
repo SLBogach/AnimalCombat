@@ -26,7 +26,7 @@ internal static class EngineShellFixture
     {
         var config = GoldenConfig.Value;
         var journal = new CanonicalReplayJournal(ReplayId, profile);
-        var result = new CombatEngine().Simulate(CreateRequest(config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config), config, journal);
         return new CanonicalEngineRun(result, journal);
     }
 
@@ -34,7 +34,7 @@ internal static class EngineShellFixture
     {
         var config = GoldenConfig.Value;
         var journal = new SummaryOnlyEventJournal(ReplayId);
-        var result = new CombatEngine().Simulate(CreateRequest(config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config), config, journal);
         return new SummaryEngineRun(result, journal);
     }
 
@@ -124,7 +124,7 @@ internal static class EngineShellFixture
 
         return new BattleRequest(
             BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             2_026_072_901,

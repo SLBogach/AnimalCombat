@@ -30,7 +30,7 @@ public sealed class BattleConfigCompiler
         var canonicalJson = CanonicalBalanceWriter.Write(document);
         var configHash = ConfigHash.Compute(canonicalJson);
         var reference = new ConfigReference(
-            new ArtifactVersion(BalanceV01Schema.SchemaVersion),
+            new ArtifactVersion(document.Schema.Version),
             new ArtifactVersion(document.Settings[BalanceV01Schema.ConfigVersionSetting].AsString()),
             configHash);
         var compiled = CompileSnapshot(reference, document);
@@ -49,7 +49,9 @@ public sealed class BattleConfigCompiler
             CompileCatalog(document.Catalogs["passives"]),
             CompileCatalog(document.Catalogs["effects"]),
             CompileCatalog(document.Catalogs["tactics"]),
-            CompileCatalog(document.Catalogs["gear"]));
+            CompileCatalog(document.Catalogs["gear"]),
+            document.Catalogs.TryGetValue("effect_rules", out var rules)
+                ? CompileCatalog(rules) : Array.Empty<CompiledConfigEntity>());
 
     private static IReadOnlyList<CompiledConfigEntity> CompileCatalog(
         IEnumerable<BalanceJsonEntity> source) =>

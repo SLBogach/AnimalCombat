@@ -686,11 +686,11 @@ public sealed class CanonicalReplayJournalTests
         ArtifactVersion? engineVersion = null) =>
         new(
             BattleId,
-            engineVersion ?? ContractVersions.Engine,
+            engineVersion ?? ContractVersions.HistoricalEngine,
             ContractVersions.Rng,
             ContractVersions.Ordering,
             new ConfigReference(
-                ContractVersions.BalanceSchema,
+                ContractVersions.HistoricalBalanceSchema,
                 new ArtifactVersion("v0.1"),
                 ConfigHash),
             new BattleInputSnapshot(
@@ -763,7 +763,7 @@ public sealed class CanonicalReplayJournalTests
         var frames = CreateFrames(actorId, targetId);
         return new CombatEventDraft(
             ContractVersions.Event,
-            engineVersion ?? ContractVersions.Engine,
+            engineVersion ?? ContractVersions.HistoricalEngine,
             ConfigHash,
             battleId ?? BattleId,
             tick,

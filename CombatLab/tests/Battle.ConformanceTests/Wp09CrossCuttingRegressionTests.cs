@@ -42,10 +42,10 @@ public sealed class Wp09CrossCuttingRegressionTests
     [Trait("AcceptanceId", "WP09-REG-002")]
     public void WP09_REG_001_ProjectGraphAndContractVersionsMatchPlan()
     {
-        Assert.Equal("battle.core/0.4.0", ContractVersions.Engine.ToString());
+        Assert.Equal("battle.core/0.4.0", ContractVersions.HistoricalEngine.ToString());
         Assert.Equal("combat.event/0.1", ContractVersions.Event.ToString());
         Assert.Equal("combat.replay/0.1", ContractVersions.Replay.ToString());
-        Assert.Equal("combat.balance/0.1", ContractVersions.BalanceSchema.ToString());
+        Assert.Equal("combat.balance/0.1", ContractVersions.HistoricalBalanceSchema.ToString());
 
         var coreProject = Read("src", "Battle.Core", "Battle.Core.csproj");
         Assert.Contains("Battle.Contracts", coreProject);

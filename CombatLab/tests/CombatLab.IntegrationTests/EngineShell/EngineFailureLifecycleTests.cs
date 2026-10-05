@@ -16,7 +16,7 @@ public sealed class EngineFailureLifecycleTests
         var capture = new FailureCaptureEventJournal(EngineShellFixture.ReplayId, capacity: 16);
         var journal = new CompletionCountingJournal(capture);
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             battleCase.Request,
             battleCase.Config,
             journal);

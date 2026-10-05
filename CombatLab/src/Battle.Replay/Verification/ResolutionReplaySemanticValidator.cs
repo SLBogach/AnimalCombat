@@ -23,7 +23,7 @@ internal static class ResolutionReplaySemanticValidator
 
         try
         {
-            ValidateGroups(events, issues);
+            ValidateGroups(events, issues, replay.GetProperty("engine").GetProperty("engine_version").GetString()!.StartsWith("battle.core/0.5.", StringComparison.Ordinal));
             ValidateResolutionEvents(events, issues);
         }
         catch (Exception exception) when (exception is
@@ -36,7 +36,8 @@ internal static class ResolutionReplaySemanticValidator
 
     private static void ValidateGroups(
         IReadOnlyList<JsonElement> events,
-        ICollection<ReplayVerificationIssue> issues)
+        ICollection<ReplayVerificationIssue> issues,
+        bool effectLineage = false)
     {
         var closed = new HashSet<string>(StringComparer.Ordinal);
         string? current = null;
@@ -44,6 +45,10 @@ internal static class ResolutionReplaySemanticValidator
         for (var index = 0; index < events.Count; index++)
         {
             var item = events[index];
+            // Effect expiry retains its original causal group, not a new impact group.
+            // Engine0.5 effect membership/lineage is verified separately; actual resolution
+            // events still cannot reopen a closed group or move that group to another tick.
+            if (effectLineage && (IsType(item, "EffectAdded") || IsType(item, "EffectRemoved"))) continue;
             var groupElement = item.GetProperty("resolution_group_id");
             var group = groupElement.ValueKind == JsonValueKind.Null ? null : groupElement.GetString();
             if (!StringComparer.Ordinal.Equals(group, current))
@@ -236,8 +241,11 @@ internal static class ResolutionReplaySemanticValidator
 
     private static bool IsCompatible(string value)
     {
-        const string prefix = "battle.core/0.4.";
-        if (!value.StartsWith(prefix, StringComparison.Ordinal))
+        const string prefix04 = "battle.core/0.4.";
+        const string prefix05 = "battle.core/0.5.";
+        var prefix = value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04
+            : value.StartsWith(prefix05, StringComparison.Ordinal) ? prefix05 : null;
+        if (prefix is null)
         {
             return false;
         }

@@ -177,7 +177,7 @@ public sealed class MovementSetupValidationTests
             : null);
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(EngineTestFixture.CreateRequest(), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(EngineTestFixture.CreateRequest(), config, journal);
 
         AssertRejected(result, journal);
         var sorted = result.RejectionErrors
@@ -431,12 +431,12 @@ public sealed class MovementSetupValidationTests
     public void WP07_VAL_006_CurrentEngineIs030AndOldOrUnknownRequestsAreRejected(
         string engineVersion)
     {
-        Assert.Equal("battle.core/0.4.0", ContractVersions.Engine.ToString());
+        Assert.Equal("battle.core/0.4.0", ContractVersions.HistoricalEngine.ToString());
         var journal = new RecordingJournal();
         var request = EngineTestFixture.CreateRequest(
             engineVersion: new ArtifactVersion(engineVersion));
 
-        var result = new CombatEngine().Simulate(request, EngineTestFixture.CreateConfig(), journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, EngineTestFixture.CreateConfig(), journal);
 
         AssertRejected(result, journal);
         Assert.Contains(result.RejectionErrors, error => error.Code.Value == "EngineVersionMismatch");
@@ -451,7 +451,7 @@ public sealed class MovementSetupValidationTests
     private static BattleResult AssertRejectedBeforeBegin(CompiledBattleConfig config)
     {
         var journal = new RecordingJournal();
-        var result = new CombatEngine().Simulate(EngineTestFixture.CreateRequest(), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(EngineTestFixture.CreateRequest(), config, journal);
         AssertRejected(result, journal);
         return result;
     }

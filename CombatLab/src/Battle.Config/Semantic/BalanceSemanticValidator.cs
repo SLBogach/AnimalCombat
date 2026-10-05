@@ -16,6 +16,10 @@ internal static class BalanceSemanticValidator
         ValidateSettings(document.Settings, issues);
         ValidateCatalogs(document, issues);
         Wp08DecisionConfigValidator.Validate(document, issues);
+        if (document.Schema.Version == "combat.balance/0.2")
+        {
+            Wp10EffectConfigValidator.Validate(document, issues);
+        }
     }
 
     private static void ValidateVersions(
@@ -23,7 +27,7 @@ internal static class BalanceSemanticValidator
         ICollection<ConfigValidationIssue> issues)
     {
         if (TryString(document.Settings, BalanceV01Schema.SchemaVersionSetting, out var schemaVersion) &&
-            !StringComparer.Ordinal.Equals(schemaVersion, BalanceV01Schema.SchemaVersion))
+            !StringComparer.Ordinal.Equals(schemaVersion, document.Schema.Version))
         {
             Add(
                 issues,
@@ -33,13 +37,13 @@ internal static class BalanceSemanticValidator
         }
 
         if (TryString(document.Settings, BalanceV01Schema.ConfigVersionSetting, out var configVersion) &&
-            !StringComparer.Ordinal.Equals(configVersion, "v0.1"))
+            !StringComparer.Ordinal.Equals(configVersion, document.Schema.ConfigVersion))
         {
             Add(
                 issues,
                 ConfigValidationCodes.InvalidEnumValue,
                 "$.settings." + BalanceV01Schema.ConfigVersionSetting,
-                $"Config version '{configVersion}' is not the v0.1 workbook contract.");
+                $"Config version '{configVersion}' does not match the explicit balance schema.");
         }
     }
 
@@ -225,6 +229,8 @@ internal static class BalanceSemanticValidator
                 {
                     if (property.Value.Kind == ConfigValueKind.Integer &&
                         !Wp08DecisionConfigValidator.OwnsCatalogNumericDomain(catalog.Key, property.Key) &&
+                        !(document.Schema.Version == "combat.balance/0.2" &&
+                          Wp10EffectConfigValidator.OwnsNumericDomain(catalog.Key, property.Key)) &&
                         IsMagnitudeTooLarge(property.Value.AsInteger()))
                     {
                         Add(

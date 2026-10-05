@@ -191,11 +191,11 @@ public sealed class DecisionDiagnosticJournalTests
     private static CombatJournalStart CreateJournalStart() =>
         new(
             BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ContractVersions.Rng,
             ContractVersions.Ordering,
             new ConfigReference(
-                ContractVersions.BalanceSchema,
+                ContractVersions.HistoricalBalanceSchema,
                 new ArtifactVersion("v0.1"),
                 ConfigHash),
             new BattleInputSnapshot(
@@ -212,7 +212,7 @@ public sealed class DecisionDiagnosticJournalTests
     private static CombatEventDraft CreateStartedDraft(Sha256Digest inputDigest) =>
         new(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ConfigHash,
             BattleId,
             tick: 0,
@@ -243,7 +243,7 @@ public sealed class DecisionDiagnosticJournalTests
             CreateFrame(FighterId.FighterB));
         return new CombatEventDraft(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ConfigHash,
             BattleId,
             tick: 1,
@@ -286,7 +286,7 @@ public sealed class DecisionDiagnosticJournalTests
             CreateFrame(FighterId.FighterB));
         return new CombatEventDraft(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ConfigHash,
             BattleId,
             tick: 1,
@@ -319,7 +319,7 @@ public sealed class DecisionDiagnosticJournalTests
     private static CombatEventDraft CreateEndedDraft(BattleSummary summary) =>
         new(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ConfigHash,
             BattleId,
             tick: 1,
@@ -383,7 +383,7 @@ public sealed class DecisionDiagnosticJournalTests
         ExternalId? battleId = null) =>
         new(
             battleId ?? BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             masterSeed: 42,
             ConfigHash,
             modeRules ?? CreateModeRules(reverseInputs: false),

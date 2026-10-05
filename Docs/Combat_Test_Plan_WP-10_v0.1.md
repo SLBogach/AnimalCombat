@@ -1,9 +1,9 @@
 # Combat Test Plan WP-10 v0.1 — Effects
 
-> Статус: `PROPOSED / AWAITING APPROVAL`; execution `NOT RUN`.
+> Статус: `APPROVED / BLOCKING`; local execution `132/132 PASSED`; implementation `IN PROGRESS / CI PENDING`.
 >
-> Подготовлено `2026-10-03`. Предложенная обязательная blocking matrix: `132` unique acceptance IDs.
-> Все `OPEN-WP10-01..28` пока `PROPOSED`. Документ не означает, что WP-10 реализован или DATA migration уже выполнена.
+> Подготовлено и утверждено `2026-10-03`. Обязательная blocking matrix: `132` unique acceptance IDs.
+> Все `OPEN-WP10-01..28` приняты владельцем 2026-10-03 и имеют статус `CLOSED`. Утверждение не означает, что WP-10 реализован или DATA migration уже выполнена.
 
 ## 1. Gate и источники
 
@@ -356,7 +356,7 @@ dotnet test CombatLab.sln --configuration Debug --no-build
 ./scripts/verify-wp10-target-determinism.ps1 -Configuration Debug
 ```
 
-`verify-wp10-generated.ps1`, `verify-wp10-target-determinism.ps1`, `verify-wp10-coverage.ps1` пока не существуют: это planned deliverables, не команды для запуска на сегодняшнем checkpoint. Reproducibility v0.1 сохраняется отдельным existing WP-04 gate; v0.2 имеет собственный gate. Existing WP-06/07/08/09 scripts после bump проверяют historical pins/current compatible probes, не сравнивают producer0.5 с immutable0.4 golden.
+`verify-wp10-generated.ps1`, `verify-wp10-target-determinism.ps1` и `verify-wp10-coverage.ps1` реализованы и проверены локально. Generated gate выполняет две fresh-process native migration/export/loader проверки v0.2 без изменения рабочего дерева; target gate проверяет девять `.0.5` golden hashes на actual loaded netstandard2.1/net10.0 dependencies. Coverage gate требует100% critical branches и Core line>=85%. Reproducibility v0.1 сохраняется отдельным existing WP04 gate. Existing WP06/07/08/09 scripts после bump проверяют historical pins/current compatible probes, не сравнивают producer0.5 с immutable0.4 golden.
 
 Coverage: fresh collected Core/Conformance/Integration coverage; selected effect arithmetic/ordering/stack/expiry/cycle/control/state-transition guards100% branch; Battle.Core combined line>=85%; WP-02/03/06/07/08/09 critical scopes сохраняются. Новые branches покрываются assertions, не исключаются blanket filters. В CI coverage/artifact mismatch публикует bounded diagnostics. Performance/batch targets не являются scope WP-10.
 
@@ -374,4 +374,87 @@ Coverage: fresh collected Core/Conformance/Integration coverage; selected effect
 | 22–25: events/atomicity/progress/terminal | EVT, SAFE, REG |
 | 26–27: historical/gates | REG, DET, GOLD, BASE |
 
-На подготовке: acceptance execution `0/132`; это не test failure, а отсутствие implementation. DATA blockers и proposal approval перечислены в Brief§10. Следующее действие: owner review/approval, затем history+DATA slice и реализация всей blocking matrix.
+Previous checkpoint `2026-10-04 — full-loop integration`: matrix утверждена, tooling/physical DATA/artifact gates CLOSED. Исполнены91/132 IDs:
+
+- `WP10-BASE-002`, `WP10-DATA-001..007/009/010/011`;
+- `WP10-MOD-001..014`;
+- `WP10-EXP-001..009`;
+- `WP10-STACK-001..006/008/009/010/013`;
+- `WP10-TRG-001/002/004/005/006/008/009/010/011/012/014`;
+- `WP10-CTRL-001..007/009/011`;
+- `WP10-KDN-001..008`, `WP10-INT-001..008`;
+- `WP10-SAFE-001..007/009`, `WP10-REG-001/002/007`.
+
+Всего323 WP10 tests (239U/48C/36I), full Release/Debug suite1230 (776 Core/377 Conformance/77 Integration), no failures/skips. WorkPackage=WP10 запуск исполнил239U/48C/36I; source trait audit91 entries/91 unique/0 duplicate/0 unknown; full132 discovery inventory ещё не закрыт. Performance project пуст, это existing warning, не skip. Matrix/thresholds не изменены.
+
+Versioned setup slice ранее добавил21 unit test:17 `EffectVersionedSetupTests` и4 consumer proof tests. `DATA-002/004/005/006/007/010/011`, `MOD-014` исполняются через strict versioned factory/full Simulate на real external compiled v0.2, без injected definition. Проверены все36 required keys, initial aggregate gear/maxima clamp, оба билда/geometry, domains/divisors/groups/roles/durations/lookups, unknown vocabulary со stable sorted paths, flag integer0/1 без coercion, reachable arithmetic overflow и guarded Int32.MaxValue activation caps. Dormant WP-11 catalog/unselected Action rules не активируются; reachable resource modifier reject. Consumer proof включает movement/geometry/cleanup-reserve arithmetic и fixed system timing.
+
+Последний срез добавил27 integration tests в `EffectLifecycleIntegrationTests`, `EffectControlIntegrationTests`, `EffectBarrierAndTerminalIntegrationTests`, `EffectInterruptIntegrationTests`, shared `EffectEngineFixture`. Synthetic JSON проходит production compiler0.2, strict setup, весь Engine0.5 loop и canonical journal; observer read-only. Новые22 IDs: `MOD-008/012`, `EXP-003/006/008/009`, `TRG-002/011/012/014`, `CTRL-002/004`, `KDN-003/005/006/008`, `INT-005/006/007`, `SAFE-006/007/009`.
+
+Exact assertions покрывают BattleStart после обоих empty initial frames; D1/D2 expiry/refresh/child closure; silent EndOfTick occurrences; old same-group/new next-group Armor; frozen startup/recovery/segment speed/intent ordering и post-expiry decision snapshot; один fatigue/lifecycle, threshold immunity без renewal; knockdown2/6/3, wakeup tick21/expiry45, GroundHit/lethal и throw/wall ordering; ordinary/explicit movement interrupt phases, paid costs/cooldown/future hits и current-group UninterruptibleImpact; terminal suppression/cleanup, HP0 recipient и invalid event-cap reserve. Producer journal0.5 теперь использует inherited WP08 event roles; standalone verifier0.5 не включён.
+
+Owner разрешил native `.NET/OpenXML мигратор`; v0.2 source/schema/generated reproducible и historical bytes сохранены. Setup/Simulate0.5 доступны internal versioned путём; public Engine/CLI остаются0.4/balance0.1 до replay/golden gates. Остались41 blocking case:
+
+- `BASE-001/003..006`, `DATA-008`;
+- `STACK-007/011/012`, `TRG-003/007/013`, `CTRL-008/010/012`;
+- `EVT-001..009`, `SAFE-008`;
+- `DET-001..008`, `REG-003..006`, `GOLD-001..004`.
+
+Требуются replay0.5 verifier/current+effect goldens, full132 inventory/critical coverage/process/TFM/profile/culture/OS/remote CI. Locked restore/Release+Debug build green,0 warnings/errors. WP04 generated Release, WP10 generated Release/Debug, WP09 actual-target/historical Release/Debug и legacy critical gates green; fresh combined Core line92.36%, consumer proof line100%/branch97.36%. Evidence: `WP10IntegrationCore`, `WP10IntegrationFinalIntegration`, sequential `WP10IntegrationWP08Replay`/`WP10IntegrationWP09Replay`. New full WP10 critical coverage ещё открыт. WP-10 не COMPLETED; UnityClient, existing fixtures/hashes и посторонние changes сохранены; commit/push не выполнялись.
+
+## 9. Previous execution checkpoint — remaining cases + replay0.5, 2026-10-04
+
+Исполнены108/132 blocking IDs. Source audit108 traits/108 unique/0 duplicate/0 unknown; матрица по-прежнему содержит132 строки. Это не full inventory/discovery closure.
+
+- `WP10-BASE-002`, `WP10-DATA-001..007/009/010/011`;
+- `WP10-MOD-001..014`, `WP10-EXP-001..009`;
+- `WP10-STACK-001..013`, `WP10-TRG-001..014`, `WP10-CTRL-001..012`;
+- `WP10-KDN-001..008`, `WP10-INT-001..008`;
+- `WP10-EVT-001..008`;
+- `WP10-SAFE-001..007/009`, `WP10-REG-001/002/007`.
+
+Новые17: `STACK-007/011/012`, `TRG-003/007/013`, `CTRL-008/010/012`, `EVT-001..008`.6 unit remaining-acceptance cases +1 timer-projection regression,9 full-loop stack/control cases,60 conformance replay cases и9 positive producer replay roundtrips добавлены в этот срез. Compare/group/guards/budgets проверяются отдельно от I capacity/lockout/guard-break/max-hold. Negative replay tests используют integrity rehash и требуют semantic failures без integrity errors; historical fixtures не перезаписаны.
+
+Verifier0.5 проверяет explicit balance0.2 metadata и public authoritative effect membership, affected frame roles, earlier causes/lineage/no RNG, stack deltas, exact Before/After expiry/latest application, replacement adjacency/cause/policy, prevented control, actionless knockdown/total ready boundary, final cleanup и advisory sparse keyframes. Повреждённый advisory keyframe даёт warning и не делает canonical event path invalid. Decision/resolution validators вызываются composed для0.5; старые0.1–0.4 policies остаются. Public deltas не доказывают private stats/cooldowns/queue rules: `EVT-009` остаётся blocking.
+
+WP10 filtered408 tests =246U/108C/54I; полный Release/Debug1315 =783 Core/437 Conformance/95 Integration.0 failures/skips; locked restore/build0 warnings/errors. Performance project пуст, сообщение no tests не скрывает skipped acceptance. WP04 generated Release, WP10 fresh-process generated Release/Debug, WP09 actual-target five0.4 scenarios/historical Release/Debug green. Source/schema/generated/manifest/fixtures/hashes unchanged. Это historical target evidence, не WP10 DET-004/005.
+
+Fresh coverage `WP10ReplayCore`, `WP10ReplayIntegration`, `WP10ReplayFinalConformance`: legacy WP02/03/06/07/08/09 selected critical gates100%, combined Core line92.45%; новый effect replay witness line98%/branch91.44%. New WP10 full critical threshold ещё не достигнут; matrix/thresholds неизменны.
+
+Остались24 IDs:
+
+- `BASE-001/003..006`, `DATA-008`, `EVT-009`, `SAFE-008`;
+- `DET-001..008`, `REG-003..006`, `GOLD-001..004`.
+
+Следующий срез: config-aware producer conformance, current+four effect goldens/public Engine0.5 CLI, version/contract/architecture/inventory/failure gates и full WP10 coverage/process/TFM/profile/culture/mirror/OS/remote CI. Internal producer0.5 + public verifier0.5 проверены; public Engine/CLI ещё0.4. WP10 не COMPLETED; Unity/посторонние changes сохранены, commit/push не выполнялись.
+
+## 10. Previous execution evidence — local132/132 passed, 2026-10-04
+
+Все строки §6 исполнены локально. Inventory проверяет actual built Unit/Conformance/Integration/Performance assemblies, тестовые attributes и ровно132 документированные IDs; дубликатов, неизвестных IDs, missing IDs и skips нет.
+
+| Family | Local blocking cases passed |
+|---|---|
+| BASE / DATA / MOD / EXP | 6/6 · 11/11 · 14/14 · 9/9 |
+| STACK / TRG / CTRL / KDN | 13/13 · 14/14 · 12/12 · 8/8 |
+| INT / EVT / SAFE | 8/8 · 9/9 · 9/9 |
+| DET / REG / GOLD | 8/8 · 7/7 · 4/4 |
+
+Evidence: locked restore, Release/Debug builds0 warnings/errors; full suites1443 (864 Core/469 Conformance/110 Integration),0 failures/skips. WP10 total536 (327U/140C/69I). Empty Performance project не представляет skipped acceptance. Новые test classes: `Wp10GoldenAndDeterminismTests`, `Wp10ReleaseSafetyAndTargetTests`, `Wp10ReleaseConformanceTests`, `Wp10BlockingCaseInventoryTests`, `Wp10GoldenManifestTests`, `Wp10EffectReplayGuardTests` и Core guard classes. DET008 также закреплён на existing exact eligible defense RNG test.
+
+Nine replay/config pairs и SHA/input/final/event-count pins находятся в `CombatLab/fixtures/replay/v0.1/wp10.engine-0.5.0.manifest.json`; metadata UTC фиксирована2026-10-04T00:00:00+00:00. Production compiler/engine/verifier roundtrip и exact canonical sidecar bytes подтверждены. Historical hashes/source/generated0.1 неизменны. EVT009 доказывает DamageTaken Self per-owner cap1 и damage66/66→50/50 независимой arithmetic + pinned config-aware re-simulation. Expiry EffectRemoved сохраняет original causal resolution group; actual impact reopen/cross-tick остаётся semantic error.
+
+Effect goldens: stacks1/2/3/3 applications ticks0/1/2/3, before-expiry6 и after-expiry2; impact66/66/50/50; crossing-only fatigue/immunity; grab9/throw10, regular miss11/GroundHit12, knockdown stages12/18/ready21, grab-lockout expiry29 и wakeup-immunity expiry45. Числовые unit oracles §3 сохраняются, fixture ticks не являются их заменой.
+
+DET001:4×100 in-process. DET002:4×10 fresh CLI processes. DET003: Standard/Diagnostic chains и SummaryOnly summary/RNG equal. DET004: actual loaded netstandard2.1/net10.0 four dependencies ×9 artifacts, в обеих конфигурациях. DET005: Debug и Release совпадают с одними pinned bytes; CI сравнивает те же bytes на Windows/Linux. DET006:3 cultures и reverse catalogs/rules. DET007: mirrored symmetric outcome/positions и required grab tie Resolution draw0. SAFE008: cap/depth/watchdog single Begin/Complete, bounded capture, reserved invalid terminal без Draw fallback.
+
+`verify-wp10-coverage.ps1`:100% branch для целых selected arithmetic/stat/store/queue/control/runtime/atomic classes и всех их generated closures/iterators, а также effect replay policy/witnesses; Core line92.74%. DATA reader/export adapter scaffolding не добавлены в этот arithmetic/state critical scope, но не исключены из coverage collection. Latest reports: `WP10ReleaseTerminalCore`, `WP10ReleaseIntegration`, `WP10ReleaseFilteredReplay`; полный Replay regression report `WP10ReleaseGuardReplay`. WP02/03/06/07/08/09 critical gates остаются100%. Generated WP04 Release/WP10 Release+Debug и actual-target/historical gates green.
+
+CI содержит WP10 filtered inventory, nine target goldens и Release critical coverage. Единственный оставшийся completion gate — remote Windows/Linux × Debug/Release jobs. До этого статус CI PENDING, не COMPLETED; local Windows/TFM runs не считаются Linux proof. UnityClient unchanged; git commit/push не выполнялись.
+
+## 11. Current execution evidence — resumed final run, 2026-10-05
+
+Матрица §6 и решения OPEN-WP10-01..28 не изменены. После возобновления заново прошли locked restore, Release/Debug build0 warnings/errors, полный1443-test suite в каждой конфигурации (864U/469C/110I),0 failures/skips. Отдельный Release `WorkPackage=WP10` выполнил536 tests (327U/140C/69I); actual built-assembly inventory132/132 green. Integration suites повторно исполнили DET/GOLD/process/actual-target проверки; historical regression tests также green.
+
+Generated gates: WP04 Release, WP10 native Release/Debug — green. Все coverage gates WP02/03/06/07/08/09/10 повторно прошли на final reports из §10: critical branches100%, combined Core line92.74%; это повторная проверка сохранённого coverage evidence, не новая collection. Production-код между collection и этим запуском не менялся. CLI smoke `effects-knockdown` дал byte-identical replay/config и FighterAWin на tick47, без перезаписи существующих outputs/fixtures.
+
+Таким образом все132 IDs имеют локальное execution evidence, а не только source attributes. Remote OS gate по-прежнему pending: для COMPLETED нужны четыре green Windows/Linux × Debug/Release CI jobs. UnityClient не изменялся; commit/push не выполнялись.

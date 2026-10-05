@@ -126,7 +126,7 @@ public sealed class Wp08DecisionLifecycleSafetyTests
     public void WP08_LIFE_004_TerminalDuringActionRetainsFrozenFinalFrameAndEmitsNoCleanupAfterEnd()
     {
         var journal = new RecordingJournal();
-        var result = new global::Battle.Core.CombatEngine().Simulate(
+        var result = new global::Battle.Core.CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             EngineTestFixture.CreateConfig(timeLimit: 1),
             journal);
@@ -336,7 +336,7 @@ public sealed class Wp08DecisionLifecycleSafetyTests
                 .OrderBy(property => property.Name, StringComparer.Ordinal));
         var journal = new RecordingJournal();
 
-        var result = new global::Battle.Core.CombatEngine().Simulate(
+        var result = new global::Battle.Core.CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             config,
             journal);
@@ -366,7 +366,7 @@ public sealed class Wp08DecisionLifecycleSafetyTests
             timeLimit: int.MaxValue);
         var journal = new RecordingJournal();
 
-        var result = new global::Battle.Core.CombatEngine().Simulate(
+        var result = new global::Battle.Core.CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             config,
             journal);
@@ -397,7 +397,7 @@ public sealed class Wp08DecisionLifecycleSafetyTests
         });
         var journal = new RecordingJournal();
 
-        var result = new global::Battle.Core.CombatEngine().Simulate(
+        var result = new global::Battle.Core.CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             config,
             journal);
@@ -425,7 +425,7 @@ public sealed class Wp08DecisionLifecycleSafetyTests
         });
         var journal = new RecordingJournal();
 
-        var result = new global::Battle.Core.CombatEngine().Simulate(
+        var result = new global::Battle.Core.CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             config,
             journal);

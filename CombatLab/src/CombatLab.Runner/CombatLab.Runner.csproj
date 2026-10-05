@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="CombatLab.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Battle.Contracts\Battle.Contracts.csproj" />
     <ProjectReference Include="..\Battle.Core\Battle.Core.csproj" />
     <ProjectReference Include="..\Battle.Config\Battle.Config.csproj" />

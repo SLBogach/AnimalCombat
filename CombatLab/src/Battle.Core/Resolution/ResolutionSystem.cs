@@ -1,11 +1,13 @@
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Results;
+using Battle.Contracts.Effects;
 using Battle.Core.Engine;
 using Battle.Core.Initialization;
 using Battle.Core.Movement;
 using Battle.Core.Outcome;
 using Battle.Core.Random;
+using Battle.Core.Effects;
 
 namespace Battle.Core.Resolution;
 
@@ -100,6 +102,22 @@ internal static class ResolutionSystem
     {
         try
         {
+            if (state.Effects is not null)
+            {
+                GroupCommitResult committed = default;
+                AtomicBattleBatch.Execute(state, emitter, TickPhase.Resolve, (isolated, events, drafts) =>
+                {
+                    var rng = isolated.Rng.Resolution.CreatePreview();
+                    var atomicPlan = BuildPlan(isolated, settings, group, rng);
+                    PrepareEffectPlan(isolated, atomicPlan);
+                    atomicPlan.GrabEndReason = PredictGrabEnd(isolated, atomicPlan);
+                    isolated.Rng.Resolution.CommitPreview(rng);
+                    committed = CommitPlan(isolated, settings, events, atomicPlan);
+                    isolated.Effects!.CloseEvents(isolated, events, drafts.ToArray());
+                    EmitDefeats(isolated, events, group.Id, committed.LethalSources);
+                });
+                return committed;
+            }
             var preview = state.Rng.Resolution.CreatePreview();
             var plan = BuildPlan(state, settings, group, preview);
             plan.GrabEndReason = PredictGrabEnd(state, plan);
@@ -203,6 +221,31 @@ internal static class ResolutionSystem
             0);
     }
 
+    private static void PrepareEffectPlan(BattleState state, ResolutionPlan plan)
+    {
+        var runtime = state.Effects!;
+        foreach (var impact in plan.Impacts)
+        {
+            var intent = impact.Intent;
+            var target = state.Get(intent.TargetId);
+            impact.ProtectedCreatedIntent = runtime.Interrupt(intent.Action.Id)?.Kind == ActionInterruptKind.UninterruptibleImpact;
+            impact.SurvivingTargetIntents = EffectControlSystem.SurvivingIntents(state, intent.TargetId, plan.Group.Intents);
+            impact.Fatigue = runtime.Channel(intent.TargetId, EffectModifierTarget.HardControlDuration);
+            impact.StunAllowed = EffectControlSystem.Allows(state, intent.TargetId, ControlCategory.Stun);
+            impact.KnockdownAllowed = EffectControlSystem.Allows(state, intent.TargetId, ControlCategory.Knockdown);
+            if (impact.Outcome != PlannedImpactOutcome.Hit) continue;
+            if (target.ActionId.HasValue && target.ActionPhase.HasValue &&
+                runtime.Interrupt(intent.Action.Id) is { } incoming && runtime.Interrupt(target.ActionId.Value) is { } filter)
+                impact.HitInterrupt = filter.AllowsHitInterrupt(target.ActionPhase.Value, incoming.IncomingStrength);
+            if (!intent.Action.HasTag("knockdown")) continue;
+            var data = runtime.Definition;
+            impact.KnockdownRatio = EffectControlMath.ControlRatio(data.ControlK, state.Get(intent.ActorId).ControlPower,
+                target.ControlResistance, data.FixedPointScale);
+            impact.Knockdown = EffectControlMath.Knockdown(state.Tick, data.KnockdownFallTicks,
+                data.KnockdownGroundedTicks, data.KnockdownGetupTicks, impact.KnockdownRatio, impact.Fatigue, data.FixedPointScale);
+        }
+    }
+
     private static ResolutionPlan BuildGrabPlan(
         BattleState state,
         ResolutionGroup group,
@@ -235,9 +278,9 @@ internal static class ResolutionSystem
         ConflictTieBreakMethod method;
         GrabPriorityResult priorityResult;
         RngProvenance? rng = null;
-        if (canonical[0].Action.GrabPriority != canonical[1].Action.GrabPriority)
+        if (canonical[0].EffectiveGrabPriority != canonical[1].EffectiveGrabPriority)
         {
-            winner = canonical.OrderByDescending(intent => intent.Action.GrabPriority).First();
+            winner = canonical.OrderByDescending(intent => intent.EffectiveGrabPriority).First();
             method = ConflictTieBreakMethod.Priority;
             priorityResult = GrabPriorityResult.Priority;
         }
@@ -301,7 +344,8 @@ internal static class ResolutionSystem
                     settings.Resolution.Global,
                     defense,
                     target.Evasion,
-                    state.Get(intent.ActorId).Precision);
+                    state.Get(intent.ActorId).Precision,
+                    state.Effects?.Channel(intent.TargetId, EffectModifierTarget.DodgeChanceOffset) ?? 0);
                 var draw = preview.NextInt(0, settings.Resolution.Global.FixedPointScale, RngOperation.ChanceCheck);
                 if (draw.Result < chance)
                 {
@@ -317,7 +361,8 @@ internal static class ResolutionSystem
                     settings.Resolution.Global,
                     defense,
                     target.Guard,
-                    state.Get(intent.ActorId).GuardBreak);
+                    state.Get(intent.ActorId).GuardBreak,
+                    state.Effects?.Channel(intent.TargetId, EffectModifierTarget.BlockChanceOffset) ?? 0);
                 var draw = preview.NextInt(0, settings.Resolution.Global.FixedPointScale, RngOperation.ChanceCheck);
                 if (draw.Result < chance)
                 {
@@ -350,7 +395,9 @@ internal static class ResolutionSystem
             settings.Resolution.Global,
             intent.Action,
             attacker.Power,
-            target.Armor);
+            target.Armor,
+            damageDealtFixedPoint: state.Effects?.Channel(intent.ActorId, EffectModifierTarget.DamageDealt),
+            damageTakenFixedPoint: state.Effects?.Channel(intent.TargetId, EffectModifierTarget.DamageTaken));
         var damage = ResolutionMath.ApplyBlock(
             settings.Resolution.Global,
             intent.Action,
@@ -377,7 +424,9 @@ internal static class ResolutionSystem
             settings.Resolution.Global,
             intent.Action,
             attacker.Power,
-            target.Armor);
+            target.Armor,
+            damageDealtFixedPoint: state.Effects?.Channel(intent.ActorId, EffectModifierTarget.DamageDealt),
+            damageTakenFixedPoint: state.Effects?.Channel(intent.TargetId, EffectModifierTarget.DamageTaken));
         var main = ResolutionMath.ApplyHealth(damage, target.Health);
         var control = intent.Action.BaseStagger == 0
             ? (ControlComputation?)null
@@ -386,7 +435,7 @@ internal static class ResolutionSystem
                 intent.Action,
                 attacker.ControlPower,
                 target.ControlResistance,
-                settings.Resolution.Global.FixedPointScale);
+                state.Effects?.Channel(intent.TargetId, EffectModifierTarget.HardControlDuration) ?? settings.Resolution.Global.FixedPointScale);
         var movementMode = intent.Action.MovementMode switch
         {
             ResolutionMovementMode.Pull => ResolutionMovementMode.Pull,
@@ -464,6 +513,9 @@ internal static class ResolutionSystem
             return AttackMissReason.DefeatedTarget;
         }
 
+        if (state.Effects is not null && target.State == FighterState.KnockedDown && !intent.Action.HasTag("ground_hit"))
+            return AttackMissReason.InvalidTarget;
+
         if (actor.ActiveCombatAction is null || actor.ActiveCombatAction.DecisionId != intent.DecisionId)
         {
             return AttackMissReason.InvalidTarget;
@@ -538,7 +590,10 @@ internal static class ResolutionSystem
         }
 
         var controlledTargets = plan.Impacts
-            .Where(impact => impact.MainControlTriggers || impact.WallControlTriggers)
+            .Where(impact => state.Effects is null
+                ? impact.MainControlTriggers || impact.WallControlTriggers
+                : (impact.MainControlTriggers || impact.WallControlTriggers) && impact.StunAllowed && !impact.Knockdown.HasValue ||
+                  impact.Knockdown.HasValue && impact.KnockdownAllowed)
             .Select(impact => impact.Intent.TargetId);
         return controlledTargets.Any(id => id == active.GrabberId || id == active.GrabbedId)
             ? GrabEndReason.Interrupted
@@ -562,6 +617,9 @@ internal static class ResolutionSystem
         {
             EmitCountered(state, emitter, plan.Group.Id, plan.Counter, plan.CancelledIncoming);
             state.ConsumeHitGroup(plan.CancelledIncoming.HitGroupId, plan.CancelledIncoming.TargetId);
+            if (state.Effects is not null)
+                _ = EffectControlSystem.Cancel(state, emitter, plan.CancelledIncoming.ActorId, "Countered",
+                    emitter.LastEventId, plan.Group.Id);
             _ = state.Get(plan.CancelledIncoming.ActorId).CancelCurrentAction();
         }
 
@@ -572,7 +630,7 @@ internal static class ResolutionSystem
                 state.ConsumeHitGroup(intent.HitGroupId, intent.TargetId);
             }
 
-            CommitGrabStart(state, settings, emitter, plan.Group.Id, plan.GrabWinner, plan.GrabPriorityResult);
+            CommitGrabStart(state, settings, emitter, plan.Group.Id, plan.GrabWinner, plan.GrabPriorityResult, plan.Group.Intents);
             mutation = true;
         }
 
@@ -613,6 +671,21 @@ internal static class ResolutionSystem
             mutation = true;
         }
 
+        if (state.Effects is not null)
+        {
+            // All damage, wall/force and throw/release consequences precede knockdown.
+            foreach (var impact in plan.Impacts.Where(x => x.Knockdown.HasValue && x.CommittedHit))
+            {
+                var intent = impact.Intent;
+                var target = state.Get(intent.TargetId);
+                var oldState = target.State;
+                var oldTimer = target.StateTicksRemaining;
+                _ = EffectControlSystem.Knockdown(state, emitter, intent.TargetId, intent.ActorId, intent.DecisionId,
+                    intent.Action.Id, impact.Knockdown!.Value, impact.KnockdownRatio, impact.Fatigue, impact.KnockdownAllowed,
+                    impact.LastSource!.Value, plan.Group.Id, impact.SurvivingTargetIntents);
+                mutation |= oldState != target.State || oldTimer != target.StateTicksRemaining;
+            }
+        }
         return new GroupCommitResult(plan.Impacts.Count, mutation, lethalSources);
     }
 
@@ -631,6 +704,10 @@ internal static class ResolutionSystem
         var related = source.HasValue ? new[] { source.Value } : Array.Empty<EventId>();
         var gap = ArenaGeometry.SurfaceGap(actor.Position, actor.CollisionRadius, target.Position, target.CollisionRadius);
 
+        if (state.Effects is not null && plan.Outcome != PlannedImpactOutcome.Miss &&
+            actor.ActiveCombatAction?.DecisionId != intent.DecisionId && !plan.ProtectedCreatedIntent)
+            plan = ImpactPlan.Miss(intent, AttackMissReason.InvalidTarget, "ActionCancelled");
+
         if (plan.ConsumeHitGroup)
         {
             state.ConsumeHitGroup(intent.HitGroupId, intent.TargetId);
@@ -638,6 +715,11 @@ internal static class ResolutionSystem
 
         if (plan.Outcome == PlannedImpactOutcome.Miss)
         {
+            if (state.Effects is not null && intent.Entry.Kind == HitPrimitiveKind.Grab &&
+                plan.MissReason == AttackMissReason.InvalidTarget && !EffectControlSystem.Allows(state, intent.TargetId, ControlCategory.Grab) &&
+                source.HasValue)
+                _ = EffectControlSystem.Prevented(state, emitter, intent.TargetId, intent.Action.Id, intent.DecisionId,
+                    source.Value, groupId, "GrabPrevented");
             _ = emitter.Emit(
                 state.Tick,
                 new AttackMissedPayload(
@@ -770,7 +852,7 @@ internal static class ResolutionSystem
                 settings.Resolution.Global.FixedPointScale,
                 latestSource,
                 "StaggerGain",
-                out var controlMutation);
+                out var controlMutation, plan);
             mutation |= controlMutation;
         }
 
@@ -844,7 +926,7 @@ internal static class ResolutionSystem
                     settings.Resolution.Global.FixedPointScale,
                     latestSource,
                     "WallStagger",
-                    out var wallControlMutation);
+                    out var wallControlMutation, plan);
                 mutation |= wallControlMutation;
             }
         }
@@ -863,6 +945,20 @@ internal static class ResolutionSystem
             mutation |= ended.HasValue;
         }
 
+        if (state.Effects is not null && plan.Outcome == PlannedImpactOutcome.Hit)
+        {
+            plan.CommittedHit = true;
+            plan.LastSource = latestSource;
+            var hardControl = plan.StunAllowed && (plan.MainControlTriggers || plan.WallControlTriggers) ||
+                plan.Knockdown.HasValue && plan.KnockdownAllowed;
+            if (plan.HitInterrupt && !hardControl && target.Health > 0)
+            {
+                var hadAction = target.ActionId.HasValue;
+                _ = EffectControlSystem.Cancel(state, emitter, intent.TargetId, "HitInterrupt", latestSource, groupId,
+                    plan.SurvivingTargetIntents);
+                mutation |= hadAction;
+            }
+        }
         return new ImpactCommitResult(mutation, lethalSource);
     }
 
@@ -938,7 +1034,7 @@ internal static class ResolutionSystem
         int fixedPointScale,
         EventId source,
         string reason,
-        out bool mutation)
+        out bool mutation, ImpactPlan? effectsPlan = null)
     {
         var target = state.Get(intent.TargetId);
         var beforeFrame = target.ToFrame();
@@ -983,6 +1079,21 @@ internal static class ResolutionSystem
         if (!thresholdReached)
         {
             return latest;
+        }
+
+        if (state.Effects is not null)
+        {
+            if (effectsPlan?.Knockdown.HasValue != true)
+                latest = EffectControlSystem.Stun(state, emitter, intent.TargetId, intent.ActorId, intent.DecisionId, intent.Action.Id,
+                    control.StunTicks, control.ControlRatioFixedPoint, effectsPlan!.Fatigue, effectsPlan.StunAllowed,
+                    latest, groupId, effectsPlan.SurvivingTargetIntents);
+            var resetBeforeEffect = target.ToFrame();
+            var resetEffect = target.ResetStagger()!.Value;
+            return emitter.Emit(state.Tick, new ResourceChangedPayload(new[] { latest }, ResourceKind.Stagger, null,
+                resetEffect.Before, resetEffect.Delta, resetEffect.After, resetEffect.Minimum, resetEffect.Maximum, ResourceClampReason.Minimum),
+                intent.TargetId, actionId: intent.Action.Id, decisionId: intent.DecisionId, resolutionGroupId: groupId,
+                sourceEventId: latest, reasonCodes: new[] { new ReasonCode("StaggerReset") }, before: new FramePair(resetBeforeEffect, null),
+                after: new FramePair(target.ToFrame(), null)).EventId;
         }
 
         var oldState = target.State;
@@ -1094,8 +1205,8 @@ internal static class ResolutionSystem
                 conflict.B.IntentId,
                 GrabCategory,
                 GrabCategory,
-                conflict.A.Action.GrabPriority,
-                conflict.B.Action.GrabPriority,
+                conflict.A.EffectiveGrabPriority,
+                conflict.B.EffectiveGrabPriority,
                 conflict.Winner.IntentId,
                 conflict.Winner == conflict.A ? ConflictResolutionResult.AWin : ConflictResolutionResult.BWin,
                 conflict.Method),
@@ -1145,10 +1256,13 @@ internal static class ResolutionSystem
         CombatEventEmitter emitter,
         ExternalId groupId,
         ImpactIntent winner,
-        GrabPriorityResult priorityResult)
+        GrabPriorityResult priorityResult, IReadOnlyList<ImpactIntent> currentGroup)
     {
         var actor = state.Get(winner.ActorId);
         var target = state.Get(winner.TargetId);
+        if (state.Effects is not null)
+            _ = EffectControlSystem.Cancel(state, emitter, winner.TargetId, "Grabbed", winner.SourceEventId ?? emitter.LastEventId,
+                groupId, EffectControlSystem.SurvivingIntents(state, winner.TargetId, currentGroup));
         var source = winner.SourceEventId ?? emitter.LastEventId;
         var related = source.HasValue ? new[] { source.Value } : Array.Empty<EventId>();
         var before = new FramePair(actor.ToFrame(), target.ToFrame());
@@ -1198,6 +1312,8 @@ internal static class ResolutionSystem
             var lethalSource = lethalSources.TryGetValue(fighterId, out var source)
                 ? source
                 : emitter.LastEventId ?? throw new InvalidOperationException("A defeat requires a prior group event.");
+            if (state.Effects is not null)
+                _ = EffectControlSystem.Cancel(state, emitter, fighterId, "Defeat", lethalSource, groupId);
             var before = fighter.ToFrame();
             var oldState = fighter.State;
             _ = fighter.ApplyDefeat();
@@ -1322,6 +1438,16 @@ internal static class ResolutionSystem
         internal bool WallControlTriggers { get; private init; }
         internal bool ConsumeHitGroup { get; private init; } = true;
         internal bool EndsGrab { get; set; }
+        internal bool ProtectedCreatedIntent { get; set; }
+        internal bool HitInterrupt { get; set; }
+        internal bool StunAllowed { get; set; }
+        internal bool KnockdownAllowed { get; set; }
+        internal int Fatigue { get; set; }
+        internal int KnockdownRatio { get; set; }
+        internal KnockdownTimeline? Knockdown { get; set; }
+        internal IReadOnlyList<ExternalId> SurvivingTargetIntents { get; set; } = Array.Empty<ExternalId>();
+        internal EventId? LastSource { get; set; }
+        internal bool CommittedHit { get; set; }
 
         internal int EventCount
         {

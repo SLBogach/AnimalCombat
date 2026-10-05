@@ -30,7 +30,7 @@ internal static class MovementEngineFixture
             maximumEvents,
             maximumZeroProgressTicks);
         var journal = new CanonicalReplayJournal(new ExternalId("replay-wp07-" + caseId), profile);
-        var result = new CombatEngine().Simulate(CreateRequest(caseId, config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(caseId, config), config, journal);
         return new MovementEngineRun(result, journal);
     }
 
@@ -47,7 +47,7 @@ internal static class MovementEngineFixture
             maximumEvents: null,
             maximumZeroProgressTicks: null);
         var journal = new SummaryOnlyEventJournal(new ExternalId("replay-wp07-" + caseId));
-        var result = new CombatEngine().Simulate(CreateRequest(caseId, config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(caseId, config), config, journal);
         return new MovementSummaryEngineRun(result, journal);
     }
 
@@ -140,7 +140,7 @@ internal static class MovementEngineFixture
 
         return new BattleRequest(
             new ExternalId("battle-wp07-" + caseId),
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             2_026_072_901UL,

@@ -38,7 +38,7 @@ public sealed class BattleSetupValidationTests
             allowedActions: EngineTestFixture.ActionIds().Append(basicId));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(request, config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, config, journal);
 
         Assert.Equal(BattleResultStatus.Rejected, result.Status);
         var error = Assert.Single(result.RejectionErrors);
@@ -95,7 +95,7 @@ public sealed class BattleSetupValidationTests
                     : action)));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             config,
             journal);
@@ -120,7 +120,7 @@ public sealed class BattleSetupValidationTests
                     : action)));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             config,
             journal);
@@ -149,7 +149,7 @@ public sealed class BattleSetupValidationTests
             allowedActions: EngineTestFixture.ActionIds().Append(extraId));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(request, config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, config, journal);
 
         AssertRejectedBeforeBegin(result, journal);
         Assert.Contains(result.RejectionErrors, error =>
@@ -213,7 +213,7 @@ public sealed class BattleSetupValidationTests
         };
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(request, config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, config, journal);
 
         AssertRejectedBeforeBegin(result, journal);
         Assert.Contains(
@@ -230,7 +230,7 @@ public sealed class BattleSetupValidationTests
         var request = EngineTestFixture.CreateRequest(allowedActions: allowed);
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(request, EngineTestFixture.CreateConfig(), journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, EngineTestFixture.CreateConfig(), journal);
 
         AssertRejectedBeforeBegin(result, journal);
         Assert.Contains(result.RejectionErrors, error => error.Code.Value == "ForbiddenStableId");
@@ -273,7 +273,7 @@ public sealed class BattleSetupValidationTests
         };
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             request,
             EngineTestFixture.CreateConfig(),
             journal);
@@ -293,7 +293,7 @@ public sealed class BattleSetupValidationTests
             allowedActions: EngineTestFixture.ActionIds().Append(new StableId("bear")));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             request,
             EngineTestFixture.CreateConfig(),
             journal);
@@ -349,7 +349,7 @@ public sealed class BattleSetupValidationTests
                     : gear)));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(request, config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, config, journal);
 
         AssertRejectedBeforeBegin(result, journal);
         Assert.Contains(
@@ -407,7 +407,7 @@ public sealed class BattleSetupValidationTests
         });
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(EngineTestFixture.CreateRequest(), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(EngineTestFixture.CreateRequest(), config, journal);
 
         AssertRejectedBeforeBegin(result, journal);
         Assert.Contains(
@@ -420,7 +420,7 @@ public sealed class BattleSetupValidationTests
     {
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(NormalizationMode.NormalizedRating),
             EngineTestFixture.CreateConfig(),
             journal);
@@ -442,7 +442,7 @@ public sealed class BattleSetupValidationTests
             source.Where(property => property.Name != "global.sim.max_zero_progress_ticks"));
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(request, config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(request, config, journal);
 
         AssertRejectedBeforeBegin(result, journal);
         var actual = result.RejectionErrors
@@ -459,7 +459,7 @@ public sealed class BattleSetupValidationTests
     [Fact]
     public void WP06_RAW_002_NullTypedApiArgumentsRemainProgrammingErrors()
     {
-        var engine = new CombatEngine();
+        var engine = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine);
         var request = EngineTestFixture.CreateRequest();
         var config = EngineTestFixture.CreateConfig();
         var journal = new RecordingJournal();
@@ -488,7 +488,7 @@ public sealed class BattleSetupValidationTests
         });
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(EngineTestFixture.CreateRequest(), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(EngineTestFixture.CreateRequest(), config, journal);
 
         Assert.Equal(BattleResultStatus.Rejected, result.Status);
         Assert.Equal(0, journal.BeginCount);

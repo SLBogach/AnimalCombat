@@ -36,7 +36,7 @@ internal static class EngineTestFixture
         IEnumerable<StableId>? allowedTactics = null) =>
         new(
             new ExternalId("battle-wp06-unit"),
-            engineVersion ?? ContractVersions.Engine,
+            engineVersion ?? ContractVersions.HistoricalEngine,
             configHash ?? ConfigDigest,
             new ModeRulesSnapshot(
                 new StableId("engine_shell_wait_v01"),
@@ -106,7 +106,7 @@ internal static class EngineTestFixture
             ("global.sim.multiplier_min", ConfigValue.FromInteger(250)),
             ("global.sim.ordering_version", ConfigValue.FromString(ContractVersions.Ordering.ToString())),
             ("global.sim.rng_version", ConfigValue.FromString(ContractVersions.Rng.ToString())),
-            ("global.sim.schema_version", ConfigValue.FromString(ContractVersions.BalanceSchema.ToString())));
+            ("global.sim.schema_version", ConfigValue.FromString(ContractVersions.HistoricalBalanceSchema.ToString())));
         var fighters = new[]
         {
             Entity(
@@ -157,7 +157,7 @@ internal static class EngineTestFixture
 
         return new CompiledBattleConfig(
             new ConfigReference(
-                balanceSchemaVersion ?? ContractVersions.BalanceSchema,
+                balanceSchemaVersion ?? ContractVersions.HistoricalBalanceSchema,
                 configVersion ?? new ArtifactVersion("v0.1"),
                 configHash ?? ConfigDigest),
             changeSettings?.Invoke(settings) ?? settings,

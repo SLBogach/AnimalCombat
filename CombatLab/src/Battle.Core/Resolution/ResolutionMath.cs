@@ -51,7 +51,9 @@ internal static class ResolutionMath
         ResolutionActionProfile action,
         int effectivePower,
         int effectiveArmor,
-        bool blocked = false)
+        bool blocked = false,
+        int? damageDealtFixedPoint = null,
+        int? damageTakenFixedPoint = null)
     {
         settings.Validate();
         RequireNonNegative(effectivePower, nameof(effectivePower));
@@ -59,7 +61,8 @@ internal static class ResolutionMath
 
         var powerTerm = checked(action.BaseDamage +
             MultiplyFixedPoint(effectivePower, action.PowerRatioFixedPoint, settings.FixedPointScale));
-        var raw = MultiplyFixedPoint(powerTerm, settings.FixedPointScale, settings.FixedPointScale);
+        var raw = MultiplyFixedPoint(powerTerm, damageDealtFixedPoint ?? settings.FixedPointScale, settings.FixedPointScale);
+        raw = MultiplyFixedPoint(raw, damageTakenFixedPoint ?? settings.FixedPointScale, settings.FixedPointScale);
         var armorDenominator = checked(effectiveArmor + settings.ArmorK);
         var armorRatio = DivideFixedPoint(effectiveArmor, armorDenominator, settings.FixedPointScale);
         var afterArmor = MultiplyFixedPoint(raw, checked(settings.FixedPointScale - armorRatio), settings.FixedPointScale);
@@ -112,12 +115,13 @@ internal static class ResolutionMath
         ResolutionGlobalSettings settings,
         ResolutionActionProfile defense,
         int guard,
-        int attackerGuardBreak)
+        int attackerGuardBreak,
+        int chanceOffset = 0)
     {
         RequireNonNegative(guard, nameof(guard));
         RequireNonNegative(attackerGuardBreak, nameof(attackerGuardBreak));
         var candidate = checked((long)defense.BlockBaseChanceFixedPoint +
-            checked((long)(guard - attackerGuardBreak) * settings.BlockSlope));
+            checked((long)(guard - attackerGuardBreak) * settings.BlockSlope) + chanceOffset);
         return checked((int)System.Math.Clamp(candidate, settings.BlockMinimum, settings.BlockMaximum));
     }
 
@@ -125,12 +129,13 @@ internal static class ResolutionMath
         ResolutionGlobalSettings settings,
         ResolutionActionProfile defense,
         int evasion,
-        int attackerPrecision)
+        int attackerPrecision,
+        int chanceOffset = 0)
     {
         RequireNonNegative(evasion, nameof(evasion));
         RequireNonNegative(attackerPrecision, nameof(attackerPrecision));
         var candidate = checked((long)defense.DodgeBaseChanceFixedPoint +
-            checked((long)(evasion - attackerPrecision) * settings.DodgeSlope));
+            checked((long)(evasion - attackerPrecision) * settings.DodgeSlope) + chanceOffset);
         return checked((int)System.Math.Clamp(candidate, settings.DodgeMinimum, settings.DodgeMaximum));
     }
 

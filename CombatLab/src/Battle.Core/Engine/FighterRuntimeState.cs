@@ -2,14 +2,21 @@ using Battle.Core.Decisions;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using System.Globalization;
+using Battle.Contracts.Effects;
+using Battle.Core.Effects;
 
 namespace Battle.Core.Engine;
 
 internal sealed class FighterRuntimeState
 {
-    private readonly Dictionary<StableId, int> _cooldowns = new();
-    private readonly Dictionary<StableId, int> _opportunityDebts = new();
-    private readonly List<EffectFrame> _effects = new();
+    private Dictionary<StableId, int> _cooldowns = new();
+    private Dictionary<StableId, int> _opportunityDebts = new();
+    private List<EffectFrame> _effects = new();
+    // At most one latest commit per actor/category: no unbounded per-hit control history.
+    private Dictionary<(FighterId Actor, ControlCategory Category), DecisionId> _controlSources = new();
+    private int? _stunEndTick;
+    internal KnockdownTimeline? Knockdown { get; private set; }
+    internal KnockdownStage? KnockdownPhase { get; private set; }
 
     internal FighterRuntimeState(
         FighterId fighterId,
@@ -146,31 +153,57 @@ internal sealed class FighterRuntimeState
 
     internal int StaggerThreshold { get; }
 
-    internal int Initiative { get; }
+    internal int Initiative { get; private set; }
 
-    internal int ActionSpeed { get; }
+    internal int ActionSpeed { get; private set; }
 
-    internal int MoveSpeed { get; }
+    internal int MoveSpeed { get; private set; }
 
     internal int CollisionRadius { get; }
 
-    internal int Power { get; }
+    internal int Power { get; private set; }
 
-    internal int Armor { get; }
+    internal int Armor { get; private set; }
 
-    internal int Precision { get; }
+    internal int Precision { get; private set; }
 
-    internal int Evasion { get; }
+    internal int Evasion { get; private set; }
 
-    internal int Guard { get; }
+    internal int Guard { get; private set; }
 
-    internal int GuardBreak { get; }
+    internal int GuardBreak { get; private set; }
 
-    internal int ControlPower { get; }
+    internal int ControlPower { get; private set; }
 
-    internal int ControlResistance { get; }
+    internal int ControlResistance { get; private set; }
 
-    internal int Mass { get; }
+    internal int Mass { get; private set; }
+
+    internal int EnergyRegen { get; private set; }
+
+    internal FighterRuntimeState Clone()
+    {
+        var clone = (FighterRuntimeState)MemberwiseClone();
+        clone._cooldowns = new Dictionary<StableId, int>(_cooldowns);
+        clone._opportunityDebts = new Dictionary<StableId, int>(_opportunityDebts);
+        clone._effects = new List<EffectFrame>(_effects);
+        clone._controlSources = new Dictionary<(FighterId, ControlCategory), DecisionId>(_controlSources);
+        return clone;
+    }
+
+    internal void SetDerivedStats(IReadOnlyDictionary<string, int> stats)
+    {
+        // Maxima, collision and stagger threshold are immutable setup properties.
+        Power = stats["Power"]; Armor = stats["Armor"]; Precision = stats["Precision"];
+        Evasion = stats["Evasion"]; Guard = stats["Guard"]; GuardBreak = stats["GuardBreak"];
+        MoveSpeed = stats["MoveSpeed"]; ActionSpeed = stats["ActionSpeed"];
+        Initiative = stats["Initiative"]; ControlPower = stats["ControlPower"];
+        ControlResistance = stats["ControlResistance"]; Mass = stats["Mass"];
+        EnergyRegen = stats["EnergyRegen"];
+    }
+
+    internal void SetEffectFrames(IEnumerable<EffectFrame> effects) =>
+        _effects = effects.OrderBy(x => x.EffectId).ToList();
 
     internal DecisionId? ActiveDecisionId { get; private set; }
 
@@ -893,6 +926,71 @@ internal sealed class FighterRuntimeState
         return cancelled;
     }
 
+    internal bool HasControlSource(FighterId actor, DecisionId decision, ControlCategory category) =>
+        _controlSources.TryGetValue((actor, category), out var previous) && previous == decision;
+
+    internal CancelledAction? BeginStun(int tick, int duration, FighterId actor, DecisionId decision)
+    {
+        var end = checked(tick + duration);
+        var cancelled = ApplyHardControl(duration);
+        _stunEndTick = end;
+        _controlSources[(actor, ControlCategory.Stun)] = decision;
+        return cancelled;
+    }
+
+    internal CancelledAction? BeginKnockdown(KnockdownTimeline timeline, FighterId actor, DecisionId decision)
+    {
+        if (timeline.StartTick < 0 || timeline.GroundedTick <= timeline.StartTick || timeline.GetupTick <= timeline.GroundedTick ||
+            timeline.ReadyTick <= timeline.GetupTick)
+            throw new ArgumentException("A positive knockdown timeline is required.", nameof(timeline));
+        var cancelled = CaptureCancelledAction();
+        ClearAction();
+        Knockdown = timeline;
+        KnockdownPhase = KnockdownStage.Fall;
+        State = FighterState.KnockedDown;
+        StateTicksRemaining = timeline.RemainingAt(timeline.StartTick);
+        _controlSources[(actor, ControlCategory.Knockdown)] = decision;
+        return cancelled;
+    }
+
+    internal void SynchronizeEffectControlTimer(int tick)
+    {
+        // Engine0.5 frames project absolute control deadlines at the current tick,
+        // including the before-frame at expiry and terminal cleanup.
+        if (State == FighterState.Stunned && _stunEndTick.HasValue)
+            StateTicksRemaining = System.Math.Max(0, _stunEndTick.Value - tick);
+        else if (State == FighterState.KnockedDown && Knockdown.HasValue)
+            StateTicksRemaining = Knockdown.Value.RemainingAt(tick);
+    }
+
+    internal EffectControlTransition? AdvanceEffectControlExpiry(int tick)
+    {
+        // Lethal damage has precedence over wakeup, including before defeat projection.
+        if (Health == 0 || State == FighterState.Defeated) return null;
+        if (State == FighterState.Stunned && _stunEndTick.HasValue)
+        {
+            if (tick < _stunEndTick.Value)
+            {
+                StateTicksRemaining = checked(_stunEndTick.Value - tick);
+                return null;
+            }
+            ClearAction();
+            return new EffectControlTransition(FighterState.Stunned, State, null, "ControlExpired");
+        }
+        if (State != FighterState.KnockedDown || !Knockdown.HasValue) return null;
+        var stage = Knockdown.Value.StageAt(tick);
+        if (stage == KnockdownStage.Completed)
+        {
+            ClearAction();
+            return new EffectControlTransition(FighterState.KnockedDown, State, null, "KnockdownCompleted");
+        }
+        StateTicksRemaining = Knockdown.Value.RemainingAt(tick);
+        if (stage == KnockdownPhase) return null;
+        KnockdownPhase = stage;
+        return new EffectControlTransition(State, State, StateTicksRemaining,
+            stage == KnockdownStage.Grounded ? "KnockdownGrounded" : "KnockdownGetUp");
+    }
+
     internal FighterStateTransition? AdvanceControlExpiry()
     {
         if (State != FighterState.Stunned)
@@ -1022,6 +1120,9 @@ internal sealed class FighterRuntimeState
 
     private void ClearAction()
     {
+        _stunEndTick = null;
+        Knockdown = null;
+        KnockdownPhase = null;
         ActionId = null;
         ActionPhase = null;
         StateTicksRemaining = null;
@@ -1244,6 +1345,8 @@ internal sealed class FighterRuntimeState
         TickPhase.Decisions.ToString(),
         message + ": " + exception.Message);
 }
+
+internal readonly record struct EffectControlTransition(FighterState From, FighterState To, int? Duration, string Reason);
 
 internal readonly record struct HealthMutation(int Before, int After, int ActualLoss);
 

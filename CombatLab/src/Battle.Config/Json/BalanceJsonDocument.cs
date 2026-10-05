@@ -1,5 +1,6 @@
 using Battle.Contracts.Config;
 using Battle.Contracts.Ids;
+using Battle.Config.Schema;
 
 namespace Battle.Config.Json;
 
@@ -7,15 +8,19 @@ internal sealed class BalanceJsonDocument
 {
     public BalanceJsonDocument(
         SortedDictionary<string, ConfigValue> settings,
-        IReadOnlyDictionary<string, List<BalanceJsonEntity>> catalogs)
+        IReadOnlyDictionary<string, List<BalanceJsonEntity>> catalogs,
+        BalanceSchemaDefinition schema)
     {
         Settings = settings;
         Catalogs = catalogs;
+        Schema = schema;
     }
 
     public SortedDictionary<string, ConfigValue> Settings { get; }
 
     public IReadOnlyDictionary<string, List<BalanceJsonEntity>> Catalogs { get; }
+
+    public BalanceSchemaDefinition Schema { get; }
 }
 
 internal sealed class BalanceJsonEntity

@@ -22,6 +22,7 @@ internal static class ReplaySemanticValidator
         MovementReplaySemanticValidator.Validate(events, issues);
         DecisionReplaySemanticValidator.Validate(replay, events, issues);
         ResolutionReplaySemanticValidator.Validate(replay, events, issues);
+        EffectReplaySemanticValidator.Validate(replay, events, issues);
         ValidateSummary(replay, events, issues);
         ValidateKeyframes(replay, events, issues);
     }
@@ -634,9 +635,11 @@ internal static class ReplaySemanticValidator
     {
         const string prefix03 = "battle.core/0.3.";
         const string prefix04 = "battle.core/0.4.";
+        const string prefix05 = "battle.core/0.5.";
         var prefix = value.StartsWith(prefix03, StringComparison.Ordinal)
             ? prefix03
-            : value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04 : null;
+            : value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04
+            : value.StartsWith(prefix05, StringComparison.Ordinal) ? prefix05 : null;
         if (prefix is null)
         {
             return false;

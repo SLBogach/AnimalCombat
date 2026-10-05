@@ -69,7 +69,7 @@ public sealed class TickCoordinatorTests
     {
         var journal = new RecordingJournal();
 
-        _ = new CombatEngine().Simulate(
+        _ = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             EngineTestFixture.CreateConfig(),
             journal);

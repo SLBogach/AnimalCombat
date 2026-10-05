@@ -2,6 +2,7 @@ using Battle.Core.Engine;
 using Battle.Core.Initialization;
 using Battle.Core.Outcome;
 using Battle.Core.Decisions;
+using Battle.Core.Effects;
 using Battle.Contracts.Config;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
@@ -17,17 +18,38 @@ public sealed class CombatEngine
 {
     private readonly ITickCoordinatorObserver _observer;
     private readonly ISystemActionAvailability _systemActionAvailability;
+    private readonly EffectRuntimeDefinition? _effectDefinition;
+    private readonly ArtifactVersion _producerVersion = ContractVersions.HistoricalEngine;
 
     public CombatEngine()
         : this(
             NullTickCoordinatorObserver.Instance,
             Wp07SystemActionAvailability.Instance)
     {
+        _producerVersion = ContractVersions.Engine;
     }
 
     internal CombatEngine(ITickCoordinatorObserver observer)
         : this(observer, Wp07SystemActionAvailability.Instance)
     {
+    }
+
+    // Controlled test seam until strict v0.2 setup/consumer/replay gates enable the new producer.
+    // Public constructors never accept or inject partially materialized effect DATA.
+    internal CombatEngine(EffectRuntimeDefinition effectDefinition)
+        : this(NullTickCoordinatorObserver.Instance, Wp07SystemActionAvailability.Instance)
+    {
+        _effectDefinition = effectDefinition ?? throw new ArgumentNullException(nameof(effectDefinition));
+    }
+
+    // Explicit historical producer selection for regression harnesses; public producer is0.5.
+    // Unlike the definition-injection harness, this consumes and validates the external v0.2 snapshot.
+    internal CombatEngine(ArtifactVersion producerVersion, ITickCoordinatorObserver? observer = null)
+        : this(observer ?? NullTickCoordinatorObserver.Instance, Wp07SystemActionAvailability.Instance)
+    {
+        if (producerVersion != ContractVersions.Engine && producerVersion != ContractVersions.HistoricalEngine)
+            throw new ArgumentOutOfRangeException(nameof(producerVersion));
+        _producerVersion = producerVersion;
     }
 
     internal CombatEngine(
@@ -59,7 +81,7 @@ public sealed class CombatEngine
             throw new ArgumentNullException(nameof(journal));
         }
 
-        var setupResult = BattleSetupFactory.Create(request, config);
+        var setupResult = BattleSetupFactory.Create(request, config, _producerVersion);
         if (!setupResult.IsSuccess)
         {
             return BattleResult.Rejected(setupResult.Errors);
@@ -67,6 +89,18 @@ public sealed class CombatEngine
 
         var setup = setupResult.Setup!;
         var state = setup.State;
+        if (_effectDefinition is not null)
+        {
+            var issues = new List<EffectSetupIssue>();
+            EffectConsumerArithmeticProof.Validate(_effectDefinition, setup.Settings, state, issues);
+            if (issues.Count != 0)
+                return BattleResult.Rejected(issues.Distinct().OrderBy(x => x.Path, StringComparer.Ordinal)
+                    .ThenBy(x => x.Code, StringComparer.Ordinal).ThenBy(x => x.Entity, StringComparer.Ordinal)
+                    .Select(x => new BattleRejectionError(new ReasonCode(x.Code), x.Path,
+                        x.Entity is null ? null : new ExternalId(x.Entity), new StableId("battle_rejected_validation"),
+                        Array.Empty<BattleRejectionDetail>())));
+            state.InitializeEffects(_effectDefinition);
+        }
         var initialFrameA = state.FighterA.ToFrame();
         var initialFrameB = state.FighterB.ToFrame();
         var journalStart = new CombatJournalStart(
@@ -93,10 +127,13 @@ public sealed class CombatEngine
                 new[] { initialFrameA, initialFrameB },
                 setup.InitiativeOrder,
                 InitiativeTieBreak.StatThenSeededHash);
-            _ = emitter.Emit(
-                0,
-                startedPayload,
-                reasonCodes: new[] { new ReasonCode("Initialization") });
+            _ = emitter.Emit(0, startedPayload, reasonCodes: new[] { new ReasonCode("Initialization") });
+            if (state.Effects is not null)
+            {
+                var started = emitter.LastDraft!;
+                AtomicBattleBatch.Execute(state, emitter, TickPhase.Snapshot, (preview, events, _) =>
+                    preview.Effects!.CloseEvents(preview, events, new[] { started }));
+            }
 
             var coordinator = new TickCoordinator(
                 setup.Settings.MaximumZeroProgressTicks,
@@ -148,6 +185,8 @@ public sealed class CombatEngine
             state.FighterA.MaximumHealth,
             state.FighterB.Health,
             state.FighterB.MaximumHealth);
+        if (state.Effects is not null)
+            emitter.PreflightNonterminalBatch(timeout.Outcome == BattleOutcome.Draw ? 2 : 1, TickPhase.Outcome);
         state.RecordOutcome(
             timeout.Outcome,
             timeout.WinnerFighterId,
@@ -183,6 +222,7 @@ public sealed class CombatEngine
             terminalSource = drawEvent.EventId;
         }
 
+        CleanupEffects(state, emitter, terminalSource);
         var summary = new BattleSummary(
             timeout.Outcome,
             timeout.WinnerFighterId,
@@ -235,6 +275,7 @@ public sealed class CombatEngine
             terminalSource = draw.EventId;
         }
 
+        CleanupEffects(state, emitter, terminalSource);
         var summary = new BattleSummary(
             outcome.Outcome,
             outcome.WinnerFighterId,
@@ -291,6 +332,7 @@ public sealed class CombatEngine
             null,
             BattleEndReason.BattleInvalid);
         var source = emitter.LastEventId;
+        CleanupEffects(state, emitter, source);
         var summary = new BattleSummary(
             BattleOutcome.Invalid,
             null,
@@ -319,5 +361,12 @@ public sealed class CombatEngine
             sourceEventId: source,
             reasonCodes: new[] { new ReasonCode(reason) });
         state.MarkTerminal();
+    }
+
+    private static void CleanupEffects(BattleState state, CombatEventEmitter emitter, EventId? source)
+    {
+        if (state.Effects is not null)
+            AtomicBattleBatch.Execute(state, emitter, TickPhase.Outcome, (preview, events, _) =>
+                preview.Effects!.Cleanup(preview, events, source));
     }
 }

@@ -58,7 +58,7 @@ public sealed class DecisionDiagnosticContractTests
         };
         var projection = new DecisionBatchSnapshotProjection(
             new ExternalId("battle-contract-0001"),
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             masterSeed: 42,
             ContractFixtures.Digest,
             ContractFixtures.CreateModeRules(),
@@ -171,7 +171,7 @@ public sealed class DecisionDiagnosticContractTests
         Assert.Throws<ArgumentException>(
             () => new DecisionBatchSnapshotProjection(
                 new ExternalId("battle-contract-0001"),
-                ContractVersions.Engine,
+                ContractVersions.HistoricalEngine,
                 42,
                 ContractFixtures.Digest,
                 ContractFixtures.CreateModeRules(),
@@ -186,7 +186,7 @@ public sealed class DecisionDiagnosticContractTests
         Assert.Throws<ArgumentException>(
             () => new DecisionBatchSnapshotProjection(
                 new ExternalId("battle-contract-0001"),
-                ContractVersions.Engine,
+                ContractVersions.HistoricalEngine,
                 42,
                 ContractFixtures.Digest,
                 ContractFixtures.CreateModeRules(),
@@ -201,7 +201,7 @@ public sealed class DecisionDiagnosticContractTests
         Assert.Throws<ArgumentException>(
             () => new DecisionBatchSnapshotProjection(
                 new ExternalId("battle-contract-0001"),
-                ContractVersions.Engine,
+                ContractVersions.HistoricalEngine,
                 42,
                 ContractFixtures.Digest,
                 ContractFixtures.CreateModeRules(),
@@ -226,7 +226,7 @@ public sealed class DecisionDiagnosticContractTests
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new DecisionBatchSnapshotProjection(
                 new ExternalId("battle-contract-0001"),
-                ContractVersions.Engine,
+                ContractVersions.HistoricalEngine,
                 42,
                 ContractFixtures.Digest,
                 ContractFixtures.CreateModeRules(),

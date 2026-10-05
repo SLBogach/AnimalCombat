@@ -18,6 +18,11 @@ internal sealed class EngineInvariantException : Exception
 
 internal static class EngineFailureCodes
 {
+    internal static ReasonCode EffectTriggerDepthExceeded { get; } = new("EffectTriggerDepthExceeded");
+    internal static ReasonCode EffectTriggerTickCapExceeded { get; } = new("EffectTriggerTickCapExceeded");
+    internal static ReasonCode EffectInstanceCapExceeded { get; } = new("EffectInstanceCapExceeded");
+    internal static ReasonCode EffectArithmeticOverflow { get; } = new("EffectArithmeticOverflow");
+    internal static ReasonCode EffectInvalidMutation { get; } = new("EffectInvalidMutation");
     internal static ReasonCode EventCapExceeded { get; } = new("EventCapExceeded");
 
     internal static ReasonCode DecisionArithmeticOverflow { get; } =

@@ -58,8 +58,24 @@ internal static class StrictBalanceJsonReader
             return null;
         }
 
+        var schema = BalanceSchemaDefinition.V01;
+        if (root.TryGetProperty("settings", out var settingsElement) && settingsElement.ValueKind == JsonValueKind.Object &&
+            settingsElement.TryGetProperty(BalanceV01Schema.SchemaVersionSetting, out var versionElement) &&
+            versionElement.ValueKind == JsonValueKind.String)
+        {
+            var selected = BalanceSchemaDefinition.Find(versionElement.GetString()!);
+            if (selected is null)
+            {
+                Add(issues, ConfigValidationCodes.UnknownSchemaVersion,
+                    "$.settings." + BalanceV01Schema.SchemaVersionSetting, "Unsupported balance schema version.");
+                return null;
+            }
+
+            schema = selected;
+        }
+
         var rootNames = new HashSet<string>(StringComparer.Ordinal);
-        var allowedRootNames = new HashSet<string>(BalanceV01Schema.RootMembers, StringComparer.Ordinal);
+        var allowedRootNames = new HashSet<string>(schema.RootMembers, StringComparer.Ordinal);
         var settings = new SortedDictionary<string, ConfigValue>(StringComparer.Ordinal);
         var catalogs = new Dictionary<string, List<BalanceJsonEntity>>(StringComparer.Ordinal);
 
@@ -78,19 +94,19 @@ internal static class StrictBalanceJsonReader
 
             if (property.Name == "settings")
             {
-                ReadSettings(property.Value, settings, issues);
+                ReadSettings(property.Value, settings, schema.Settings, issues);
             }
             else
             {
                 catalogs[property.Name] = ReadCatalog(
                     property.Name,
                     property.Value,
-                    BalanceV01Schema.Catalogs[property.Name],
+                    schema.Catalogs[property.Name],
                     issues);
             }
         }
 
-        foreach (var required in BalanceV01Schema.RootMembers)
+        foreach (var required in schema.RootMembers)
         {
             if (!rootNames.Contains(required))
             {
@@ -107,12 +123,13 @@ internal static class StrictBalanceJsonReader
             }
         }
 
-        return new BalanceJsonDocument(settings, catalogs);
+        return new BalanceJsonDocument(settings, catalogs, schema);
     }
 
     private static void ReadSettings(
         JsonElement element,
         SortedDictionary<string, ConfigValue> target,
+        CatalogSchema settingsSchema,
         ICollection<ConfigValidationIssue> issues)
     {
         if (element.ValueKind != JsonValueKind.Object)
@@ -125,7 +142,7 @@ internal static class StrictBalanceJsonReader
         foreach (var property in element.EnumerateObject())
         {
             var path = "$.settings." + property.Name;
-            if (!BalanceV01Schema.Settings.Fields.TryGetValue(property.Name, out var schema))
+            if (!settingsSchema.Fields.TryGetValue(property.Name, out var schema))
             {
                 Add(issues, ConfigValidationCodes.UnknownJsonMember, path, $"Unknown setting '{property.Name}'.");
                 continue;
@@ -138,7 +155,7 @@ internal static class StrictBalanceJsonReader
             }
         }
 
-        AddMissingFields(BalanceV01Schema.Settings, actualNames, "$.settings", issues);
+        AddMissingFields(settingsSchema, actualNames, "$.settings", issues);
     }
 
     private static List<BalanceJsonEntity> ReadCatalog(
@@ -297,10 +314,11 @@ internal static class StrictBalanceJsonReader
         {
             if (field.Value.Required && !actual.Contains(field.Key))
             {
+                var isStatBound = path == "$.settings" && field.Key.StartsWith("stat.", StringComparison.Ordinal);
                 Add(
                     issues,
-                    ConfigValidationCodes.MissingRequiredConfigKey,
-                    path,
+                    isStatBound ? ConfigValidationCodes.MissingStatBounds : ConfigValidationCodes.MissingRequiredConfigKey,
+                    isStatBound ? path + "." + field.Key : path,
                     $"Required member '{field.Key}' is missing.");
             }
         }

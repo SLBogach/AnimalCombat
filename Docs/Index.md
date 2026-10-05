@@ -3,7 +3,7 @@
 ## Источники истины
 
 1. [Combat Design Specification v0.1](./Combat_Design_Specification_v0.1.docx) — игровая семантика.
-2. [Combat Balance Workbook v0.1](../CombatLab/config/source/Combat_Balance_Workbook_v0.1.xlsx) и скомпилированный config — числа и Stable ID.
+2. [Combat Balance Workbook v0.2](../CombatLab/config/source/Combat_Balance_Workbook_v0.2.xlsx) и generated v0.2 — текущие validated числа/Stable ID public Engine0.5. [Workbook v0.1](../CombatLab/config/source/Combat_Balance_Workbook_v0.1.xlsx) и generated v0.1 сохранены как immutable historical baseline Engine0.4.
 3. [Combat Event & Replay Schema v0.1](./Combat_Event_Replay_Schema_v0.1.docx) и machine package — wire-контракт, события и integrity.
 4. [Combat Lab Technical Design v0.1](./Combat_Lab_Technical_Design_v0.1.docx) — архитектура и этапы WP.
 5. [Combat Test Plan v0.1](./Combat_Test_Plan_v0.1.md) — exact pass/fail-матрица WP-06; закрывает `OPEN-05`.
@@ -13,6 +13,7 @@
 9. [Unity Replay Viewer Test Plan v0.1](./Unity_Replay_Viewer_Test_Plan_v0.1.md) — approved blocking matrix отдельного read-only WP-UI-01; execution in progress.
 10. [Unity Replay Viewer Game-First UI Spec v0.1](./Unity_Replay_Viewer_UI_Spec_v0.1.md) — историческая утверждённая визуальная ревизия WP-UI-01.
 11. [Unity Replay Viewer Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) — текущий утверждённый визуальный контракт; v0.1 сохранён как история решения.
+12. [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — утверждённая blocking matrix Effects: local `132/132` passed, `OPEN-WP10-01..28 CLOSED`; `2026-10-05` исправлены schema LF/CRLF и target SHA helper portability, локально Release/Debug1446 passed; remote confirmation pending.
 
 ## Рабочие этапы
 
@@ -29,7 +30,7 @@
 | WP-08 | Decisions | завершён | [WP-08 Brief](./WP-08_Brief.md) |
 | WP-09 | Resolution | завершён | [WP-09 Brief](./WP-09_Brief.md) |
 | WP-UI-01 | Unity Replay Viewer v0.1 | в работе | [WP-UI-01 Brief](./WP-UI-01_Brief.md) |
-| WP-10 | Effects | запланирован | — |
+| WP-10 | Effects | local acceptance passed132/132; CI pending | [WP-10 Brief](./WP-10_Brief.md) |
 | WP-11 | Fighters | запланирован | — |
 | WP-12 | Batch | запланирован | — |
 | WP-13 | Acceptance | запланирован | — |
@@ -47,6 +48,9 @@
 - [Combat Test Plan WP-08 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-08_v0.1.md)
 - [Завершённый WP-09 Resolution](./WP-09_Brief.md)
 - [Combat Test Plan WP-09 v0.1 — EXECUTED / PASSED](./Combat_Test_Plan_WP-09_v0.1.md)
+- [WP-10 Effects — IN PROGRESS](./WP-10_Brief.md)
+- [Combat Test Plan WP-10 v0.1 — LOCAL132/132 PASSED / CI PENDING](./Combat_Test_Plan_WP-10_v0.1.md)
+- [WP-10 migration, release verification, demo и Git handoff — CI PENDING](./WP-10_Migration.md)
 - [WP-UI-01 Unity Replay Viewer — IN PROGRESS](./WP-UI-01_Brief.md)
 - [Unity Replay Viewer Test Plan v0.1 — APPROVED / BLOCKING](./Unity_Replay_Viewer_Test_Plan_v0.1.md)
 - [Unity Replay Viewer Game-First UI Spec v0.1 — historical approved revision](./Unity_Replay_Viewer_UI_Spec_v0.1.md)

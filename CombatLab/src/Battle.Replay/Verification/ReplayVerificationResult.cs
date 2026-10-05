@@ -117,6 +117,7 @@ public static class ReplayVerificationCodes
     public const string DecisionCausalityInvalid = "semantic.decision_causality";
     public const string DecisionDiagnosticInvalid = "semantic.decision_diagnostic";
     public const string ResolutionInvalid = "semantic.resolution";
+    public const string EffectInvalid = "semantic.effect";
     public const string SummaryMismatch = "semantic.summary";
     public const string KeyframeMismatch = "semantic.keyframe";
     public const string InputDigestMismatch = "integrity.input_digest";

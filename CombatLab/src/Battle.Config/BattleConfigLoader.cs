@@ -85,7 +85,8 @@ public sealed class BattleConfigLoader
             counts.Passives != config.Passives.Count ||
             counts.Effects != config.Effects.Count ||
             counts.Tactics != config.Tactics.Count ||
-            counts.Gear != config.Gear.Count)
+            counts.Gear != config.Gear.Count ||
+            counts.EffectRules != config.EffectRules.Count)
         {
             issues.Add(new ConfigValidationIssue(
                 ConfigValidationCodes.ManifestMismatch,

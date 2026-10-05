@@ -102,7 +102,7 @@ public sealed class Wp08ArchitectureGuardsTests
             phaseMatches.Select(match =>
                 match.Groups["name"].Value + "=" + match.Groups["value"].Value));
         Assert.Equal("tick-pipeline/1", ContractVersions.Ordering.ToString());
-        Assert.Equal("battle.core/0.4.0", ContractVersions.Engine.ToString());
+        Assert.Equal("battle.core/0.4.0", ContractVersions.HistoricalEngine.ToString());
     }
 
     [Fact]

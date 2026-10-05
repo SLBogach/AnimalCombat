@@ -2,6 +2,7 @@ using System.Globalization;
 using Battle.Core.Decisions;
 using Battle.Core.Engine;
 using Battle.Core.Random;
+using Battle.Core.Effects;
 using Battle.Contracts.Config;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
@@ -15,6 +16,7 @@ namespace Battle.Core.Initialization;
 internal static class BattleSetupFactory
 {
     private const string ExpectedConfigVersion = "v0.1";
+    internal static ArtifactVersion EffectsEngineVersion { get; } = new("battle.core/0.5.0");
     private const string TimeLimitKey = "battle.time_limit_ticks";
     private const string MaximumEventsKey = "global.sim.max_events_per_battle";
     private const string MaximumZeroProgressKey = "global.sim.max_zero_progress_ticks";
@@ -24,7 +26,7 @@ internal static class BattleSetupFactory
     private const string StartPositionAKey = "global.arena.start_position_a";
     private const string StartPositionBKey = "global.arena.start_position_b";
 
-    internal static BattleSetupResult Create(BattleRequest request, CompiledBattleConfig config)
+    internal static BattleSetupResult Create(BattleRequest request, CompiledBattleConfig config, ArtifactVersion? producerVersion = null)
     {
         if (request is null)
         {
@@ -37,7 +39,9 @@ internal static class BattleSetupFactory
         }
 
         var issues = new List<ValidationIssue>();
-        ValidateVersions(request, config, issues);
+        var producer = producerVersion ?? ContractVersions.HistoricalEngine;
+        var effectsEnabled = producer == EffectsEngineVersion;
+        ValidateVersions(request, config, issues, producer, effectsEnabled);
         ValidateMode(request.ModeRules, issues);
         ValidateModeAllowlists(request.ModeRules, config, issues);
 
@@ -56,8 +60,8 @@ internal static class BattleSetupFactory
         var startPositionB = ReadRequiredSetting(config, StartPositionBKey, int.MinValue, int.MaxValue, issues);
 
         ValidateArena(arenaMinimum, arenaMaximum, startPositionA, startPositionB, issues);
-        var buildA = ValidateBuild(request.BuildA, request.ModeRules, config, "/fighters/0", issues);
-        var buildB = ValidateBuild(request.BuildB, request.ModeRules, config, "/fighters/1", issues);
+        var buildA = ValidateBuild(request.BuildA, request.ModeRules, config, "/fighters/0", issues, effectsEnabled);
+        var buildB = ValidateBuild(request.BuildB, request.ModeRules, config, "/fighters/1", issues, effectsEnabled);
         var systemApproach = ValidateSystemMovementAction(
             SystemActionSelector.ApproachId,
             "Approach",
@@ -96,6 +100,15 @@ internal static class BattleSetupFactory
             return new BattleSetupResult(null, ToRejectionErrors(issues));
         }
 
+        EffectRuntimeDefinition? effects = null;
+        if (effectsEnabled)
+        {
+            var effectIssues = new List<EffectSetupIssue>();
+            effects = EffectSetupMaterializer.TryCreate(request, config, effectIssues);
+            foreach (var issue in effectIssues) issues.Add(new ValidationIssue(issue.Code, issue.Path, issue.Entity));
+            if (effects is null || issues.Count != 0) return new BattleSetupResult(null, ToRejectionErrors(issues));
+        }
+
         var fighterA = TryInitializeFighter(
             request.BuildA,
             buildA,
@@ -103,7 +116,8 @@ internal static class BattleSetupFactory
             Facing.Right,
             fixedPointScale.Value,
             "/fighters/0",
-            issues);
+            issues,
+            effects?.Fighters.Single(x => x.Fighter == FighterId.FighterA).InitialStats);
         var fighterB = TryInitializeFighter(
             request.BuildB,
             buildB,
@@ -111,7 +125,8 @@ internal static class BattleSetupFactory
             Facing.Left,
             fixedPointScale.Value,
             "/fighters/1",
-            issues);
+            issues,
+            effects?.Fighters.Single(x => x.Fighter == FighterId.FighterB).InitialStats);
         if (fighterA is null || fighterB is null || issues.Count != 0)
         {
             return new BattleSetupResult(null, ToRejectionErrors(issues));
@@ -185,6 +200,16 @@ internal static class BattleSetupFactory
             resolution,
             initiative);
 
+        if (effects is not null)
+        {
+            var consumerIssues = new List<EffectSetupIssue>();
+            EffectConsumerArithmeticProof.Validate(effects, settings, state, consumerIssues);
+            foreach (var issue in consumerIssues) issues.Add(new ValidationIssue(issue.Code, issue.Path, issue.Entity));
+            if (issues.Count != 0) return new BattleSetupResult(null, ToRejectionErrors(issues));
+            // Both fighters and the complete reachable graph have passed validation. No Begin/draws yet.
+            state.InitializeEffects(effects);
+        }
+
         return new BattleSetupResult(
             new BattleSetup(state, settings, initiative),
             Array.Empty<BattleRejectionError>());
@@ -193,10 +218,12 @@ internal static class BattleSetupFactory
     private static void ValidateVersions(
         BattleRequest request,
         CompiledBattleConfig config,
-        ICollection<ValidationIssue> issues)
+        ICollection<ValidationIssue> issues,
+        ArtifactVersion producer,
+        bool effectsEnabled)
     {
         AddMismatch(
-            request.EngineVersion == ContractVersions.Engine,
+            request.EngineVersion == producer,
             "EngineVersionMismatch",
             "/engine_version",
             request.EngineVersion.ToString(),
@@ -208,7 +235,7 @@ internal static class BattleSetupFactory
             request.ConfigHash.ToString(),
             issues);
         AddMismatch(
-            config.Reference.BalanceSchemaVersion == ContractVersions.BalanceSchema,
+            config.Reference.BalanceSchemaVersion.ToString() == (effectsEnabled ? "combat.balance/0.2" : ContractVersions.HistoricalBalanceSchema.ToString()),
             "BalanceSchemaVersionMismatch",
             "/config/balance_schema_version",
             config.Reference.BalanceSchemaVersion.ToString(),
@@ -216,7 +243,7 @@ internal static class BattleSetupFactory
         AddMismatch(
             string.Equals(
                 config.Reference.ConfigVersion.ToString(),
-                ExpectedConfigVersion,
+                effectsEnabled ? "v0.2" : ExpectedConfigVersion,
                 StringComparison.Ordinal),
             "ConfigVersionMismatch",
             "/config/config_version",
@@ -232,13 +259,13 @@ internal static class BattleSetupFactory
         ValidateVersionSetting(
             config,
             "global.sim.schema_version",
-            ContractVersions.BalanceSchema.ToString(),
+            effectsEnabled ? "combat.balance/0.2" : ContractVersions.HistoricalBalanceSchema.ToString(),
             config.Reference.BalanceSchemaVersion.ToString(),
             issues);
         ValidateVersionSetting(
             config,
             "global.sim.config_version",
-            ExpectedConfigVersion,
+            effectsEnabled ? "v0.2" : ExpectedConfigVersion,
             config.Reference.ConfigVersion.ToString(),
             issues);
         ValidateVersionSetting(
@@ -605,7 +632,8 @@ internal static class BattleSetupFactory
         ModeRulesSnapshot modeRules,
         CompiledBattleConfig config,
         string path,
-        ICollection<ValidationIssue> issues)
+        ICollection<ValidationIssue> issues,
+        bool effectsEnabled)
     {
         var startIssueCount = issues.Count;
         EnsureAllowed(modeRules.AllowedAnimalIds, build.AnimalId, path + "/animal_id", issues);
@@ -663,7 +691,7 @@ internal static class BattleSetupFactory
 
         var baseStats = ReadFighterStats(fighter, path + "/animal_id", issues);
         var resourceId = ReadRequiredStableIdProperty(fighter, "resource_id", path + "/animal_id", issues);
-        var modifiers = ReadGearModifiers(gearEntities, path + "/gear", issues);
+        var modifiers = effectsEnabled ? Array.Empty<StatModifier>() : ReadGearModifiers(gearEntities, path + "/gear", issues);
 
         return issues.Count == startIssueCount && resourceId.HasValue
             ? new ValidatedBuild(baseStats, resourceId.Value, modifiers)
@@ -1053,12 +1081,20 @@ internal static class BattleSetupFactory
         Facing facing,
         int fixedPointScale,
         string path,
-        ICollection<ValidationIssue> issues)
+        ICollection<ValidationIssue> issues,
+        IReadOnlyDictionary<string, int>? initialEffectStats = null)
     {
         IReadOnlyDictionary<string, int> stats;
         try
         {
-            stats = ModifierPipeline.Apply(validated.BaseStats, validated.Modifiers, fixedPointScale);
+            if (initialEffectStats is null)
+                stats = ModifierPipeline.Apply(validated.BaseStats, validated.Modifiers, fixedPointScale);
+            else
+            {
+                var combined = validated.BaseStats.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+                foreach (var stat in initialEffectStats) combined[stat.Key] = stat.Value;
+                stats = combined;
+            }
         }
         catch (OverflowException)
         {

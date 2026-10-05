@@ -222,7 +222,7 @@ public sealed class EventContractTests
         EventId? eventId = null) =>
         new(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ContractFixtures.Digest,
             new ExternalId("battle-0001"),
             0,

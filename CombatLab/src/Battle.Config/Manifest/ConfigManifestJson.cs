@@ -45,6 +45,10 @@ public static class ConfigManifestJson
             writer.WriteStartObject();
             writer.WriteNumber("actions", manifest.EntityCounts.Actions);
             writer.WriteNumber("builds", manifest.EntityCounts.Builds);
+            if (manifest.Reference.BalanceSchemaVersion.ToString() == "combat.balance/0.2")
+            {
+                writer.WriteNumber("effect_rules", manifest.EntityCounts.EffectRules);
+            }
             writer.WriteNumber("effects", manifest.EntityCounts.Effects);
             writer.WriteNumber("fighters", manifest.EntityCounts.Fighters);
             writer.WriteNumber("gear", manifest.EntityCounts.Gear);
@@ -115,11 +119,14 @@ public static class ConfigManifestJson
                 return null;
             }
 
+            var countsMembers = new[] { "actions", "builds", "effects", "fighters", "gear", "passives", "tactics" };
+            var isV02 = schemaVersion == "combat.balance/0.2";
+            if (isV02) countsMembers = countsMembers.Append("effect_rules").ToArray();
             if (!root.TryGetProperty("entity_counts", out var countsElement) ||
                 countsElement.ValueKind != JsonValueKind.Object ||
                 !ValidateMembers(
                     countsElement,
-                    new[] { "actions", "builds", "effects", "fighters", "gear", "passives", "tactics" },
+                    countsMembers,
                     "$manifest.entity_counts",
                     issues) ||
                 !TryCount(countsElement, "fighters", issues, out var fighters) ||
@@ -132,6 +139,9 @@ public static class ConfigManifestJson
             {
                 return null;
             }
+
+            var effectRules = 0;
+            if (isV02 && !TryCount(countsElement, "effect_rules", issues, out effectRules)) return null;
 
             if (!root.TryGetProperty("validation_summary", out var validationElement) ||
                 validationElement.ValueKind != JsonValueKind.Object ||
@@ -156,7 +166,7 @@ public static class ConfigManifestJson
                     sourceHash,
                     exporterVersion,
                     generatedUtc,
-                    new ConfigEntityCounts(fighters, actions, passives, effects, tactics, gear, builds),
+                    new ConfigEntityCounts(fighters, actions, passives, effects, tactics, gear, builds, effectRules),
                     errorCount,
                     warningCount);
             }

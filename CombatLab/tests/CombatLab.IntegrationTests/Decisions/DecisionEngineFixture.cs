@@ -29,7 +29,7 @@ internal static class DecisionEngineFixture
     {
         var config = GoldenConfig.Value;
         var journal = new CanonicalReplayJournal(ReplayId, profile);
-        var result = new CombatEngine().Simulate(CreateRequest(config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config), config, journal);
         return new DecisionEngineRun(result, journal);
     }
 
@@ -37,7 +37,7 @@ internal static class DecisionEngineFixture
     {
         var config = GoldenConfig.Value;
         var journal = new SummaryOnlyEventJournal(ReplayId);
-        var result = new CombatEngine().Simulate(CreateRequest(config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config), config, journal);
         return new DecisionSummaryEngineRun(result, journal);
     }
 
@@ -140,7 +140,7 @@ internal static class DecisionEngineFixture
 
         return new BattleRequest(
             BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             0,

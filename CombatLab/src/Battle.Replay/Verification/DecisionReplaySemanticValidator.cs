@@ -571,7 +571,7 @@ internal static class DecisionReplaySemanticValidator
             activeTicks < 1 ||
             !HasNullableStringValue(commitAfterActor, "action_id", actionId) ||
             !HasStringValue(commitAfterActor, "action_phase", expectedPhase) ||
-            !HasStringValue(commitAfterActor, "state", expectedState) ||
+            !HasCommittedState(combatEvent, commitAfterActor, expectedState, expectedPhase) ||
             commitAfterActor.GetProperty("state_ticks_remaining").ValueKind != JsonValueKind.Number ||
             commitAfterActor.GetProperty("state_ticks_remaining").GetInt32() != expectedTimer ||
             !SameFighterFrameExcept(
@@ -1002,7 +1002,7 @@ internal static class DecisionReplaySemanticValidator
                     var expectedState = expectedToPhase == "Active" ? "AttackActive" : "Recovery";
                     valid &= HasNullableStringValue(afterActor, "action_id", actionId) &&
                              HasStringValue(afterActor, "action_phase", expectedToPhase) &&
-                             HasStringValue(afterActor, "state", expectedState) &&
+                             HasCommittedState(combatEvent, afterActor, expectedState, expectedToPhase!) &&
                              afterActor.GetProperty("state_ticks_remaining").ValueKind == JsonValueKind.Number &&
                              afterActor.GetProperty("state_ticks_remaining").GetInt32() == expectedPhaseTicks;
                 }
@@ -1408,9 +1408,11 @@ internal static class DecisionReplaySemanticValidator
     {
         const string prefix03 = "battle.core/0.3.";
         const string prefix04 = "battle.core/0.4.";
+        const string prefix05 = "battle.core/0.5.";
         var prefix = value.StartsWith(prefix03, StringComparison.Ordinal)
             ? prefix03
-            : value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04 : null;
+            : value.StartsWith(prefix04, StringComparison.Ordinal) ? prefix04
+            : value.StartsWith(prefix05, StringComparison.Ordinal) ? prefix05 : null;
         if (prefix is null)
         {
             return false;
@@ -1529,6 +1531,18 @@ internal static class DecisionReplaySemanticValidator
 
     private static string? GetNullableString(JsonElement value) =>
         value.ValueKind == JsonValueKind.Null ? null : value.GetString();
+
+    private static bool HasCommittedState(JsonElement combatEvent, JsonElement frame, string expected, string phase)
+    {
+        if (HasStringValue(frame, "state", expected)) return true;
+        // Engine0.5 activates defensive actions with their public defensive state.
+        // DATA-dependent tag/profile checks belong to config-aware conformance;
+        // older engines retain their original AttackActive/Recovery policy.
+        if (!combatEvent.GetProperty("engine_version").GetString()!.StartsWith("battle.core/0.5.", StringComparison.Ordinal)) return false;
+        var state = GetNullableString(frame.GetProperty("state"));
+        return expected == "AttackActive" && phase == "Active" && state is "Block" or "Dodge" or "CounterWindow" ||
+               expected == "Recovery" && phase == "Recovery" && state == "DodgeRecovery";
+    }
 
     private static bool HasStringValue(JsonElement value, string propertyName, string expected) =>
         StringComparer.Ordinal.Equals(value.GetProperty(propertyName).GetString(), expected);

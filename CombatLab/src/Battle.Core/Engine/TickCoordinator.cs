@@ -65,6 +65,7 @@ internal sealed class TickCoordinator
         }
 
         var beforeTick = ProgressStamp.Capture(state);
+        state.Effects?.SynchronizeFrames(state);
         TickSnapshot? snapshot = null;
         ImmediateOutcome? immediateOutcome = null;
 
@@ -72,13 +73,25 @@ internal sealed class TickCoordinator
         snapshot = state.CreateSnapshot();
 
         Observe(state, TickPhase.Expiry);
-        RunExpiry(state, settings, emitter);
+        if (state.Effects is null) RunExpiry(state, settings, emitter);
+        else AtomicBattleBatch.Execute(state, emitter, TickPhase.Expiry, (preview, events, drafts) =>
+        {
+            preview.Effects!.Expire(preview, events, EffectExpiryBoundary.ExpireBeforeTick);
+            var start = drafts.Count;
+            RunExpiry(preview, settings, events);
+            preview.Effects.CloseEvents(preview, events, drafts.Skip(start).ToArray());
+        });
         Observe(state, TickPhase.Resource);
         state.FighterA.DecrementCooldowns();
         state.FighterB.DecrementCooldowns();
 
         Observe(state, TickPhase.ActionPhaseEnd);
-        RunActionLifecycle(state, settings, emitter);
+        if (state.Effects is null) RunActionLifecycle(state, settings, emitter);
+        else AtomicBattleBatch.Execute(state, emitter, TickPhase.ActionPhaseEnd, (preview, events, drafts) =>
+        {
+            RunActionLifecycle(preview, settings, events);
+            preview.Effects!.CloseEvents(preview, events, drafts.ToArray());
+        });
 
         Observe(state, TickPhase.Decisions);
         UpdateEmergencies(state);
@@ -110,6 +123,11 @@ internal sealed class TickCoordinator
         Observe(state, TickPhase.EndTick);
         if (!immediateOutcome.HasValue)
         {
+            if (state.Effects is not null) AtomicBattleBatch.Execute(state, emitter, TickPhase.EndTick, (preview, events, _) =>
+            {
+                preview.Effects!.EndOfTick(preview, events);
+                preview.Effects.Expire(preview, events, EffectExpiryBoundary.ExpireAfterTick);
+            });
             _watchdog.Observe(beforeTick, ProgressStamp.Capture(state));
             state.AdvanceTick();
         }
@@ -132,6 +150,11 @@ internal sealed class TickCoordinator
         foreach (var fighterId in settings.InitiativeOrder)
         {
             var fighter = state.Get(fighterId);
+            if (state.Effects is not null)
+            {
+                Battle.Core.Effects.EffectControlSystem.Expire(state, emitter, fighterId);
+                continue;
+            }
             var before = fighter.ToFrame();
             var transition = fighter.AdvanceControlExpiry();
             if (!transition.HasValue)
@@ -499,7 +522,9 @@ internal sealed class TickCoordinator
                     fighter.SameCategoryStreak),
                 fighter.OpportunityDebts,
                 telegraph,
-                fighter.Emergency);
+                fighter.Emergency,
+                effects: state.Effects is null ? null : fighter.Effects,
+                effectInputs: state.Effects?.CaptureDecision(state, fighterId));
         }
     }
 
@@ -743,6 +768,8 @@ internal sealed class TickCoordinator
         foreach (var fighterId in settings.InitiativeOrder)
         {
             var fighter = state.Get(fighterId);
+            if (state.Effects is not null && fighter.State is FighterState.Stunned or FighterState.KnockedDown)
+                continue; // Control timers belong exclusively to phase 2, not the action lifecycle.
             var before = fighter.ToFrame();
             var wasCombat = fighter.IsActiveCombat;
             var transition = fighter.AdvanceMovementLifecycle();

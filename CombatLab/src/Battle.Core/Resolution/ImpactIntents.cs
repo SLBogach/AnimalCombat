@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
+using Battle.Contracts.Effects;
 using Battle.Core.Engine;
 
 namespace Battle.Core.Resolution;
@@ -20,6 +21,8 @@ internal sealed record ImpactIntent(
     EventId? SourceEventId)
 {
     internal ResolutionClass Class => Action.ClassFor(Entry.Kind);
+    internal int? CapturedGrabPriority { get; init; }
+    internal int EffectiveGrabPriority => CapturedGrabPriority ?? Action.GrabPriority;
 }
 
 internal sealed class ResolutionGroup
@@ -95,8 +98,22 @@ internal static class ImpactIntentCollector
                     state.Tick,
                     actor.Initiative,
                     actor.CommitDirection,
-                    actor.CombatLifecycleEventId));
+                    actor.CombatLifecycleEventId)
+                {
+                    CapturedGrabPriority = entry.Kind == HitPrimitiveKind.Grab && state.Effects is not null
+                        ? FreezeGrabPriority(state, actor, descriptor.ResolutionProfile.GrabPriority) : null,
+                });
             }
+        }
+    }
+
+    private static int FreezeGrabPriority(BattleState state, FighterRuntimeState actor, int baseline)
+    {
+        try { return checked(baseline + state.Effects!.Channel(actor.FighterId, EffectModifierTarget.GrabPriority)); }
+        catch (OverflowException exception)
+        {
+            throw new EngineInvariantException(EngineFailureCodes.EffectArithmeticOverflow,
+                TickPhase.CollectIntents.ToString(), "Grab priority arithmetic overflowed: " + exception.Message);
         }
     }
 }

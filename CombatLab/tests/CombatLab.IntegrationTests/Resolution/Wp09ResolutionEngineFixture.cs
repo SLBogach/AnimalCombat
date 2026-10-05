@@ -28,7 +28,7 @@ internal static class Wp09ResolutionEngineFixture
         var journal = new CanonicalReplayJournal(
             new ExternalId("replay-wp09-" + Slug(scenario)),
             profile);
-        var result = new CombatEngine().Simulate(Request(scenario, config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(Request(scenario, config), config, journal);
         return new ResolutionRun(result, journal);
     }
 
@@ -187,7 +187,7 @@ internal static class Wp09ResolutionEngineFixture
         };
         return new BattleRequest(
             new ExternalId("battle-wp09-" + Slug(scenario)),
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             new ModeRulesSnapshot(
                 new StableId("wp09_" + Slug(scenario).Replace('-', '_') + "_v01"),

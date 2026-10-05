@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
+using Battle.Core.Effects;
 
 namespace Battle.Core.Decisions;
 
@@ -112,7 +113,8 @@ internal sealed class DecisionFighterView
         ActionPhase? actionPhase = null,
         int stagger = 0,
         int staggerThreshold = 1,
-        IEnumerable<EffectFrame>? effects = null)
+        IEnumerable<EffectFrame>? effects = null,
+        EffectDecisionView? effectInputs = null)
     {
         if (fighterId is not FighterId.FighterA and not FighterId.FighterB)
         {
@@ -165,6 +167,7 @@ internal sealed class DecisionFighterView
             nameof(opportunityDebts));
         Telegraph = telegraph;
         Emergency = emergency;
+        EffectInputs = effectInputs;
         PublicFrame = new FighterFrame(
             fighterId,
             position,
@@ -226,6 +229,8 @@ internal sealed class DecisionFighterView
     internal DecisionTelegraphView? Telegraph { get; }
 
     internal bool Emergency { get; }
+
+    internal EffectDecisionView? EffectInputs { get; }
 
     internal bool IsDecisionReady => State == FighterState.DecisionReady && !CurrentActionId.HasValue;
 

@@ -36,11 +36,41 @@ internal sealed class CombatEventEmitter
 
     internal bool IsTerminal { get; private set; }
 
+    internal int TerminalCleanupReserve { get; private set; }
+
+    internal CombatEventDraft? LastDraft { get; private set; }
+
+    internal void SetTerminalCleanupReserve(int count)
+    {
+        if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+        TerminalCleanupReserve = count;
+    }
+
+    internal CombatEventEmitter CreatePreview(ICombatEventJournal previewJournal) => new(
+        _request, _config, previewJournal, int.MaxValue)
+    {
+        _nextSequence = _nextSequence,
+        LastDraft = LastDraft,
+    };
+
+    internal void PublishBatch(IEnumerable<CombatEventDraft> drafts)
+    {
+        foreach (var draft in drafts)
+        {
+            if (draft.Sequence != _nextSequence)
+                throw new EngineInvariantException(EngineFailureCodes.EffectInvalidMutation, "AtomicBatch", "Preview sequence diverged before publication.");
+            _ = Emit(draft.Tick, draft.Payload, draft.ActorId, draft.TargetId, draft.ActionId,
+                draft.EffectId, draft.DecisionId, draft.ResolutionGroupId, draft.SourceEventId,
+                draft.ReasonCodes, draft.Rng, draft.Before, draft.After);
+        }
+    }
+
     internal EventId? LastEventId => _nextSequence == 0
         ? null
         : EventId.FromSequence(_nextSequence - 1);
 
-    internal void PreflightNonterminalBatch(int eventCount, TickPhase phase = TickPhase.Decisions)
+    internal void PreflightNonterminalBatch(int eventCount, TickPhase phase = TickPhase.Decisions,
+        int? terminalCleanupReserve = null)
     {
         if (eventCount < 0)
         {
@@ -55,12 +85,14 @@ internal sealed class CombatEventEmitter
                 "No canonical event may follow BattleEnded.");
         }
 
-        if ((long)eventCount > (_maximumEvents - 1L) - _nextSequence)
+        var cleanup = terminalCleanupReserve ?? TerminalCleanupReserve;
+        if (cleanup < 0) throw new ArgumentOutOfRangeException(nameof(terminalCleanupReserve));
+        if ((long)eventCount > (_maximumEvents - 1L - cleanup) - _nextSequence)
         {
             throw new EngineInvariantException(
                 EngineFailureCodes.EventCapExceeded,
                 phase.ToString(),
-                $"The event cap of {_maximumEvents} cannot fit an atomic batch of {eventCount} events while reserving BattleEnded.");
+                $"The event cap of {_maximumEvents} cannot fit an atomic batch of {eventCount} events while reserving {cleanup} cleanup events and BattleEnded.");
         }
     }
 
@@ -93,7 +125,7 @@ internal sealed class CombatEventEmitter
         }
 
         var isTerminal = payload.EventType == CombatEventType.BattleEnded;
-        if ((!isTerminal && _nextSequence >= _maximumEvents - 1L) ||
+        if ((!isTerminal && _nextSequence >= _maximumEvents - 1L - TerminalCleanupReserve) ||
             (isTerminal && _nextSequence >= _maximumEvents))
         {
             throw new EngineInvariantException(
@@ -133,6 +165,7 @@ internal sealed class CombatEventEmitter
         }
 
         _nextSequence = checked(_nextSequence + 1);
+        LastDraft = draft;
         IsTerminal = isTerminal;
         return identity;
     }

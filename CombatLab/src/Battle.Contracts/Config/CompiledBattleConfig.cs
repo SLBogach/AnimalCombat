@@ -12,6 +12,7 @@ public sealed class CompiledBattleConfig
     private readonly IReadOnlyDictionary<StableId, CompiledConfigEntity> effectsById;
     private readonly IReadOnlyDictionary<StableId, CompiledConfigEntity> tacticsById;
     private readonly IReadOnlyDictionary<StableId, CompiledConfigEntity> gearById;
+    private readonly IReadOnlyDictionary<StableId, CompiledConfigEntity> effectRulesById;
 
     public CompiledBattleConfig(ConfigReference reference)
         : this(
@@ -35,6 +36,21 @@ public sealed class CompiledBattleConfig
         IEnumerable<CompiledConfigEntity> effects,
         IEnumerable<CompiledConfigEntity> tactics,
         IEnumerable<CompiledConfigEntity> gear)
+        : this(reference, settings, fighters, actions, passives, effects, tactics, gear,
+            Array.Empty<CompiledConfigEntity>())
+    {
+    }
+
+    public CompiledBattleConfig(
+        ConfigReference reference,
+        IEnumerable<ConfigProperty> settings,
+        IEnumerable<CompiledConfigEntity> fighters,
+        IEnumerable<CompiledConfigEntity> actions,
+        IEnumerable<CompiledConfigEntity> passives,
+        IEnumerable<CompiledConfigEntity> effects,
+        IEnumerable<CompiledConfigEntity> tactics,
+        IEnumerable<CompiledConfigEntity> gear,
+        IEnumerable<CompiledConfigEntity> effectRules)
     {
         if (settings is null)
         {
@@ -71,6 +87,11 @@ public sealed class CompiledBattleConfig
             throw new ArgumentNullException(nameof(gear));
         }
 
+        if (effectRules is null)
+        {
+            throw new ArgumentNullException(nameof(effectRules));
+        }
+
         Reference = reference;
         Settings = CopySettings(settings, out settingsByName);
         Fighters = CopyCatalog(fighters, out fightersById);
@@ -79,6 +100,7 @@ public sealed class CompiledBattleConfig
         Effects = CopyCatalog(effects, out effectsById);
         Tactics = CopyCatalog(tactics, out tacticsById);
         Gear = CopyCatalog(gear, out gearById);
+        EffectRules = CopyCatalog(effectRules, out effectRulesById);
     }
 
     public ConfigReference Reference { get; }
@@ -96,6 +118,8 @@ public sealed class CompiledBattleConfig
     public IReadOnlyList<CompiledConfigEntity> Tactics { get; }
 
     public IReadOnlyList<CompiledConfigEntity> Gear { get; }
+
+    public IReadOnlyList<CompiledConfigEntity> EffectRules { get; }
 
     public bool TryGetSetting(string name, out ConfigValue value) =>
         settingsByName.TryGetValue(name, out value);
@@ -117,6 +141,9 @@ public sealed class CompiledBattleConfig
 
     public bool TryGetGear(StableId id, out CompiledConfigEntity? entity) =>
         TryGet(gearById, id, out entity);
+
+    public bool TryGetEffectRule(StableId id, out CompiledConfigEntity? entity) =>
+        TryGet(effectRulesById, id, out entity);
 
     private static IReadOnlyList<ConfigProperty> CopySettings(
         IEnumerable<ConfigProperty> source,

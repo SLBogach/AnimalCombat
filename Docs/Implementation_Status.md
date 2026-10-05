@@ -11,6 +11,7 @@
 - WP-06 Engine shell
 - WP-07 Movement
 - WP-08 Decisions
+- WP-09 Resolution
 
 WP-05 завершил typed event journal, canonical JSON, SHA-256 event chain и replay verifier. Его требования сохранены в [WP-05_Brief.md](./WP-05_Brief.md).
 
@@ -200,9 +201,191 @@ Canonical balance JSON, workbook и generated artifacts не изменены. `
 
 GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest` и `windows-latest`, Debug и Release — все четыре jobs green. CI подтвердил полный test suite и обязательные generated, target-determinism, historical replay и coverage gates на обеих ОС. Все completion conditions WP-09 выполнены.
 
+## Реализация WP-10 Effects
+
+**WP-10 — `IN PROGRESS / LOCAL ACCEPTANCE PASSED / CI PENDING`; checkpoint `2026-10-04`, `132/132` blocking IDs исполнены локально.**
+
+Подготовка выполнена в `feature/wp-10-effects` от локального `master@81b1488`: completed WP-09 и сохранённый Unity Viewer checkpoint. Read-only проверка GitHub в этот момент показала remote `master@e610c76`; локальный master опережал remote на один commit. Merge/commit Viewer не закрывает его отдельную acceptance matrix.
+
+Созданы:
+
+- [WP-10 Brief](./WP-10_Brief.md) — source sections, implementation boundaries, exact runtime semantics, DATA proposals и план;
+- [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — `132` unique proposed blocking acceptance IDs;
+- `OPEN-WP10-01..28` и matrix приняты владельцем `2026-10-03`; все проектные решения `CLOSED`.
+
+Предлагается Engine `battle.core/0.5.0`, новый баланс `combat.balance/0.2`/`v0.2`, отдельные versioned workbook/schema/generated artifacts. v0.1 и replay Engine0.1–0.4 сохраняются. Обязательство `OPEN-WP07-13` переносится в физический gate WP-10: 15 stat min/max pairs должны быть в validated DATA до runtime movement modifiers. Дополнительно требуются queue caps, explicit effect rules/metadata и knockdown/interrupt DATA.
+
+`BLOCK-WP10-APPROVAL-01 — CLOSED`. Реализован независимый history/DATA/contracts slice:
+
+- automated SHA + semantic verification всех десяти historical replay Engine `0.1–0.4` до version bump;
+- pins source workbook, config/schema/map/validation/manifest v0.1 и проверка source machine replay package;
+- source-compatible immutable `CompiledBattleConfig.EffectRules` с lookup и защитой от duplicate RuleId;
+- typed effect rule/target/refresh/role/control/interrupt vocabulary, `EffectRuleProfile` и explicit `StatBounds`;
+- version-selecting strict reader/compiler и отдельная schema definition v0.2; default schema writer v0.1 остаётся byte-identical;
+- обязательность всех 36 новых settings, validation stat domains/roles/durations/lookups/groups/references/targets/interrupt tokens;
+- version-aware manifest с `effect_rules` count для v0.2, включая loader count verification;
+- separate physical workbook/schema/generated v0.2: 36 settings, 120 action metadata fields, 9 gear priorities, 30 effect metadata fields, 65 rule fields;
+- repo-native .NET/OpenXML мигратор и `migrate-config`: pinned v0.1 input, CreateNew-only output, atomic publish после exporter/compiler validation, сохранение старых ячеек/formulas/styles и untouched OPC parts;
+- version-aware exporter/CLI: separate names/schema/manifest/counts для v0.2, existing v0.1 export byte-identical; `--schema-output` позволяет read-only verification рабочего дерева;
+- `verify-wp10-generated.ps1`: две fresh-process migration/export/loader проверки без записи в source/schema/generated; добавлен в четыре CI configurations (remote execution ещё не подтверждён);
+- immutable `EffectProfile`/`EffectModifier`, pure `EffectStatMath` с checked floor/Add aggregation/product per fold/last Override/clamp;
+- per-fighter cloneable `EffectStore`: пять policies, exact end-exclusive/remaining/due boundaries, real-mutation budgets, priority expiry/ordinal public order и fatigue lookup once;
+- cloneable bounded `EffectTriggerQueue`: causal ordering, root-cycle/once guards, independent fighter rule budgets/cooldowns, depth/tick caps, quiet EndOfTick occurrence identity; пока без Engine/journal integration;
+- strict Core `EffectSetupMaterializer`: explicit v0.2/reference settings, 15 bounds, metadata/roles/groups/lookup/duration checks, sorted typed issues и достижимость Global/selected Action/transitive Effect rules;
+- immutable `EffectRuntimeDefinition`/per-fighter definitions: base и initial stats, canonical static gear Add/product/Override/clamp; no mutable stores/queues/caches в shared compiled config;
+- conservative `EffectArithmeticProof` для intermediate Add/product/derived folds, reachable lifetime/cooldown timers и control stage boundaries; mutually exclusive profiles используют один group envelope. Полный consumer-specific damage/decision/event-reserve proof ещё требуется;
+- typed `ActionInterruptProfile`: explicit strengths/phases, Armored protection boundary, Unstoppable Stun/Knockdown filters без bypass Grab/Defeat;
+- pure `EffectControlMath`/`KnockdownTimeline`: resistance→fatigue→stun clamp и exact half-open Fall/Grounded/GetUp, checked total;
+- 156 WP10 tests: 48 Conformance + 99 Core + 9 Integration, включая 65 новых тестов этого продолжения. Synthetic/compiled corruption tests не заменяют physical workbook.
+
+Локальная проверка Windows `2026-10-03`:
+
+- locked restore — green;
+- Release/Debug build — `0 warnings / 0 errors`; после обнаружения restricted reused MSBuild workers использованы `-m:1 -nr:false`;
+- Release/Debug полный solution — `1063 passed / 0 failed / 0 skipped`: Core636, Conformance377, Integration50; Performance project по-прежнему пуст;
+- WP10 filtered run: `156` проходят; acceptance metadata присутствует у 17 полностью исполненных IDs. Materializer/store/queue foundation tests пока не закрывают pre-Begin/closure/Engine integration cases;
+- `verify-wp04-generated.ps1 -Configuration Release` — green, config hash прежний;
+- `verify-wp10-generated.ps1 -Configuration Release/Debug` — green: native XLSX и export artifacts одинаковы, manifest отличается только generated_utc;
+- `verify-wp09-target-determinism.ps1 -Configuration Release` — green: пять current Engine0.4 fixtures byte-identical между actual netstandard2.1/net10.0 assemblies;
+- historical SHA/semantic verification — green; `git diff --check -- CombatLab Docs` — green.
+- свежие WP02/WP03/WP06/WP07/WP08/WP09 critical coverage gates — 100%, combined Core line `88.74%`; pure `EffectStatMath`, `EffectControlMath`, `KnockdownTimeline` line/branch — 100%. Reader branch `94.83%`, arithmetic proof branch `92.55%`, store/queue/control integration ещё не закрывают full WP10 coverage; gates не ослаблены.
+
+На checkpoint2026-10-03 были исполнены17/132: `WP10-BASE-002`, `WP10-DATA-001/003/009`, `WP10-MOD-001..007`, `WP10-CTRL-003`, `WP10-KDN-002`, `WP10-INT-001`, `WP10-REG-001/002/007`. Последующие atomic47/132 и текущий control60/132 checkpoints — ниже. Physical `BLOCK-WP10-DATA-01..04`, `BLOCK-WP10-ARTIFACT-01`, `BLOCK-WP10-HISTORY-01` CLOSED после экспорта/loader/pin checks. Core materializer до Begin и full consumer-specific overflow proof остаются обязательны до публичного включения Effects.
+
+`BLOCK-WP10-TOOLING-01 — CLOSED`: владелец явно разрешил `.NET/OpenXML мигратор` 2026-10-03 вместо недоступного runtime навыка Spreadsheets. Сохранение оформления/formulas проверено по OPC/cell XML; визуальный render в Excel/artifact-tool не выполнялся. Workflow и проверенные hashes — [WP-10 Migration](./WP-10_Migration.md).
+
+### Atomic runtime checkpoint — 2026-10-04
+
+- `EffectRuntime`: private stores/queue/cache/lineage, typed owner/recipient/condition resolution, bounded cycle diagnostics; no auto-passive execution, no additional RNG.
+- `AtomicBattleBatch`: deep preview бойцов, cooldowns/debts/consumed hits/grabs/outcome, обеих RNG streams, store/queue budgets/visited и drafts; exact preflight всего batch плюс final active-effect cleanup/BattleEnded reserve до публикации.
+- EffectAdded/Removed отражают отдельные authoritative public deltas; Replace даёт empty intermediate membership; application event IDs, expiry sources и genuine action/group lineage сохраняются.
+- Conditional TickCoordinator wiring: Before expiry/closure/recompute до decisions; lifecycle hooks; group closure после всех frozen impacts и до defeat; EndOfTick затем repeated After due drain; normal EOT не выполняется при immediate terminal.
+- Runtime stats recompute из immutable base/gear; damage channels до armor/chip, chance offsets до clamp, fatigue duration channel в control calculation. Weight/GrabPriority consumers и protections ещё не завершены.
+- Terminal cleanup trigger-free, reserved Invalid completion; даже failure первой closure сохраняет BattleStarted seq0 и единственный BattleEnded/Complete. Journal Append-port по прежнему trusted; rollback гарантия относится к engine prepare/validation/caps, не внешнему journal transport failure.
+- Непубличный controlled constructor позволяет unit harness вызвать полный Simulate; публичные constructors не принимают partial DATA. Producer остаётся0.4/balance0.1, v0.2 pre-Begin factory пока не подключена.
+
+Добавлены39 unit tests; totals:195 WP10 tests (138U/48C/9I), full Release/Debug1102 (675 Core/377 Conformance/50 Integration), no failures/skips; restore locked/build0 warnings/errors. Исполнены47/132 IDs,30 новых; точный список — [Test Plan checkpoint](./Combat_Test_Plan_WP-10_v0.1.md). Metadata47 unique/no duplicates; полный132 inventory ещё не готов. Старые coverage gates/thresholds сохранены; новые WP10 critical branches ещё не100%. Generated v0.1/v0.2, historical SHA/semantic и actual netstandard2.1/net10.0 Engine0.4 determinism проходят; это не WP10 effect target/process conformance.
+
+На atomic checkpoint оставались85 cases; последующий control checkpoint — ниже. Similar unit assertions не закрывают ещё не исполненные I/C requirements. WP-10 не COMPLETED. File list и результаты — [WP-10 Migration continuation](./WP-10_Migration.md).
+
+### Control runtime checkpoint — 2026-10-04
+
+- `EffectControlSystem`: separate frozen hit/control filters, allowed/prevented transitions, explicit ActionCancelled и earlier-real-cause guards. EffectControlSystem line/branch100% в fresh Core coverage.
+- FighterRuntimeState: clone-safe bounded latest-commit ledger (actor/category), absolute stun expiry, immutable knockdown timeline/internal stage; no same-commit refresh, dead-target wakeup, fictitious GetUp action or duplicated cancellation. Phase2 owns control timers; phase4 no longer decrements them as actions.
+- Resolution: immunity permits damage/stagger/reset but does not cancel actions for prevented control; Armored strength threshold and Unstoppable protected categories/phases; Counter/Grab/Defeat cannot be ignored. Knockdown follows complete group damage/force/throw and precedes defeat. GroundHit-only geometry on all three stages, no defense draw for ordinary miss.
+- Fatigue lookup once, shared stack lifetime/crossing-only immunity; Wakeup/ControlEnded hooks before decision snapshot. GrabLockout uses the active role effect's authoritative interval instead of an independent legacy timer in this branch; legacy Engine0.4 retains its prior lockout.
+- Cancellation retains committed energy/resource/cooldown, removes future descriptors/hits. Only an already-created current-group UninterruptibleImpact intent survives; stale same-ActionId/different-DecisionId cannot survive.
+- Knockdown action-owned hooks derive the originating attacker from the canonical causal chain, not StateChanged.actor (victim). Bounded source walk, no RNG or inferred synthetic cause.
+
+Добавлены48 unit tests; totals:243 WP10 tests (186U/48C/9I), full Release/Debug1150 (723 Core/377 Conformance/50 Integration), no failures/skips; locked restore/build0 warnings/errors. Исполнены60/132 IDs: предыдущие47 плюс `CTRL-001/005/006/007/009/011`, `KDN-001/004/007`, `INT-002/003/004/008`. Source audit60 entries/60 unique/0 duplicate/0 unknown, matrix132 unchanged. Exact list — Test Plan checkpoint. I/C control acceptance ещё не закрыт controlled unit assertions.
+
+WP04 generated Release, WP10 generated Release/Debug, WP09 actual netstandard2.1/net10.0 determinism/historical pins — green. Legacy WP02/03/06/07/08/09 critical gates100%; combined Core line89.74%. Core coverage: `WP10ControlFinalCore`; Integration: `WP10ControlFinalIntegration`; sequential Replay collectors: `WP10ControlWP08ReplayFinal` / `WP10ControlWP09ReplayFinal`. Full WP10 critical/process/TFM/remote CI остаются открытыми.
+
+Остались72 cases: pre-Begin v0.2/full consumer proof, decision weight/grab consumers, production-level control integration/conformance, version0.5/replay verifier/new goldens, full matrix inventory/critical coverage/determinism/CI. Следующий срез — remaining consumers и consumer-specific validation. Public producer остаётся0.4, CLI не выпускает effect replay. UnityClient, generated/historical bytes и посторонние changes сохранены; commit/push не выполнялись.
+
+v0.2 workbook SHA `3628c7fecafc91622d19086675bfd935529e53ef3622286ce309bbe47d0fc8bf`; config SHA `5361ec68359de06a1f4ff458893ad4d537825c873ffb0252e272a5b429b4e0c4`; export `0 errors / 0 warnings`, five effect rules. Reproducibility v0.2 Release/Debug gates green; migrated XLSX bytes equal in en-US/ru-RU/tr-TR; Unix ZIP metadata normalization отдельно проверена synthetic test, но фактический Linux CI ещё нужен.
+
+Workbook/generated v0.1, fixtures и UnityClient не изменялись этим slice; посторонние Unity-изменения сохранены. Git commit/push не выполнялись.
+
+### Consumer checkpoint — 2026-10-04
+
+- `EffectDecisionView`: immutable copied weight sources/protection in shared phase5 snapshot. BlockWeight/PunishWeight/WallActionWeight только в Situation по exact tags; matching channels объединяются в canonical order до floor, без повторения в других стадиях.
+- Effective signed GrabPriority frozen при collection; conflict winner/payload используют captured value. Grab availability использует frozen opponent eligibility; Mass/ControlResistance читаются при resolution-group freeze.
+- `EffectArithmeticProof.ReachableRange/WeightUpper`: bounded reachable envelopes, including absent effects, gear/Override, group exclusion and combined weight channels. Schema maximum не подменяет реально достижимую неизменённую характеристику.
+- `EffectConsumerArithmeticProof`: damage/armor, control/fatigue/timeline, force/wall, timing, six-stage decision/weight sum, grab Add intermediate proof. Controlled Simulate возвращает sorted Rejected до Begin при риске; external production materializer/full DATA-007 gate ещё не подключён.
+
+Добавлены32 unit tests; всего275 WP10 tests (218U/48C/9I). Исполнены61/132, новый MOD-011; remaining71, no matrix changes. Locked restore/Release+Debug build0 warnings/errors; full suite1182 (755 Core/377 Conformance/50 Integration),0 failures/skips. Performance project по-прежнему пуст. Source trait audit61 unique/no duplicates/no unknown; full132 discovery inventory ещё required.
+
+WP04 generated Release, WP10 generated Release/Debug, WP09 actual-target/historical gate прошли. Fresh Core coverage `WP10ConsumersCore`, Integration `WP10ConsumersIntegration`, sequential Replay `WP10ConsumersWP08Replay`/`WP10ConsumersWP09Replay`; legacy selected critical gates100%, fresh combined Core line90.60%; EffectDecisionView line/branch100%. New full WP10 critical coverage не закрыт. Native artifacts/historical hashes не менялись, UnityClient/postоронние changes сохранены; commit/push не выполнялись.
+
+На consumer checkpoint public Engine/CLI оставались0.4/balance0.1. External pre-Begin v0.2 и movement/event-reserve proof завершены следующим срезом ниже; I/C control/freeze acceptance, replay0.5/goldens, full coverage/inventory/process/TFM/remote CI ещё обязательны.
+
+### Продолжение — versioned v0.2 setup, 2026-10-04
+
+- `BattleSetupFactory` подключает strict materializer и consumer proof для explicit `battle.core/0.5.0` + balance v0.2. Весь reachable graph, оба билда, initial geometry и арифметика проверяются до journal.Begin. Default public producer остаётся0.4; новый versioned путь пока internal до replay/golden gates, без definition injection.
+- V0.2 initialization использует агрегированные Add/product/ordered Override и clamp всех15 initial stats. Static MaxHealth1770/currentHP1770 валиден, runtime structural/maxima modifiers запрещены. Legacy0.4 initialization остаётся последовательным — historical semantics/hashes сохранены.
+- Consumer proof дополнен Int32 arena width/radius/speed/combat-move pair bounds и checked closure/terminal-cleanup reserve arithmetic. System startup/recovery берутся из fixed DATA, без ActionSpeed scaling. Малый max_events не отвергает валидный potential graph: actual batch preflight даёт FailedInvariant/EventCapExceeded, без partial commit, с одним terminal BattleInvalid/Complete.
+- Flag Override принимает только integer0/1; bool/string/другие числа дают typed domain rejection, без coercion. Проверены stable sorted code/path для неизвестных vocabulary/reference/phase tokens, incompatible groups/roles/lookups/durations, reachable sum/product/timer/consumer overflow, dormant WP-11 channels и unselected Action rules.
+- Full Simulate через real compiled v0.2 проверяет initial empty frames, Before-boundary D1 expiry, terminal cleanup и A/B/A reuse без effect/counter/RNG leaks. No-Begin rejection не подменён controlled definition harness; I/C release cases этим не закрываются.
+
+Добавлены21 unit tests:17 `EffectVersionedSetupTests` и4 consumer-proof tests. Всего296 WP10 tests (239U/48C/9I); full Release/Debug1203 (776 Core/377 Conformance/50 Integration),0 failures/skips. Locked restore green; Release/Debug build0 warnings/errors. Performance project по-прежнему пуст. Новые исполненные blocking IDs: `DATA-002/004/005/006/007/010/011`, `MOD-014`. Итого69/132, осталось63. Source trait audit69 entries/69 unique/0 duplicate/0 unknown; full132 discovery inventory ещё required.
+
+WP04 generated Release, WP10 fresh-process migration/export/load Release/Debug и WP09 five actual netstandard2.1/net10.0 Engine0.4 fixtures/historical pins — green. Artifact/workbook/schema/fixture bytes не менялись. Fresh coverage: `WP10VersionedSetupFinalCore`, `WP10VersionedSetupIntegration`, sequential `WP10VersionedSetupWP08Replay`/`WP10VersionedSetupWP09Replay`. Legacy selected WP02/03/06/07/08/09 critical gates100%; combined Core line92.26%. Consumer proof line100%, branch97.36%; Reader branch95.19%, new full WP10 critical coverage ещё не100%. Thresholds/matrix не ослаблены; Linux/remote CI не запускались.
+
+Остались I/C effect/control/freeze acceptance, versioned replay0.5 verifier/current+effect goldens, remaining U/C/I cases, full coverage/inventory/process/TFM/profile/culture/OS/remote CI gates. Public Engine/CLI всё ещё0.4/balance0.1, эффектный replay пока не является доступным CLI release. UnityClient и посторонние изменения сохранены; commit/push не выполнялись. File list и тестовая команда — [WP-10 Migration](./WP-10_Migration.md).
+
+### Продолжение — full-loop effects/control integration, 2026-10-04
+
+Production-compiled integration harness проводит synthetic JSON через настоящий v0.2 compiler, strict pre-Begin setup, весь Engine0.5 loop и canonical journal. Definitions/state не инжектируются; observer только читает phase snapshots. Для тестов добавлены friend access IntegrationTests и optional observer internal versioned constructor; public Engine/CLI остаются0.4.
+
+- Проверены BattleStart после двух initial frames, D1/D2 Before/After границы, expiry-trigger closure с latest successful application lineage, удаление дочернего D1 After на той же границе, silent EndOfTick occurrence и suppression на terminal tick.
+- Проверены frozen startup/recovery и speed уже начатого system movement segment: следующий commit/segment использует обновлённые stats. Equal trade читает pre-group Armor для обоих impacts; следующая группа видит эффект. Изменение Initiative не пересортировывает frozen intents, но влияет на collection следующего tick; обе decisions видят общий post-expiry snapshot.
+- Full-loop control cases подтверждают один fatigue на living stun/grab exit, crossing2→3 immunityD25 без renewal на cap, knockdown Fall/Grounded/GetUp2/6/3, Ready phase2tick21 до decisions, wakeup expiry aftertick45, legal GroundHit/lethal precedence и throw/force/wall before knockdown без duplicate cancellation/lockout/fatigue.
+- Interrupt integration подтверждает отсутствие ordinary-hit cancel в combat Active/Recovery, explicit movement Startup/Active cancellation, сохранение paid Energy12/cooldown100 без refund, удаление future hits и survival только уже созданного current-group UninterruptibleImpact intent.
+- Timeout/lethal cleanup trigger-free, final effects empty, BattleEnded last. HP0 subject не принимает late DamageTaken effect до defeat. Event-cap failure с уже активными effects сохраняет резерв для всех removals+invalid terminal и откатывает failed closure budgets.
+- Canonical journal распознаёт Engine0.5 как наследующий WP08 event roles. Это только producer journal compatibility: standalone replay verifier0.5 и effect semantic validators ещё не реализованы. Historical policies/bytes не менялись.
+
+Добавлены27 integration tests в четырёх классах + shared fixture. Новые22 blocking IDs: `MOD-008/012`, `EXP-003/006/008/009`, `TRG-002/011/012/014`, `CTRL-002/004`, `KDN-003/005/006/008`, `INT-005/006/007`, `SAFE-006/007/009`. Итого91/132, осталось41. Source audit91 traits/91 unique/0 duplicate/0 unknown; full132 discovery gate остаётся обязательным.
+
+Locked restore green; Release/Debug build0 warnings/errors. Полный suite1230 (776 Core/377 Conformance/77 Integration),0 failures/skips; WP10 filtered323 (239U/48C/36I). Performance project по-прежнему пуст. WP04 generated Release, WP10 fresh-process native reproduction Release/Debug и WP09 five actual-target/historical checks Release/Debug green. Workbook/schema/generated/manifest/fixtures/hashes не заменялись. Fresh coverage: `WP10IntegrationCore`, `WP10IntegrationFinalIntegration`, sequential `WP10IntegrationWP08Replay`/`WP10IntegrationWP09Replay`; legacy critical WP02/03/06/07/08/09 gates100%, combined Core line92.36%. Полный WP10 critical coverage не100%; matrix/thresholds не ослаблены. Linux/remote CI не запускались. UnityClient/postоронние изменения сохранены; commit/push не выполнялись.
+
+### Продолжение — remaining control/stack/queue + replay0.5, 2026-10-04
+
+Исполнены ещё17 blocking IDs: `STACK-007/011/012`, `TRG-003/007/013`, `CTRL-008/010/012`, `EVT-001..008`. Теперь108/132, осталось24. Stack/trigger/control разделы полностью представлены acceptance tests; source audit108 traits/108 unique/0 duplicate/0 unknown. Это не закрытие полного132 discovery gate.
+
+- Unit cases проверяют StrongestWins CompareKey/tie ordering и missing compare rejection, Replace/Strongest group capacity, guards, отдельные rule/effect budgets и independent A/B ControlEnded budgets.
+- Full-loop integration проверяет group replacement при заполненных32/128 slots без transient overflow, rollback при следующем new-group превышении, общий grab-lockout разных actions и точный expiry, failed block → post-damage guard-break → следующие stat/weight consumers, max-hold/release/throw/lethal control endings без double fatigue/lockout.
+- Добавлен version-specific public effect/control replay verifier0.5, составленный с существующими decision/resolution policies. Проверяются explicit balance0.2 metadata, affected frames/causes/lineage, no RNG, stack deltas, lifetime/expiry/latest application, Replace Removed→Added, prevented control, actionless knockdown stages/ready boundary, sparse keyframes и terminal empty membership. Verifier не выводит private DATA/queue budgets/cooldowns из публичного replay; config-aware producer conformance `EVT-009` ещё обязателен.
+- 60 conformance tests проверяют позитивные witnesses и integrity-rehashed semantic tampering;9 integration replay scenarios проходят schema/verifier без warnings. Historical0.1–0.4 hashes/policies не заменены.
+- Verifier выявил producer-frame ошибки: на timeout cleanup effects remaining были от предыдущего tick, а control before-frame countdown отставал до expiry projection. Исправлена текущая абсолютная проекция timers только в effects path; переходы состояний/legacy0.4 семантика сохранены. Defensive zero-startup Active frames Block/Dodge/CounterWindow и DodgeRecovery принимаются только policy0.5.
+
+Этот срез добавил85 tests:7U/60C/18I. Locked restore green; Release/Debug build0 warnings/errors; полный suite1315 (783 Core/437 Conformance/95 Integration),0 failures/skips; WP10 filtered408 (246U/108C/54I). Пустой Performance project даёт прежнее сообщение no tests, не skipped acceptance.
+
+WP04 generated Release, WP10 native fresh-process generated Release/Debug и WP09 actual netstandard2.1/net10.0 five historical/current0.4 scenarios Release/Debug green. Эти target checks не закрывают новый WP10 target/determinism gate. Workbook/schema/generated/manifest/fixtures/hashes не менялись. Fresh reports: `WP10ReplayCore`, `WP10ReplayIntegration`, `WP10ReplayFinalConformance`; legacy WP02/03/06/07/08/09 critical gates100%, combined Core line92.45%. Новый effect replay witness line98%/branch91.44%; полный WP10 critical coverage остаётся открытым, thresholds/matrix не ослаблены.
+
+Public Engine/CLI остаются0.4/balance0.1, internal producer0.5 + standalone verifier0.5 доступны тестам. Goldens/public release, config-aware conformance, remaining24 IDs/full inventory/critical coverage/determinism/OS/remote CI не завершены. UnityClient и посторонние изменения сохранены; commit/push не выполнялись. Точный остаток и file list — Test Plan и WP-10 Migration.
+
+### Предыдущий checkpoint — public release и local gates, 2026-10-04
+
+Public Engine0.5/balance0.2 и CLI `run-demo` доступны. Добавлены девять verified golden replay/config pairs и отдельный manifest; все historical0.1–0.4 pins сохранены. Закрыты оставшиеся24 IDs, в том числе independent config-aware EVT-009, failure lifecycle, four GOLD cases и весь DET/REG release slice. Reflection inventory на актуальных test assemblies обнаруживает132 IDs без skips/duplicates/unknowns.
+
+Locked restore green; Release/Debug build0 warnings/errors; в каждой конфигурации1443 tests (864 Core/469 Conformance/110 Integration),0 failed/skipped. WP10:536 (327U/140C/69I). Performance project остаётся пустым, это не пропущенные acceptance cases. Whole-artifact reproducibility: четыре effects×100 повторов,40 fresh CLI processes, Standard/Diagnostic/SummaryOnly, культуры/перестановки/mirror, actual netstandard2.1/net10.0 dependency checks и обе конфигурации совпадают с goldens.
+
+Новый WP10 critical coverage gate100% branch, включая полные critical runtime/queue/store/control/math/atomic classes и generated closures, а также public effect replay witnesses; combined Core line92.74%. Fresh reports: `WP10ReleaseTerminalCore`, `WP10ReleaseIntegration`, `WP10ReleaseFilteredReplay`; полный conformance report `WP10ReleaseGuardReplay`. Legacy WP02/03/06/07/08/09 gates сохранены и green. Generated0.1/0.2 воспроизводимы; v0.1 hashes не менялись. CI дополнен WP10 inventory/actual-target/coverage gates.
+
+Незавершённые code/acceptance/coverage пункты отсутствуют. Remote Windows/Linux × Debug/Release CI ещё не выполнен, поэтому WP10 не COMPLETED. Synthetic demo не является fighter-passive/resource kit implementation: это WP11. UnityClient и его пользовательские changes сохранены; git commit/push не выполнялись. Файлы/команды/границы результата — [WP-10 Migration](./WP-10_Migration.md).
+
+### Предыдущий checkpoint — завершение прерванной проверки, 2026-10-05
+
+Найден и завершён последний checkpoint WP10: повторный locked restore, Release/Debug build0 warnings/errors, полный suite1443 passed (864 Core/469 Conformance/110 Integration) в каждой конфигурации,0 failures/skips. Отдельный Release WP10 suite536 passed (327U/140C/69I), inventory132/132 green. Integration suite повторно выполнил process/profile/culture/golden/actual-target проверки. Пустой Performance project остаётся вне WP10 acceptance scope.
+
+WP04 generated Release и WP10 native generated Release/Debug reproduce unchanged source/generated bytes. Повторно проверены сохранённые финальные coverage reports: WP02/03/06/07/08/09/10 gates green, critical branches100%, combined Core line92.74%. Новые coverage reports не собирались: production-код после финального coverage checkpoint не изменён.
+
+CLI smoke `effects-knockdown` создал новую ignored replay/config пару `artifacts/replays/wp10-knockdown-20261005-8a1f5305.{json,config.json}`: FighterAWin на tick47, оба файла byte-identical к pinned golden/sidecar. Fixtures/hashes/DATA не перезаписаны; UnityClient и посторонние изменения сохранены. Дополнительные production-правки не потребовались, обновлена документация. Commit/push/remote CI не выполнялись; WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED.
+
+### Предыдущий checkpoint — CI schema portability fix, 2026-10-05
+
+Первый remote CI run выявил две связанные ошибки: Windows generated gate отвергал schema v0.2, Linux WP10-REG-002/DATA-009 отвергали SHA schema v0.1/v0.2. Причина подтверждена: Git blobs уже LF, локальные Windows файлы/exporter были CRLF; `JsonWriterOptions.NewLine` по умолчанию зависит от OS. Старые WP10 pins ошибочно закрепили CRLF checkout, а не persisted bytes.
+
+`BalanceSchemaJson` теперь явно использует LF; `.gitattributes` дополнен LF policy для balance v0.1 (v0.2 policy уже был). Schema SHA pins исправлены на существующие Git blobs: v0.1 `fd7c3c1d5b52807126e260dd71150a36ef2e68fb18c3dc332dad5c1e17eb40f0`, v0.2 `a33627ce0b382fa37bbd0ff67d3fe1a793ff6dd2d7bccba71e83ee58f0441457`. Локальные schema только EOL-нормализованы; Git diff их содержимого пуст. Historical v0.1 blob совпадает с baseline81b1488. JSON fields, workbook/config/replay hashes и blocking matrix не изменены; gates не ослаблены. Добавлены2 regression executions для LF/no BOM/no EOF newline в обоих schema versions.
+
+Фактические проверки после fix: locked restore; Release/Debug build0 warnings/errors; по1445 passed (864U/471C/110I),0 failed/skipped. Targeted affected suites —7 passed в каждой конфигурации; WP04/WP10 generated gates Release/Debug green. Git checkout filters с `core.autocrlf=true/false` сохраняют оба SHA. Actual-target/process/profile/culture/golden/historical/inventory checks в полном suite green,132/132 IDs; WP10 Conformance142 passed. Сохранённые coverage gates unchanged Core/Replay повторно green: critical100%, Core line92.74%.
+
+Commit/push не выполнялись. Необходим новый remote прогон для fix commit: WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED. UnityClient/посторонние changes сохранены; причина и точный patch list — [WP-10 Migration](./WP-10_Migration.md).
+
+### Текущий checkpoint — CI target hash helper fix, 2026-10-05
+
+После740fd91 schema/conformance checks в remote Windows Debug прошли; `WP10-DET-004` остановился на недоступном `Get-FileHash` в дочернем Windows PowerShell. Target probe уже успешно собрался, поэтому это host/tooling failure, не golden mismatch. Тест запускает legacy Windows PowerShell на Windows и pwsh на Linux; наличие module function в локальном host не гарантирует её наличие в child runner. Конкретная причина недоступности модуля из remote log не установлена.
+
+Target gate теперь вычисляет тот же SHA-256 через .NET stream/SHA256 и не зависит от `Get-FileHash`, по подходу existing WP09 gate. DET004 стал theory с2 полными прогонами: normal host и host с global Get-FileHash function, которая бросает исключение при любом вызове. В обоих случаях проверяются все9 goldens × actual netstandard2.1/net10.0 dependencies и mandatory success marker. Matrix132 IDs, hashes/fixtures/producer semantics unchanged; skips/fallback не добавлены.
+
+Locked restore, Release/Debug build0 warnings/errors; по1446 passed (864U/471C/111I),0 failed/skipped. Targeted DET0042/2 green в каждой конфигурации; оба варианта также прошли в полном suite. WP04/WP10 generated Release/Debug green; inventory132/132. WP10 всего539 executions (327U/142C/70I). Saved coverage unchanged critical Core/Replay:100%, line92.74%. UnityClient и посторонние changes сохранены, commit/push не выполнялись. Необходим новый remote green run fix commit; WP10 остаётся CI PENDING.
+
 ## Следующее действие
 
-На текущей feature-ветке продолжить WP-UI-01 после реализованного game-first presentation slice: расширить PlayMode до полной three-fixture/negative acceptance matrix, добавить внешний read-only path UX и выполнить Windows Standalone build/smoke. Основной Combat roadmap после WP-09 остаётся WP-10 Effects и не переносится в Unity Viewer.
+Проверить diff, сделать отдельный CI portability fix commit без UnityClient и отправить в существующую WP10 ветку/PR. Дождаться Windows/Linux × Debug/Release CI именно для нового commit. Все132 cases/local build/test/coverage/determinism/generated/historical gates green. После четырёх green jobs обновить WP10 до COMPLETED; затем подготовить WP11 Fighters (passives, Rage/Tempo/Grip, resource/kit rules). До remote evidence статус остаётся CI PENDING.
+
+WP-UI-01 можно продолжать отдельной веткой: full three-fixture/negative PlayMode matrix, external-path UX, Windows Standalone smoke и static checks остаются его собственными условиями завершения. Они не блокируют подготовку основного combat roadmap.
 
 ## WP-UI-01 Unity Replay Viewer
 

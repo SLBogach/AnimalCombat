@@ -163,7 +163,7 @@ internal static class WeightedDecisionFixture
     {
         var config = Config.Value;
         var journal = new CanonicalReplayJournal(ReplayId, profile);
-        var result = new CombatEngine().Simulate(CreateRequest(config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config), config, journal);
         AssertCompleted(result);
         return new WeightedCanonicalRun(result, journal);
     }
@@ -172,7 +172,7 @@ internal static class WeightedDecisionFixture
     {
         var config = Config.Value;
         var journal = new SummaryOnlyEventJournal(ReplayId);
-        var result = new CombatEngine().Simulate(CreateRequest(config), config, journal);
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(CreateRequest(config), config, journal);
         AssertCompleted(result);
         return new WeightedSummaryRun(result, journal);
     }
@@ -262,7 +262,7 @@ internal static class WeightedDecisionFixture
 
         return new BattleRequest(
             BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             config.Reference.ConfigHash,
             modeRules,
             0,

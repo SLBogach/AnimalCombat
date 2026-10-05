@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="../../src/CombatLab.Runner/Replays/EffectDemoCatalog.cs" Link="EffectDemoCatalog.cs" />
     <Reference Include="Battle.Config">
       <HintPath>..\..\src\Battle.Config\bin\$(Configuration)\$(CombatTarget)\Battle.Config.dll</HintPath>
       <Private>true</Private>

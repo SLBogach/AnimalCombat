@@ -2,15 +2,16 @@ using Battle.Core.Random;
 using Battle.Contracts.Events;
 using Battle.Contracts.Ids;
 using Battle.Contracts.Results;
+using Battle.Core.Effects;
 
 namespace Battle.Core.Engine;
 
 internal sealed class BattleState
 {
     private long _nextSnapshotIdentity;
-    private readonly HashSet<string> _consumedHitGroups = new(StringComparer.Ordinal);
-    private readonly Dictionary<FighterId, int> _grabLockoutUntil = new();
-    private readonly List<EventId> _pivotalEventIds = new();
+    private HashSet<string> _consumedHitGroups = new(StringComparer.Ordinal);
+    private Dictionary<FighterId, int> _grabLockoutUntil = new();
+    private List<EventId> _pivotalEventIds = new();
     private ActiveGrabRuntime? _activeGrab;
 
     internal BattleState(
@@ -25,11 +26,51 @@ internal sealed class BattleState
 
     internal int Tick { get; private set; }
 
-    internal FighterRuntimeState FighterA { get; }
+    internal FighterRuntimeState FighterA { get; private set; }
 
-    internal FighterRuntimeState FighterB { get; }
+    internal FighterRuntimeState FighterB { get; private set; }
 
-    internal GameplayRng Rng { get; }
+    internal GameplayRng Rng { get; private set; }
+
+    internal EffectRuntime? Effects { get; private set; }
+
+    internal void InitializeEffects(EffectRuntimeDefinition definition)
+    {
+        EnsureMutable();
+        if (Effects is not null || Tick != 0)
+            throw new EngineInvariantException(EngineFailureCodes.EffectInvalidMutation, "Initialization", "Effects can only initialize once at tick zero.");
+        var runtime = new EffectRuntime(definition);
+        runtime.Recompute(this, FighterId.FighterA);
+        runtime.Recompute(this, FighterId.FighterB);
+        Effects = runtime;
+    }
+
+    internal BattleState Clone()
+    {
+        var clone = (BattleState)MemberwiseClone();
+        clone.FighterA = FighterA.Clone();
+        clone.FighterB = FighterB.Clone();
+        clone.Rng = Rng.Clone();
+        clone.Effects = Effects?.Clone();
+        clone._consumedHitGroups = new HashSet<string>(_consumedHitGroups, StringComparer.Ordinal);
+        clone._grabLockoutUntil = new Dictionary<FighterId, int>(_grabLockoutUntil);
+        clone._pivotalEventIds = new List<EventId>(_pivotalEventIds);
+        return clone;
+    }
+
+    internal void CommitPreview(BattleState preview)
+    {
+        EnsureMutable();
+        if (preview.Tick != Tick || preview.IsTerminal)
+            throw new EngineInvariantException(EngineFailureCodes.EffectInvalidMutation, "AtomicBatch", "A nonterminal preview must retain its originating tick.");
+        FighterA = preview.FighterA; FighterB = preview.FighterB; Rng = preview.Rng;
+        Effects = preview.Effects; _nextSnapshotIdentity = preview._nextSnapshotIdentity;
+        _consumedHitGroups = preview._consumedHitGroups; _grabLockoutUntil = preview._grabLockoutUntil;
+        _pivotalEventIds = preview._pivotalEventIds; _activeGrab = preview._activeGrab;
+        ActiveControlId = preview.ActiveControlId; Outcome = preview.Outcome;
+        WinnerFighterId = preview.WinnerFighterId; EndReason = preview.EndReason;
+        TerminalResolutionGroupId = preview.TerminalResolutionGroupId;
+    }
 
     internal bool IsTerminal { get; private set; }
 
@@ -131,7 +172,8 @@ internal sealed class BattleState
     }
 
     internal bool CanBeGrabbed(FighterId fighterId, int tick) =>
-        !_grabLockoutUntil.TryGetValue(fighterId, out var until) || tick >= until;
+        tick >= GrabLockoutUntil(fighterId) &&
+        (Effects is null || EffectControlSystem.Allows(this, fighterId, Battle.Contracts.Effects.ControlCategory.Grab));
 
     internal void StartGrab(
         ExternalId grabId,
@@ -171,12 +213,15 @@ internal sealed class BattleState
 
         var ended = _activeGrab.Value;
         _activeGrab = null;
-        _grabLockoutUntil[ended.GrabbedId] = checked(releaseTick + lockoutTicks);
+        if (Effects?.HasRole(Battle.Contracts.Effects.EffectSemanticRole.GrabLockout) != true)
+            _grabLockoutUntil[ended.GrabbedId] = checked(releaseTick + lockoutTicks);
         return ended;
     }
 
     internal int GrabLockoutUntil(FighterId fighterId) =>
-        _grabLockoutUntil.TryGetValue(fighterId, out var until) ? until : 0;
+        Effects?.HasRole(Battle.Contracts.Effects.EffectSemanticRole.GrabLockout) == true
+            ? Effects.RoleEnd(fighterId, Battle.Contracts.Effects.EffectSemanticRole.GrabLockout)
+            : _grabLockoutUntil.TryGetValue(fighterId, out var until) ? until : 0;
 
     internal void EnsureMutable()
     {

@@ -42,18 +42,36 @@ public static class ConfigCommand
             return command switch
             {
                 "export" => Export(optionArguments, standardOutput, standardError, workingDirectory),
+                "migrate" => Migrate(optionArguments, standardOutput, standardError, workingDirectory),
                 "validate" => Validate(optionArguments, standardOutput, standardError, workingDirectory),
                 _ => UsageOrInputExitCode,
             };
         }
         catch (Exception exception) when (
             exception is IOException or
+            InvalidDataException or
             UnauthorizedAccessException or
+            System.Xml.XmlException or
             ArgumentException)
         {
             standardError.WriteLine($"Input error: {exception.Message}");
             return UsageOrInputExitCode;
         }
+    }
+
+    private static int Migrate(IReadOnlyList<string> arguments, TextWriter output, TextWriter error, string workingDirectory)
+    {
+        if (!TryParseOptions(arguments, ["--workbook", "--output"], error, out var options))
+            return UsageOrInputExitCode;
+        var root = FindRepositoryRoot(workingDirectory);
+        var source = ResolvePath(options.GetValueOrDefault("--workbook") ??
+            Path.Combine(root, "config", "source", "Combat_Balance_Workbook_v0.1.xlsx"), workingDirectory);
+        var destination = ResolvePath(options.GetValueOrDefault("--output") ??
+            Path.Combine(root, "config", "source", "Combat_Balance_Workbook_v0.2.xlsx"), workingDirectory);
+        var hash = new BalanceWorkbookMigrator().Migrate(source, destination);
+        output.WriteLine($"Migrated workbook (v0.1 retained): {destination}");
+        output.WriteLine($"Workbook hash: sha256:{hash}");
+        return SuccessExitCode;
     }
 
     private static int Export(
@@ -62,7 +80,7 @@ public static class ConfigCommand
         TextWriter error,
         string workingDirectory)
     {
-        if (!TryParseOptions(arguments, ["--workbook", "--output"], error, out var options))
+        if (!TryParseOptions(arguments, ["--workbook", "--output", "--schema-output"], error, out var options))
         {
             return UsageOrInputExitCode;
         }
@@ -84,10 +102,17 @@ public static class ConfigCommand
         }
 
         var export = new BalanceWorkbookExporter().Export(workbookPath);
+        var artifactBaseName = ArtifactBaseName;
+        if (export.CandidateJson.Length != 0)
+        {
+            using var candidate = JsonDocument.Parse(export.CandidateJson);
+            if (candidate.RootElement.GetProperty("settings").TryGetProperty("global.sim.schema_version", out var version) &&
+                version.GetString() == "combat.balance/0.2") artifactBaseName = "combat.balance.v0.2";
+        }
         WriteIssues(export.Issues, error);
         if (!export.IsSuccess || export.SourceWorkbookHash is null)
         {
-            WriteValidationArtifact(outputDirectory, export.Issues, Array.Empty<ConfigValidationIssue>(), null, export.SourceWorkbookHash?.Value);
+            WriteValidationArtifact(outputDirectory, export.Issues, Array.Empty<ConfigValidationIssue>(), null, export.SourceWorkbookHash?.Value, artifactBaseName);
             return InvalidConfigExitCode;
         }
 
@@ -100,7 +125,7 @@ public static class ConfigCommand
                 export.Issues,
                 compilation.Issues,
                 compilation.ConfigHash?.Value,
-                export.SourceWorkbookHash.Value.Value);
+                export.SourceWorkbookHash.Value.Value, artifactBaseName);
             return InvalidConfigExitCode;
         }
 
@@ -113,32 +138,35 @@ public static class ConfigCommand
             export.EntityCounts["effects"],
             export.EntityCounts["tactics"],
             export.EntityCounts["gear"],
-            export.EntityCounts["builds"]);
+            export.EntityCounts["builds"],
+            export.EntityCounts.GetValueOrDefault("effect_rules"));
         var manifest = ConfigManifest.Create(
             compilation.Config.Reference,
             export.SourceWorkbookHash.Value,
-            ExporterVersion,
+            artifactBaseName == ArtifactBaseName ? ExporterVersion : "0.2.0+wp10",
             DateTimeOffset.UtcNow,
             counts,
             warningCount);
 
         Directory.CreateDirectory(outputDirectory);
-        WriteAtomic(Path.Combine(outputDirectory, ArtifactBaseName + ".json"), compilation.GetCanonicalJson());
-        WriteAtomic(Path.Combine(outputDirectory, ArtifactBaseName + ".manifest.json"), ConfigManifestJson.Write(manifest));
+        WriteAtomic(Path.Combine(outputDirectory, artifactBaseName + ".json"), compilation.GetCanonicalJson());
+        WriteAtomic(Path.Combine(outputDirectory, artifactBaseName + ".manifest.json"), ConfigManifestJson.Write(manifest));
         WriteAtomic(
-            Path.Combine(repositoryRoot, "schemas", "balance", "v0.1", "combat.balance.schema.json"),
-            BalanceSchemaJson.Write());
+            options.TryGetValue("--schema-output", out var schemaOutput)
+                ? ResolvePath(schemaOutput, workingDirectory)
+                : Path.Combine(repositoryRoot, "schemas", "balance", compilation.Config.Reference.ConfigVersion.Value.Value, "combat.balance.schema.json"),
+            BalanceSchemaJson.Write(compilation.Config.Reference.BalanceSchemaVersion.Value.Value));
         WriteAtomic(
-            Path.Combine(outputDirectory, ArtifactBaseName + ".map.csv"),
+            Path.Combine(outputDirectory, artifactBaseName + ".map.csv"),
             new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(export.MapCsv));
         WriteValidationArtifact(
             outputDirectory,
             export.Issues,
             compilation.Issues,
             compilation.ConfigHash.Value.Value,
-            export.SourceWorkbookHash.Value.Value);
+            export.SourceWorkbookHash.Value.Value, artifactBaseName);
 
-        output.WriteLine($"Exported {ArtifactBaseName} to {outputDirectory}");
+        output.WriteLine($"Exported {artifactBaseName} to {outputDirectory}");
         output.WriteLine($"Config hash: {compilation.ConfigHash.Value.Value}");
         return SuccessExitCode;
     }
@@ -209,6 +237,12 @@ public static class ConfigCommand
             options = arguments.Skip(1).ToArray();
             return true;
         }
+        if (string.Equals(arguments[0], "migrate-config", StringComparison.Ordinal))
+        {
+            command = "migrate";
+            options = arguments.Skip(1).ToArray();
+            return true;
+        }
 
         if (string.Equals(arguments[0], "validate-config", StringComparison.Ordinal))
         {
@@ -220,7 +254,8 @@ public static class ConfigCommand
         if (arguments.Count >= 2 && string.Equals(arguments[0], "config", StringComparison.Ordinal))
         {
             if (string.Equals(arguments[1], "export", StringComparison.Ordinal) ||
-                string.Equals(arguments[1], "validate", StringComparison.Ordinal))
+                string.Equals(arguments[1], "validate", StringComparison.Ordinal) ||
+                string.Equals(arguments[1], "migrate", StringComparison.Ordinal))
             {
                 command = arguments[1];
                 options = arguments.Skip(2).ToArray();
@@ -293,11 +328,12 @@ public static class ConfigCommand
         IReadOnlyList<BalanceExportIssue> exportIssues,
         IReadOnlyList<ConfigValidationIssue> compilationIssues,
         string? configHash,
-        string? sourceHash)
+        string? sourceHash,
+        string artifactBaseName)
     {
         Directory.CreateDirectory(outputDirectory);
         var bytes = WriteValidationJson(exportIssues, compilationIssues, configHash, sourceHash);
-        WriteAtomic(Path.Combine(outputDirectory, ArtifactBaseName + ".validation.json"), bytes);
+        WriteAtomic(Path.Combine(outputDirectory, artifactBaseName + ".validation.json"), bytes);
     }
 
     private static byte[] WriteValidationJson(
@@ -394,9 +430,10 @@ public static class ConfigCommand
     private static void WriteUsage(TextWriter writer)
     {
         writer.WriteLine("Usage:");
-        writer.WriteLine("  combatlab export-config [--workbook <path>] [--output <directory>]");
+        writer.WriteLine("  combatlab export-config [--workbook <path>] [--output <directory>] [--schema-output <path>]");
+        writer.WriteLine("  combatlab migrate-config [--workbook <v0.1 path>] [--output <new v0.2.xlsx path>]");
         writer.WriteLine("  combatlab validate-config [--config <path>] [--manifest <path>]");
-        writer.WriteLine("Aliases: config export, config validate");
+        writer.WriteLine("Aliases: config export, config validate, config migrate");
     }
 
     private sealed record PrintableIssue(string Code, string Path, string Message, string Severity);

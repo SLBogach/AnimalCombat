@@ -1,0 +1,98 @@
+{
+  "engine": "battle.core/0.5.0",
+  "balance_schema": "combat.balance/0.2",
+  "master_seed": "0",
+  "metadata_utc": "2026-10-04T00:00:00+00:00",
+  "scenarios": [
+    {
+      "scenario": "wait",
+      "replay": "wait-equal-l1.engine-0.5.0.json",
+      "config": "wait-equal-l1.engine-0.5.0.config.json",
+      "file_sha256": "413f8fe7d9573fc1f93e7c5f691affedd020bb87348bbc8ccbf6334118ec32b4",
+      "config_sha256": "a110438e72bcb93d9db89a523feef475e7c0a8fd30742e05aa491a6e4d147241",
+      "input_digest": "sha256:9e87df5c355dba1a35abcec76a251935e45b59e139a0f973bd898de20aa2d260",
+      "final_digest": "sha256:6fb5ddb05d66029c0f18117476816e9f283339eea1daed6e8cd738db01125595",
+      "event_count": 8
+    },
+    {
+      "scenario": "decision",
+      "replay": "decision-weighted-l1.engine-0.5.0.json",
+      "config": "decision-weighted-l1.engine-0.5.0.config.json",
+      "file_sha256": "55c76fa7a08258f1dd8fab716e394e6e6d74c6c2b3f7ffd41a63171214fc1337",
+      "config_sha256": "7170c6f6e83904a52258e336396f6ae03aaba91085356964331160816ddaf3e3",
+      "input_digest": "sha256:3381336a5209f9426fd11885b4277118ee28e46f86611766b043ef38f2a19073",
+      "final_digest": "sha256:6d9ccfc7d4fae570b2fb2cd48251a4310df7a412f9668eaa988726c16fe3e34b",
+      "event_count": 8
+    },
+    {
+      "scenario": "resolution-basic",
+      "replay": "resolution-basic-l1.engine-0.5.0.json",
+      "config": "resolution-basic-l1.engine-0.5.0.config.json",
+      "file_sha256": "10e454bbe74bd91e4475ce28e15a64533fc658319b3fc0dd9412929d9ef20e48",
+      "config_sha256": "963b4b69e8252526e3df496bf8e6bfe536c7f22da16658603341c2d683521b30",
+      "input_digest": "sha256:f412984a873366834d85f0ee7eebfdff503d2db8ec013f92ec942a4cfcf80eee",
+      "final_digest": "sha256:70a075b7e8ffa9bb4f44468fd395814ee8292bb1964159a1a57c080f06e0f880",
+      "event_count": 12
+    },
+    {
+      "scenario": "resolution-double-ko",
+      "replay": "resolution-double-ko-l1.engine-0.5.0.json",
+      "config": "resolution-double-ko-l1.engine-0.5.0.config.json",
+      "file_sha256": "237bf61e1d2e51d9bcc0025802de44eff7323b94e97b01177affaf32b601294c",
+      "config_sha256": "265d4d85cf7bc42d44d7c9a4345526bf85f075f7207be8ee87bc22116d0169d8",
+      "input_digest": "sha256:c49179eb987635e4b5114befd43c712db8211acb61516d71e68d783b00d1320d",
+      "final_digest": "sha256:241c1b4a05ddaf638b4c8ddd313633fbc51662c795df81b1b15cb4e32ad10b6c",
+      "event_count": 19
+    },
+    {
+      "scenario": "resolution-wall-grab",
+      "replay": "resolution-wall-grab-l1.engine-0.5.0.json",
+      "config": "resolution-wall-grab-l1.engine-0.5.0.config.json",
+      "file_sha256": "d5d6d7b2761b205d53d4cbd3b59b2f908ced4baf22a00d0f623298c66bc2962b",
+      "config_sha256": "ff3954145175aac362fc1e0f08aba8c913dacefa690a3df4acd0da14fda18a78",
+      "input_digest": "sha256:7cc51b6c4e68094614b42f380dfb197ea59e338b4704f872c6c556f4bc06061d",
+      "final_digest": "sha256:599b4dc629d468946a8bfa797f8251abaff51294f751bba5ee3db591c9b930fe",
+      "event_count": 17
+    },
+    {
+      "scenario": "effects-stack-expiry",
+      "replay": "effects-stack-expiry-l1.engine-0.5.0.json",
+      "config": "effects-stack-expiry-l1.engine-0.5.0.config.json",
+      "file_sha256": "bf8c7286958301a12516ed71c81893dda84c61051245215d3196357e24cba40f",
+      "config_sha256": "f9e8aa24588199f9856baaa89bc0facc1837a49dda6bf596f3d3a71f981c2fb9",
+      "input_digest": "sha256:a68b37c911e083b0eabc7303ba1d4198ba88490f28b101ff5e83946f9f8c30c6",
+      "final_digest": "sha256:19365268807628748cfcb549db5cf64007d4bc6060dc31024acf7eacb6a58c0c",
+      "event_count": 42
+    },
+    {
+      "scenario": "effects-impact-snapshot",
+      "replay": "effects-impact-snapshot-l1.engine-0.5.0.json",
+      "config": "effects-impact-snapshot-l1.engine-0.5.0.config.json",
+      "file_sha256": "d071381ac420cddda93754a526c92ff06a7605eb68176cc4b4d8fd0f9b5fef9f",
+      "config_sha256": "5df1d5340ae39b0dfbd41ac44bce008e999ce553480f18c76e7a067139a58429",
+      "input_digest": "sha256:6f4ed68d4307e7085731e4cae90b04670d824193b4a4032494690cbdb70252a8",
+      "final_digest": "sha256:2dc5bd2a5ebc11d1f238cd23b3bf10632566b809c0cdcabb25f9420e027d7e0e",
+      "event_count": 28
+    },
+    {
+      "scenario": "effects-control-chain",
+      "replay": "effects-control-chain-l1.engine-0.5.0.json",
+      "config": "effects-control-chain-l1.engine-0.5.0.config.json",
+      "file_sha256": "951c6e1fb1f499ddbcc2e97210e47332ff80b2ee489dea22d734fc88ed53ce78",
+      "config_sha256": "0a8384db42381a8cca1a4948f58dbd6447c51f65eb0df7cf9df11c505074e09a",
+      "input_digest": "sha256:b9e3d2dbb3c48a2f5e957db27d8690ef395612ef3dc7c49680baff46268726bc",
+      "final_digest": "sha256:d4db568cf8f6cd870ab1030b04b2824ba0b99dd75a92d742e23e88e8c5fc0f38",
+      "event_count": 156
+    },
+    {
+      "scenario": "effects-knockdown",
+      "replay": "effects-knockdown-l1.engine-0.5.0.json",
+      "config": "effects-knockdown-l1.engine-0.5.0.config.json",
+      "file_sha256": "921efe36b9e3afac1de171bcf834a663e17bab1c2313da3f5db12dbe0d5a3fcb",
+      "config_sha256": "a306c9cd06c9d2e8d4db1aa428a48ddbf0fd764d88c9af607e99ba55b932e9ba",
+      "input_digest": "sha256:96738838c2bd5458aa73724b916a10b563940f2e1ec29858ef34716d1a34962b",
+      "final_digest": "sha256:416da88e97e8362c2e2ee2de256490421156bfe48d974e50f4f8be2b9981c4ca",
+      "event_count": 103
+    }
+  ]
+}

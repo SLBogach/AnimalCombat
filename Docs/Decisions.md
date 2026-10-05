@@ -171,6 +171,64 @@
 - GitHub Actions execution от `2026-09-08` для code head `9317c82`: `ubuntu-latest`/`windows-latest` × Debug/Release — все четыре jobs green.
 - WP-09 имеет статус `COMPLETED`; все blocking и completion gates закрыты.
 
+## WP-10 Effects
+
+### Принятые решения — 2026-10-03
+
+Владелец принял все `OPEN-WP10-01..28` и Combat Test Plan WP-10 как обязательную blocking matrix 2026-10-03. Все перечисленные решения имеют статус **CLOSED**. Точные условия, утверждённые DATA values и source precedence находятся в [WP-10 Brief](./WP-10_Brief.md); [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) содержит `132` unique blocking acceptance IDs. Решения предыдущих WP сохраняются; полный stat-clamp defer из `OPEN-WP07-13` должен быть исполнен в WP-10.
+
+| ID | Предложение |
+|---|---|
+| `OPEN-WP10-01` | Обязательная exact matrix/inventory, code после approval. |
+| `OPEN-WP10-02` | Baseline local master81b1488 с WP-09/Viewer; remote synchronization отдельна. |
+| `OPEN-WP10-03` | Generic effects/control — WP-10; full fighter passives/resources — WP-11. |
+| `OPEN-WP10-04` | Engine0.5/balance0.2 и отдельные DATA files; wire/RNG/ordering/mode unchanged. |
+| `OPEN-WP10-05` | 15 stat bound pairs и explicit queue/knockdown values Brief§4.2–4.3. |
+| `OPEN-WP10-06` | Aggregate Add, sorted FP product, ordered Override, final clamp; signed floor. |
+| `OPEN-WP10-07` | Post-expiry shared decision snapshot, frozen commits/segments/intents, effects видны следующей group. |
+| `OPEN-WP10-08` | Explicit effect_rules catalog, typed conditions/primitives, пять generic bindings. |
+| `OPEN-WP10-09` | 12 phases unchanged; bounded closure before defeat, end-tick then after-expiry. |
+| `OPEN-WP10-10` | Before expiry t+D; After expiry end t+D-1; ResetDuration/KeepLonger. |
+| `OPEN-WP10-11` | Exact Reject/Refresh/Replace/StrongestWins/AddStacks, atomic mutation/event deltas. |
+| `OPEN-WP10-12` | One group occupant, explicit CompareKey, stable identity tie-break. |
+| `OPEN-WP10-13` | Proposed depth8/triggers128/instances32 и deterministic causal-level order. |
+| `OPEN-WP10-14` | Rule admission и effect mutation budgets раздельны; cooldown/once/caps explicit. |
+| `OPEN-WP10-15` | Semantic repeated-root cycle suppression diagnostic; hard-cap excess fatal. |
+| `OPEN-WP10-16` | Typed stat/damage/chance/tag-weight/grab consumers; reserved resource targets unreachable until WP-11. |
+| `OPEN-WP10-17` | Guard-broken only after failed eligible Block plus guard_break tag. |
+| `OPEN-WP10-18` | Fatigue after ControlEnded, stack lookup, threshold-crossing immunity, no immunity refresh. |
+| `OPEN-WP10-19` | One authoritative target grab-lockout interval, same-source control refresh prohibited. |
+| `OPEN-WP10-20` | Data-driven Fall/Grounded/GetUp, fatigue per stage, GroundHit-only and wakeup immunity. |
+| `OPEN-WP10-21` | Explicit strengths/phases/control filters; Armored threshold3, Unstoppable categories; costs retained. |
+| `OPEN-WP10-22` | Affected actor/source target, backward lineage, exact frames; no canonical no-op markers. |
+| `OPEN-WP10-23` | Whole closure preview/preflight/rollback, reserve cleanup plus BattleEnded. |
+| `OPEN-WP10-24` | Authoritative progress only, typed failures и bounded causal diagnostics. |
+| `OPEN-WP10-25` | Trigger-free terminal cleanup, no late effects, BattleEnded last. |
+| `OPEN-WP10-26` | Engine0.4 historical pins before bump; preserve all old bytes; separate0.5 goldens. |
+| `OPEN-WP10-27` | Unit/conformance/integration132 IDs, process/TFM/OS/profile/historical/generated/coverage gates. |
+| `OPEN-WP10-28` | v0.1 reader retained; engine0.5 requires explicit v0.2; Unity changes outside scope. |
+
+### Готовность этапа
+
+**Checkpoint2026-10-04: LOCAL132/132 PASSED / CI PENDING.** Public Engine0.5/balance0.2, `run-demo`, девять `.0.5` replay/config sidecars и отдельный manifest реализованы; historical bytes unchanged. Exact discovery inventory132/132, полный Release/Debug suite1443 (864U/469C/110I) и WP10 critical coverage100% green; Core combined line92.74%. Все28 CLOSED решений и blocking cases исполнены локально. Generated/actual-target/process/profile/culture/mirror/RNG/historical gates green. Для COMPLETED требуется Windows/Linux × Debug/Release remote CI с новыми WP10 gates; сессия не выполняла commit/push/remote CI. Нормативные gameplay/DATA решения не изменены; записи ниже сохраняются как предыдущие checkpoints.
+
+Возобновление `2026-10-05`: повторные locked restore, Release/Debug build/test (по1443 passed), WP10 filtered run536 passed/inventory132/132, native generated Release/Debug и gates на сохранённых final coverage reports green. Новый CLI smoke replay/config byte-identical к golden, FighterAWin на tick47. Нормативные решения не изменены; production-правки не потребовались. Актуальный статус остаётся LOCAL ACCEPTANCE PASSED / CI PENDING: без четырёх remote green jobs COMPLETED не ставится. Unity/посторонние changes сохранены; commit/push не выполнялись.
+
+Последующий CI checkpoint `2026-10-05`: remote schema SHA failures подтвердили CRLF/LF рассогласование. Fix явно задаёт LF для schema writer и обоих checkout paths; WP10 pins исправлены на уже существующие LF Git blobs, historical v0.1 blob совпадает с81b1488. Это portability bugfix, не новое OPEN решение или DATA rebalance. JSON/workbook/config/replay contents unchanged, hash checks остаются byte-exact. После fix Release/Debug по1445 passed, generated gates и checkout filters green, inventory132/132;2 дополнительные LF regressions. Требуется новый remote green run после fix push; CI PENDING. Подробное evidence — [Migration](./WP-10_Migration.md).
+
+Текущий CI checkpoint `2026-10-05`: schema failures исправлены, затем Windows child target host не нашёл Get-FileHash. Hash gate теперь использует .NET SHA256 без зависимости от module function; алгоритм/pins не изменены. DET004 normal/forbidden-Get-FileHash executions проверяют полный9×2 actual-target gate и success marker, без skips. Release/Debug по1446 passed (864U/471C/111I), targeted2/2 в каждой конфигурации, generated/inventory132/132 green. Scope/OPEN decisions/producer semantics unchanged; saved critical coverage100%/line92.74%. Новый remote confirmation pending, commit/push не выполнялись.
+
+- WP-10 `IN PROGRESS`: physical DATA verified; materializer/foundation, atomic/control runtime, decision/grab consumers и strict versioned v0.2 pre-Begin setup реализованы; full-loop effect/control/barrier/interrupt/terminal integration проверена production-compiled inputs. Internal versioned Engine0.5 принимает external compiled v0.2 без definition injection; public producer/CLI пока0.4 до replay/golden gates. Это последовательность implementation, не изменение approved version contract0.5/0.2.
+- `BLOCK-WP10-APPROVAL-01` CLOSED: owner принял exact proposals/matrix.
+- `BLOCK-WP10-DATA-01..04` CLOSED: stat bounds, queue caps, rules/metadata/registry и knockdown/interrupt fields внесены в physical v0.2 и проверены exporter/compiler/loader. Core materializer/conservative consumer proof подключены в versioned setup до Begin; arithmetic proof дополнен movement/geometry/event-cleanup reserve и fixed system timing. Full release integration/conformance/coverage ещё required.
+- `BLOCK-WP10-ARTIFACT-01` CLOSED: physical v0.2 source/schema/generated migration, reproducible0-error/0-warning export и v0.1 pins green.
+- `BLOCK-WP10-HISTORY-01` CLOSED: automated SHA/semantic verify десяти replay0.1–0.4 green до bump; Engine пока0.4.
+- Approval закрывает проектное согласование, не physical DATA/artifact/history gates. Runtime fallback запрещён.
+- WP10 checkpoint2026-10-04:408 тестов (246U/108C/54I), полный Release/Debug suite1315;108 acceptance IDs исполнены, остальные24 и full matrix/critical coverage/determinism/CI обязательны. Новые17 IDs закрывают remaining STACK/TRG/CTRL и EVT-001..008. Strict compiled v0.2 → full Engine0.5/canonical journal проверяет group replacement на32/128 slots/rollback, grab-lockout разных actions, guard-break consumers и max-hold/release/throw/lethal endings. Version-specific standalone verifier0.5 составлен с decision/resolution policies и проверяет только public deltas/lineage/lifetime/control/keyframes/cleanup;60 C tamper tests и9 I roundtrips green. Config-aware producer proof EVT-009 не подменён public verifier. Stale timeout/control before-frame countdown исправлены в effects projection; legacy0.4 policies/hashes сохранены. Public Engine/CLI пока0.4/balance0.1 до current+effect golden release gates. Legacy critical gates100%, combined Core line92.45%; new full WP10 critical branches ещё не100%. Generated/historical hashes не менялись; Unity/посторонние changes сохранены, commit/push не выполнялись.
+- `BLOCK-WP10-TOOLING-01` CLOSED: владелец явно разрешил repo-native `.NET/OpenXML мигратор` 2026-10-03. Это исключение к authoring method навыка Spreadsheets, не разрешение runtime defaults/изменения v0.1/Unity. Мигратор создаёт новый файл и проверяет SHA/формулы/styles; внешний Excel visual render не выполнялся. [Workflow](./WP-10_Migration.md).
+- v0.1 export сохраняет `operation2=Override/value2=0` без modifier_stat2 в unused slots. Эти existing placeholders сохраняются, но не активируют второй modifier и не являются runtime defaults. Непустой target требует полной target/operation/value triple.
+- Existing Unity ProjectSettings/untracked files не являются частью WP-10 patch; UnityClient не изменялся. Git commit не выполнялся.
+
 ## WP-UI-01 visual revision
 
 - `2026-10-01 — APPROVED`: [Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) заменяет тёмное broadcast-оформление v0.1 на тёплую иллюстрированную арену, две красные HP-полосы, центральное `VS` и компактную нижнюю панель. Cyan/orange остаются малыми маркерами A/B; прежний v0.1 spec сохраняется как история решения.

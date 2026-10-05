@@ -38,7 +38,7 @@ internal static class ContractFixtures
     public static BattleRequest CreateRequest() =>
         new(
             new ExternalId("battle-contract-0001"),
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             Digest,
             CreateModeRules(),
             42UL,
@@ -74,11 +74,11 @@ internal static class ContractFixtures
     public static CombatJournalStart CreateJournalStart() =>
         new(
             new ExternalId("battle-contract-0001"),
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ContractVersions.Rng,
             ContractVersions.Ordering,
             new ConfigReference(
-                ContractVersions.BalanceSchema,
+                ContractVersions.HistoricalBalanceSchema,
                 new ArtifactVersion("v0.1"),
                 Digest),
             new BattleInputSnapshot(

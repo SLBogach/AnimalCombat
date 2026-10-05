@@ -223,6 +223,10 @@ internal static class DecisionAvailabilityEvaluator
             {
                 return Reject(DecisionRejectionCodes.TargetDefeated);
             }
+            if (action.HasTag("grab") && opponent.EffectInputs is { GrabAllowed: false })
+            {
+                return Reject(DecisionRejectionCodes.TargetUnavailable);
+            }
         }
 
         var surfaceGap = SurfaceGap(actor, opponent);

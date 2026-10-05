@@ -101,7 +101,7 @@ public sealed class TimeoutOutcomeTests
     {
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             EngineTestFixture.CreateConfig(timeLimit: limit),
             journal);
@@ -143,7 +143,7 @@ public sealed class TimeoutOutcomeTests
     {
         var journal = new RecordingJournal();
 
-        var result = new CombatEngine().Simulate(
+        var result = new CombatEngine(global::Battle.Contracts.Versions.ContractVersions.HistoricalEngine).Simulate(
             EngineTestFixture.CreateRequest(),
             EngineTestFixture.CreateConfig(),
             journal);

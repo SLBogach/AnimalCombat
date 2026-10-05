@@ -67,9 +67,17 @@ jobs:
         shell: pwsh
         run: ./scripts/verify-wp09-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
 
+      - name: Verify WP-10 target determinism and pinned goldens
+        shell: pwsh
+        run: ./scripts/verify-wp10-target-determinism.ps1 -Configuration ${{ matrix.configuration }}
+
       - name: Verify WP-04 generated balance artifacts
         shell: pwsh
         run: ./scripts/verify-wp04-generated.ps1 -Configuration ${{ matrix.configuration }}
+
+      - name: Verify WP-10 native migration and generated v0.2 artifacts
+        shell: pwsh
+        run: ./scripts/verify-wp10-generated.ps1 -Configuration ${{ matrix.configuration }}
 
       - name: Test
         run: >-
@@ -104,6 +112,26 @@ jobs:
           --collect:"XPlat Code Coverage"
           --settings coverage.runsettings
           --results-directory TestResults/Coverage/Core
+
+      - name: Enforce WP-10 blocking test inventory
+        run: >-
+          dotnet test CombatLab.sln
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+          --filter "WorkPackage=WP10"
+
+      - name: Collect WP-10 effect replay coverage
+        if: matrix.configuration == 'Release'
+        run: >-
+          dotnet test tests/Battle.ConformanceTests/Battle.ConformanceTests.csproj
+          --configuration ${{ matrix.configuration }}
+          --no-build
+          --no-restore
+          --filter "WorkPackage=WP10"
+          --collect:"XPlat Code Coverage"
+          --settings coverage.wp09-replay.runsettings
+          --results-directory TestResults/Coverage/WP10Replay
 
       - name: Collect WP-08 replay and contract coverage
         if: matrix.configuration == 'Release'
@@ -180,6 +208,15 @@ jobs:
           -CoreResultsDirectory ./TestResults/Coverage/Core
           -IntegrationResultsDirectory ./TestResults/Coverage/WP09Integration
           -ReplayResultsDirectory ./TestResults/Coverage/WP09Replay
+
+      - name: Enforce WP-10 critical coverage
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: >-
+          ./scripts/verify-wp10-coverage.ps1
+          -CoreResultsDirectory ./TestResults/Coverage/Core
+          -IntegrationResultsDirectory ./TestResults/Coverage/WP09Integration
+          -ReplayResultsDirectory ./TestResults/Coverage/WP10Replay
 
       - name: Publish coverage
         if: always() && matrix.configuration == 'Release'

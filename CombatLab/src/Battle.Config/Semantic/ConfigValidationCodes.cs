@@ -2,6 +2,15 @@ namespace Battle.Config.Semantic;
 
 public static class ConfigValidationCodes
 {
+    public const string MissingStatBounds = "MissingStatBounds";
+    public const string InvalidStatBounds = "InvalidStatBounds";
+    public const string InvalidEffectReference = "InvalidEffectReference";
+    public const string InvalidEffectGroup = "InvalidEffectGroup";
+    public const string InvalidEffectLookup = "InvalidEffectLookup";
+    public const string UnsupportedEffectModifierTarget = "UnsupportedEffectModifierTarget";
+    public const string InvalidEffectRule = "InvalidEffectRule";
+    public const string InvalidInterruptProfile = "InvalidInterruptProfile";
+    public const string EffectArithmeticOverflowRisk = "EffectArithmeticOverflowRisk";
     public const string AmbiguousTargetProfile = "AmbiguousTargetProfile";
     public const string ArithmeticOverflowRisk = "ArithmeticOverflowRisk";
     public const string ConfigHashMismatch = "ConfigHashMismatch";

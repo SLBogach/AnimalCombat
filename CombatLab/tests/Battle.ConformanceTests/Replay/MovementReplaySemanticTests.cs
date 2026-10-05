@@ -379,7 +379,7 @@ public sealed class MovementReplaySemanticTests
     {
         var draft = new CombatEventDraft(
             ContractVersions.Event,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ConfigHash,
             BattleId,
             tick,
@@ -405,11 +405,11 @@ public sealed class MovementReplaySemanticTests
         FighterFrame initialB) =>
         new(
             BattleId,
-            ContractVersions.Engine,
+            ContractVersions.HistoricalEngine,
             ContractVersions.Rng,
             ContractVersions.Ordering,
             new ConfigReference(
-                ContractVersions.BalanceSchema,
+                ContractVersions.HistoricalBalanceSchema,
                 new ArtifactVersion("v0.1"),
                 ConfigHash),
             new BattleInputSnapshot(

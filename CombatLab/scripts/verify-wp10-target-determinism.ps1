@@ -7,6 +7,20 @@ $prefixWp10 = $tempParentWp10.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.P
 if (-not $tempWp10.StartsWith($prefixWp10, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe temp path.' }
 $projectWp10 = Join-Path $rootWp10 'tools/Wp06.TargetProbe/Wp06.TargetProbe.csproj'
 $manifestWp10 = Get-Content (Join-Path $rootWp10 'fixtures/replay/v0.1/wp10.engine-0.5.0.manifest.json') -Raw | ConvertFrom-Json
+function Get-Wp10TargetSha256 {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    # The integration gate also runs in Windows PowerShell 5.1. Do not depend on
+    # the optional Get-FileHash module function being available in that host.
+    $streamWp10Hash = [IO.File]::OpenRead($Path)
+    try {
+        $algorithmWp10Hash = [Security.Cryptography.SHA256]::Create()
+        try {
+            return ([BitConverter]::ToString($algorithmWp10Hash.ComputeHash($streamWp10Hash))).Replace('-', '').ToLowerInvariant()
+        }
+        finally { $algorithmWp10Hash.Dispose() }
+    }
+    finally { $streamWp10Hash.Dispose() }
+}
 New-Item -ItemType Directory -Path $tempWp10 | Out-Null
 try {
     dotnet restore $projectWp10 --locked-mode --disable-build-servers
@@ -19,10 +33,10 @@ try {
             $actualWp10 = Join-Path $outputWp10 $entryWp10.replay
             dotnet (Join-Path $outputWp10 'Wp06.TargetProbe.dll') $rootWp10 $targetWp10 ('wp10:' + $entryWp10.scenario) $actualWp10
             if ($LASTEXITCODE -ne 0) { throw "Probe execution failed: $targetWp10/$($entryWp10.scenario)" }
-            $hashWp10 = (Get-FileHash -LiteralPath $actualWp10 -Algorithm SHA256).Hash.ToLowerInvariant()
+            $hashWp10 = Get-Wp10TargetSha256 -Path $actualWp10
             if ($hashWp10 -cne $entryWp10.file_sha256) { throw "Golden mismatch: $targetWp10/$($entryWp10.scenario)" }
             $goldenWp10 = Join-Path $rootWp10 ('fixtures/replay/v0.1/' + $entryWp10.replay)
-            if ((Get-FileHash -LiteralPath $goldenWp10 -Algorithm SHA256).Hash.ToLowerInvariant() -cne $entryWp10.file_sha256) { throw 'Committed golden stale.' }
+            if ((Get-Wp10TargetSha256 -Path $goldenWp10) -cne $entryWp10.file_sha256) { throw 'Committed golden stale.' }
         }
     }
     Write-Output 'WP10 nine goldens match actual netstandard2.1/net10.0 dependencies; loaded TFMs asserted by probe.'

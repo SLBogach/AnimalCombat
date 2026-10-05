@@ -433,8 +433,14 @@ Locked restore green; Release/Debug build0 warnings/errors; полные suites1
 
 Production-код при возобновлении менять не потребовалось; уточнены текущие DATA/history пометки и execution evidence в Docs. Статус `LOCAL ACCEPTANCE PASSED / CI PENDING` сохраняется: необходимы четыре remote Windows/Linux × Debug/Release green jobs. UnityClient/посторонние changes сохранены, commit/push не выполнялись.
 
-## 18. Current checkpoint — CI schema portability fix, 2026-10-05
+## 18. Previous checkpoint — CI schema portability fix, 2026-10-05
 
 Remote CI выявил OS-dependent schema formatting: Git blobs LF, Windows exporter/default `JsonWriterOptions.NewLine` и local pins CRLF. Генератор schema теперь явно LF, checkout policy покрывает обе balance versions, SHA tests закрепляют существующие LF Git bytes. Historical schema blob, workbook/config/replay contents и hashes не изменены; два новых regression executions проверяют LF/no BOM/no final newline. Это исправление сериализации/checkout, не изменение approved gameplay/DATA/version contract.
 
 Locked restore; Release/Debug build0 warnings/errors; по1445 tests (864U/471C/110I),0 failed/skipped; affected suites7/7 в обеих конфигурациях. Generated WP04/WP10 Release/Debug green. Git filters при `core.autocrlf=true/false` сохраняют оба pinned schema SHA; conformance/inventory132/132, actual-target/process/historical/golden checks green. Saved coverage для unchanged critical Core/Replay scopes100%, combined Core line92.74%. Для COMPLETED нужен новый remote Windows/Linux × Debug/Release green run после push fix. UnityClient unchanged, commit/push не выполнялись.
+
+## 19. Current checkpoint — CI target hash helper fix, 2026-10-05
+
+Следующий Windows Debug CI прошёл schema/conformance, но target integration child host не нашёл `Get-FileHash`. Gate теперь использует .NET file stream/SHA256, сохраняя byte-exact manifest/golden comparisons. DET004 выполняется в normal host и с намеренно запрещённым Get-FileHash; оба варианта проверяют9 goldens на обеих actual target dependencies и обязательный success marker. Матрица/числа/producer/hashes/fixtures unchanged, skips/relaxed checks не добавлены.
+
+Locked restore; Release/Debug build0 warnings/errors; full suites по1446 passed (864U/471C/111I),0 failures/skips. Targeted DET0042/2 в обеих конфигурациях green; full suite/inventory132/132 и generated WP04/WP10 Release/Debug green. Saved critical Core/Replay coverage100%, Core line92.74%. Remote confirmation для нового fix commit pending; UnityClient unchanged, commit/push не выполнялись.

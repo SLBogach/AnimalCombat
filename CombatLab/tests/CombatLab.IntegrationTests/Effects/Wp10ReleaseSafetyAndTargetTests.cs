@@ -18,15 +18,33 @@ namespace CombatLab.IntegrationTests.Effects;
 [Trait("WorkPackage", "WP10")]
 public sealed class Wp10ReleaseSafetyAndTargetTests
 {
-    [Fact, Trait("AcceptanceId", "WP10-DET-004")]
-    public async Task ActualTargetDependenciesReproduceAllNineGoldenArtifacts()
+    [Theory, Trait("AcceptanceId", "WP10-DET-004")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ActualTargetDependenciesReproduceAllNineGoldenArtifacts(bool forbidFileHashCmdlet)
     {
         var shell = OperatingSystem.IsWindows() ? Path.Combine(Environment.SystemDirectory, "WindowsPowerShell/v1.0/powershell.exe") : "pwsh";
         var start = new ProcessStartInfo(shell) { WorkingDirectory = Root, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
-        foreach (var argument in new[] { "-NoProfile", "-File", Path.Combine(Root, "scripts/verify-wp10-target-determinism.ps1"), "-Configuration", Configuration }) start.ArgumentList.Add(argument);
+        start.ArgumentList.Add("-NoProfile");
+        start.ArgumentList.Add("-NonInteractive");
+        var script = Path.Combine(Root, "scripts/verify-wp10-target-determinism.ps1");
+        if (forbidFileHashCmdlet)
+        {
+            // Fail any accidental dependency on the cmdlet even when this host
+            // happens to have its module installed. Run the complete gate.
+            start.ArgumentList.Add("-Command");
+            start.ArgumentList.Add("function global:Get-FileHash { throw 'Get-FileHash must not be used by the target gate.' }; & '" +
+                script.Replace("'", "''", StringComparison.Ordinal) + "' -Configuration '" + Configuration + "'");
+        }
+        else
+        {
+            foreach (var argument in new[] { "-File", script, "-Configuration", Configuration }) start.ArgumentList.Add(argument);
+        }
         using var process = Process.Start(start)!; var output = process.StandardOutput.ReadToEndAsync(); var error = process.StandardError.ReadToEndAsync();
         if (!process.WaitForExit(180000)) { process.Kill(entireProcessTree: true); Assert.Fail("Target determinism probe timed out."); }
-        Assert.True(process.ExitCode == 0, await output + await error);
+        var stdout = await output; var stderr = await error;
+        Assert.True(process.ExitCode == 0, stdout + stderr);
+        Assert.Contains("WP10 nine goldens match actual netstandard2.1/net10.0 dependencies", stdout, StringComparison.Ordinal);
     }
 
     [Fact, Trait("AcceptanceId", "WP10-DET-007")]

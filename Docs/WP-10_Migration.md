@@ -337,3 +337,17 @@ Patch:
 После fix: locked restore; Release/Debug build0 warnings/errors; full suites по1445 passed (864U/471C/110I),0 failures/skips. Affected historical/data suites7 passed в каждой конфигурации; Release WP10 Conformance142 passed/inventory132/132. WP10 всего538 executions (327U/142C/69I) в полном suite. WP04/WP10 generated Release/Debug green. Read-only `git -c core.autocrlf=true/false cat-file --filters HEAD:<schema>` подтвердил одинаковые LF bytes для обеих policies; это local checkout-filter evidence, не запуск Linux runner. Full integration/conformance повторно проверили process/actual-target/goldens/historical. Saved gates неизменённых critical Core/Replay scopes100%, line92.74%; новая collection не выполнялась.
 
 Необходим reviewed fix commit/push в ту же `feature/wp-10-effects`; существующий PR обновится. Дождаться четырёх remote green jobs именно для fix commit. COMPLETED пока не ставить. Commit/push не выполнялись; UnityClient/посторонние changes сохранены.
+
+## CI follow-up — target hash helper without PowerShell module dependency, 2026-10-05
+
+Remote Windows Debug после740fd91 прошёл864 Core и471 Conformance tests. DET004 остановился после успешного probe build на `Get-FileHash is not recognized`. Тест на Windows запускает legacy Windows PowerShell, а отдельный workflow step — pwsh; наличие функции Get-FileHash локально не доказывает её наличие в child runner. Log подтверждает missing command, но точная module/environment причина не установлена. Empty Performance project не связан с этим failure.
+
+Patch ограничен tooling/test и status docs:
+
+- `CombatLab/scripts/verify-wp10-target-determinism.ps1`: оба SHA calls используют `Get-Wp10TargetSha256` на .NET FileStream/SHA256; stream/algorithm гарантированно disposed. Сохраняются lowercase64 hex, strict manifest/committed-golden comparisons и9 scenarios×2 actual dependency targets. Подход уже используется existing WP09 gate.
+- `CombatLab/tests/CombatLab.IntegrationTests/Effects/Wp10ReleaseSafetyAndTargetTests.cs`: DET004 theory normal/forbidden-Get-FileHash; second row устанавливает throwing global function и запускает тот же полный script, без skips. Оба rows требуют exit0 и final success marker. Process non-interactive/hidden, timeout180s/tree kill/stdout+stderr capture сохранены; script path корректно quoted для пробелов/Unicode/apostrophe.
+- Docs Status/Brief/Test Plan/Decisions/Index/Migration: новый checkpoint/evidence, без изменения OPEN decisions или blocking matrix.
+
+После fix locked restore и Release/Debug build0 warnings/errors. Targeted DET0042 passed в каждой конфигурации, normal и forbidden variants проверены и в полном suite. Release/Debug full suites по1446 passed (864U/471C/111I),0 failed/skipped. WP10 total539 (327U/142C/70I), inventory132/132. WP04/WP10 generated Release/Debug green; process/target/golden/historical regressions green. Saved coverage unchanged critical Core/Replay100%, line92.74%; новая collection не выполнялась, production Core/Replay не изменены. Manifest/SHA pins/source/generated/schema/fixtures не менялись.
+
+Commit/push не выполнялись; UnityClient и посторонние changes сохранены. Отправить reviewed fix в ту же ветку/PR, затем дождаться четырёх Windows/Linux × Debug/Release green jobs для нового commit. Локальный Windows run не является Linux/remote evidence; WP10 остаётся CI PENDING.

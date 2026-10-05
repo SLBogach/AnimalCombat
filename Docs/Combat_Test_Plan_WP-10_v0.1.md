@@ -459,10 +459,16 @@ Generated gates: WP04 Release, WP10 native Release/Debug — green. Все cover
 
 Таким образом все132 IDs имеют локальное execution evidence, а не только source attributes. Remote OS gate по-прежнему pending: для COMPLETED нужны четыре green Windows/Linux × Debug/Release CI jobs. UnityClient не изменялся; commit/push не выполнялись.
 
-## 12. Current execution evidence — CI schema portability repair, 2026-10-05
+## 12. Previous execution evidence — CI schema portability repair, 2026-10-05
 
 Windows generated schema mismatch и Linux WP10-REG-002/DATA-009 SHA failures объяснены OS-dependent CRLF exporter/local pins versus существующие LF Git blobs. `BalanceSchemaJson` теперь явно LF; обе balance versions имеют LF checkout policy. Pins указывают на persisted LF bytes, а не host-specific checkout. Schema contents/Git blobs, workbook/config/replay hashes и132-row blocking matrix unchanged; никакой нормализации внутри hash assertions или ослабления checks не добавлено.
 
 Добавлены2 дополнительные regression executions `BalanceSchemasAreCanonicalLfArtifactsOnEveryPlatform` для v0.1/v0.2: LF, no CR/BOM/EOF newline, exact schema file equality и JSON parse. После fix locked restore и Release/Debug build0 warnings/errors; полный suite по1445 passed (864U/471C/110I),0 failed/skipped. Affected historical/data classes7 passed в каждой конфигурации; Release WP10 Conformance142 passed, inventory132/132. Все WP10 tests в full suite:538 (327U/142C/69I).
 
 Generated WP04/WP10 в Release/Debug green; Git checkout filters при `core.autocrlf=true/false` сохраняют оба pinned schema SHA. Full suites также повторно исполнили process/actual-target/profile/culture/historical/golden gates. Saved coverage для unchanged Core/Replay снова green: critical100%, combined Core line92.74%; новая collection не требовалась для schema writer fix вне этих scopes. Remote confirmation для нового fix commit pending, поэтому статус не COMPLETED. UnityClient unchanged; commit/push не выполнялись.
+
+## 13. Current execution evidence — target gate without Get-FileHash, 2026-10-05
+
+Windows Debug remote run после740fd91 прошёл schema/conformance, затем DET004 упал на отсутствующем Get-FileHash в child Windows PowerShell. Gate заменяет оба cmdlet calls на .NET stream/SHA256, без изменения алгоритма, manifest pins или требований к actual loaded TFMs. DET004 теперь2-row theory: normal host и throwing global Get-FileHash guard. Каждый row исполняет полный9×2 target gate; success marker и exit0 обязательны. Skip/platform-conditional pass не добавлены; acceptance ID остаётся одним, inventory132/132 unchanged.
+
+Фактические проверки: locked restore; Release/Debug build0 warnings/errors; по1446 full-suite passed (864U/471C/111I),0 failed/skipped. Targeted DET0042/2 green в каждой конфигурации, оба rows green и в full suite. WP10 total539 (327U/142C/70I); process/profile/culture/golden/historical/inventory gates в полных suites green. WP04/WP10 generated Release/Debug green. Saved coverage unchanged critical Core/Replay scopes100%, combined line92.74%; новая collection не выполнялась. Fixtures/hashes/DATA unchanged, UnityClient unchanged, commit/push не выполнялись. COMPLETED только после нового four-job remote green run.

@@ -363,7 +363,7 @@ WP04 generated Release и WP10 native generated Release/Debug reproduce unchange
 
 CLI smoke `effects-knockdown` создал новую ignored replay/config пару `artifacts/replays/wp10-knockdown-20261005-8a1f5305.{json,config.json}`: FighterAWin на tick47, оба файла byte-identical к pinned golden/sidecar. Fixtures/hashes/DATA не перезаписаны; UnityClient и посторонние изменения сохранены. Дополнительные production-правки не потребовались, обновлена документация. Commit/push/remote CI не выполнялись; WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED.
 
-### Текущий checkpoint — CI schema portability fix, 2026-10-05
+### Предыдущий checkpoint — CI schema portability fix, 2026-10-05
 
 Первый remote CI run выявил две связанные ошибки: Windows generated gate отвергал schema v0.2, Linux WP10-REG-002/DATA-009 отвергали SHA schema v0.1/v0.2. Причина подтверждена: Git blobs уже LF, локальные Windows файлы/exporter были CRLF; `JsonWriterOptions.NewLine` по умолчанию зависит от OS. Старые WP10 pins ошибочно закрепили CRLF checkout, а не persisted bytes.
 
@@ -372,6 +372,14 @@ CLI smoke `effects-knockdown` создал новую ignored replay/config па
 Фактические проверки после fix: locked restore; Release/Debug build0 warnings/errors; по1445 passed (864U/471C/110I),0 failed/skipped. Targeted affected suites —7 passed в каждой конфигурации; WP04/WP10 generated gates Release/Debug green. Git checkout filters с `core.autocrlf=true/false` сохраняют оба SHA. Actual-target/process/profile/culture/golden/historical/inventory checks в полном suite green,132/132 IDs; WP10 Conformance142 passed. Сохранённые coverage gates unchanged Core/Replay повторно green: critical100%, Core line92.74%.
 
 Commit/push не выполнялись. Необходим новый remote прогон для fix commit: WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED. UnityClient/посторонние changes сохранены; причина и точный patch list — [WP-10 Migration](./WP-10_Migration.md).
+
+### Текущий checkpoint — CI target hash helper fix, 2026-10-05
+
+После740fd91 schema/conformance checks в remote Windows Debug прошли; `WP10-DET-004` остановился на недоступном `Get-FileHash` в дочернем Windows PowerShell. Target probe уже успешно собрался, поэтому это host/tooling failure, не golden mismatch. Тест запускает legacy Windows PowerShell на Windows и pwsh на Linux; наличие module function в локальном host не гарантирует её наличие в child runner. Конкретная причина недоступности модуля из remote log не установлена.
+
+Target gate теперь вычисляет тот же SHA-256 через .NET stream/SHA256 и не зависит от `Get-FileHash`, по подходу existing WP09 gate. DET004 стал theory с2 полными прогонами: normal host и host с global Get-FileHash function, которая бросает исключение при любом вызове. В обоих случаях проверяются все9 goldens × actual netstandard2.1/net10.0 dependencies и mandatory success marker. Matrix132 IDs, hashes/fixtures/producer semantics unchanged; skips/fallback не добавлены.
+
+Locked restore, Release/Debug build0 warnings/errors; по1446 passed (864U/471C/111I),0 failed/skipped. Targeted DET0042/2 green в каждой конфигурации; оба варианта также прошли в полном suite. WP04/WP10 generated Release/Debug green; inventory132/132. WP10 всего539 executions (327U/142C/70I). Saved coverage unchanged critical Core/Replay:100%, line92.74%. UnityClient и посторонние changes сохранены, commit/push не выполнялись. Необходим новый remote green run fix commit; WP10 остаётся CI PENDING.
 
 ## Следующее действие
 

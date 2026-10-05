@@ -20,6 +20,8 @@ public static class BalanceSchemaJson
                    {
                        Encoder = JavaScriptEncoder.Default,
                        Indented = true,
+                       // Persisted schema bytes must not depend on Environment.NewLine.
+                       NewLine = "\n",
                    }))
         {
             writer.WriteStartObject();

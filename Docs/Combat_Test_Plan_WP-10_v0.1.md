@@ -451,10 +451,18 @@ DET001:4×100 in-process. DET002:4×10 fresh CLI processes. DET003: Standard/Dia
 
 CI содержит WP10 filtered inventory, nine target goldens и Release critical coverage. Единственный оставшийся completion gate — remote Windows/Linux × Debug/Release jobs. До этого статус CI PENDING, не COMPLETED; local Windows/TFM runs не считаются Linux proof. UnityClient unchanged; git commit/push не выполнялись.
 
-## 11. Current execution evidence — resumed final run, 2026-10-05
+## 11. Previous execution evidence — resumed final run, 2026-10-05
 
 Матрица §6 и решения OPEN-WP10-01..28 не изменены. После возобновления заново прошли locked restore, Release/Debug build0 warnings/errors, полный1443-test suite в каждой конфигурации (864U/469C/110I),0 failures/skips. Отдельный Release `WorkPackage=WP10` выполнил536 tests (327U/140C/69I); actual built-assembly inventory132/132 green. Integration suites повторно исполнили DET/GOLD/process/actual-target проверки; historical regression tests также green.
 
 Generated gates: WP04 Release, WP10 native Release/Debug — green. Все coverage gates WP02/03/06/07/08/09/10 повторно прошли на final reports из §10: critical branches100%, combined Core line92.74%; это повторная проверка сохранённого coverage evidence, не новая collection. Production-код между collection и этим запуском не менялся. CLI smoke `effects-knockdown` дал byte-identical replay/config и FighterAWin на tick47, без перезаписи существующих outputs/fixtures.
 
 Таким образом все132 IDs имеют локальное execution evidence, а не только source attributes. Remote OS gate по-прежнему pending: для COMPLETED нужны четыре green Windows/Linux × Debug/Release CI jobs. UnityClient не изменялся; commit/push не выполнялись.
+
+## 12. Current execution evidence — CI schema portability repair, 2026-10-05
+
+Windows generated schema mismatch и Linux WP10-REG-002/DATA-009 SHA failures объяснены OS-dependent CRLF exporter/local pins versus существующие LF Git blobs. `BalanceSchemaJson` теперь явно LF; обе balance versions имеют LF checkout policy. Pins указывают на persisted LF bytes, а не host-specific checkout. Schema contents/Git blobs, workbook/config/replay hashes и132-row blocking matrix unchanged; никакой нормализации внутри hash assertions или ослабления checks не добавлено.
+
+Добавлены2 дополнительные regression executions `BalanceSchemasAreCanonicalLfArtifactsOnEveryPlatform` для v0.1/v0.2: LF, no CR/BOM/EOF newline, exact schema file equality и JSON parse. После fix locked restore и Release/Debug build0 warnings/errors; полный suite по1445 passed (864U/471C/110I),0 failed/skipped. Affected historical/data classes7 passed в каждой конфигурации; Release WP10 Conformance142 passed, inventory132/132. Все WP10 tests в full suite:538 (327U/142C/69I).
+
+Generated WP04/WP10 в Release/Debug green; Git checkout filters при `core.autocrlf=true/false` сохраняют оба pinned schema SHA. Full suites также повторно исполнили process/actual-target/profile/culture/historical/golden gates. Saved coverage для unchanged Core/Replay снова green: critical100%, combined Core line92.74%; новая collection не требовалась для schema writer fix вне этих scopes. Remote confirmation для нового fix commit pending, поэтому статус не COMPLETED. UnityClient unchanged; commit/push не выполнялись.

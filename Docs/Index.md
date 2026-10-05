@@ -13,7 +13,7 @@
 9. [Unity Replay Viewer Test Plan v0.1](./Unity_Replay_Viewer_Test_Plan_v0.1.md) — approved blocking matrix отдельного read-only WP-UI-01; execution in progress.
 10. [Unity Replay Viewer Game-First UI Spec v0.1](./Unity_Replay_Viewer_UI_Spec_v0.1.md) — историческая утверждённая визуальная ревизия WP-UI-01.
 11. [Unity Replay Viewer Illustrated Fight Screen v0.2](./Unity_Replay_Viewer_UI_Spec_v0.2.md) — текущий утверждённый визуальный контракт; v0.1 сохранён как история решения.
-12. [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — утверждённая blocking matrix Effects: local `132/132` passed, `OPEN-WP10-01..28 CLOSED`; финальный прогон повторён `2026-10-05`, remote CI pending.
+12. [Combat Test Plan WP-10 v0.1](./Combat_Test_Plan_WP-10_v0.1.md) — утверждённая blocking matrix Effects: local `132/132` passed, `OPEN-WP10-01..28 CLOSED`; `2026-10-05` исправлена CI schema LF/CRLF portability, локально Release/Debug1445 passed; remote confirmation pending.
 
 ## Рабочие этапы
 

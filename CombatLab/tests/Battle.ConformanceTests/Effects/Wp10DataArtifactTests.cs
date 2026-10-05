@@ -60,7 +60,8 @@ public sealed class Wp10DataArtifactTests
             ("config/generated/combat.balance.v0.2.json", "5361ec68359de06a1f4ff458893ad4d537825c873ffb0252e272a5b429b4e0c4"),
             ("config/generated/combat.balance.v0.2.map.csv", "218a495e35f5df16a6430921bafc457bd77bc619fabb8949914a5557b02f5b66"),
             ("config/generated/combat.balance.v0.2.validation.json", "146b96da958ec881bdfdfe5e9ddcdf47c7d591f5c83e951621b20036eb59f101"),
-            ("schemas/balance/v0.2/combat.balance.schema.json", "068b1886e548f45d817cb9c8e6a88a6754c876036af934d49b2cd903bbed53ee"),
+            // Pin the existing LF Git blob, not the exporter host's line endings.
+            ("schemas/balance/v0.2/combat.balance.schema.json", "a33627ce0b382fa37bbd0ff67d3fe1a793ff6dd2d7bccba71e83ee58f0441457"),
         };
         foreach (var pin in pins) Assert.Equal(pin.Item2, Hash(Read(pin.Item1)));
         Assert.Equal(Read("schemas/balance/v0.2/combat.balance.schema.json"), BalanceSchemaJson.Write("combat.balance/0.2"));
@@ -78,6 +79,21 @@ public sealed class Wp10DataArtifactTests
         Assert.Equal(0, validation.RootElement.GetProperty("error_count").GetInt32());
         Assert.Equal(0, validation.RootElement.GetProperty("warning_count").GetInt32());
         Assert.Empty(validation.RootElement.GetProperty("issues").EnumerateArray());
+    }
+
+    [Theory]
+    [InlineData("combat.balance/0.1", "v0.1")]
+    [InlineData("combat.balance/0.2", "v0.2")]
+    public void BalanceSchemasAreCanonicalLfArtifactsOnEveryPlatform(string schemaVersion, string configVersion)
+    {
+        var bytes = BalanceSchemaJson.Write(schemaVersion);
+        Assert.Equal((byte)'{', bytes[0]); // UTF-8 without a BOM.
+        Assert.Equal((byte)'}', bytes[^1]); // No platform-specific trailing newline.
+        Assert.Contains((byte)'\n', bytes);
+        Assert.DoesNotContain((byte)'\r', bytes);
+        Assert.Equal(Read("schemas/balance/" + configVersion + "/combat.balance.schema.json"), bytes);
+        using var document = JsonDocument.Parse(bytes);
+        Assert.Equal("object", document.RootElement.GetProperty("type").GetString());
     }
 
     [Fact]

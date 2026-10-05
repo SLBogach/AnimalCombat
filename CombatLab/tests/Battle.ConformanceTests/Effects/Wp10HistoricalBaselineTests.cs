@@ -48,7 +48,8 @@ public sealed class Wp10HistoricalBaselineTests
             ("config/generated/combat.balance.v0.1.map.csv", "38db30bd8572f325c6259bc110456944ed18ec42538d584953b6290205be9fae"),
             ("config/generated/combat.balance.v0.1.manifest.json", "444f57998473cf165cdc14b8ac6c323d4f0b2c28e6f275a7e4854978693b891f"),
             ("config/generated/combat.balance.v0.1.validation.json", "041ff6c70a2e1d9f0cd91b6edeae3879e72782a38f043730ce1ae191c6a74526"),
-            ("schemas/balance/v0.1/combat.balance.schema.json", "b503b8e5d03ea5fbaed2deda6c5c5e1bc40bd1c4a86a4cbd18060468baf8b7ca"),
+            // Pin the existing LF Git blob, not a Windows CRLF checkout of it.
+            ("schemas/balance/v0.1/combat.balance.schema.json", "fd7c3c1d5b52807126e260dd71150a36ef2e68fb18c3dc332dad5c1e17eb40f0"),
         };
         foreach (var (path, hash) in pins) Assert.Equal(hash, Hash(Read(path)));
         Assert.Equal(Read("schemas/balance/v0.1/combat.balance.schema.json"), BalanceSchemaJson.Write());

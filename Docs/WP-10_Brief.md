@@ -425,10 +425,16 @@ Locked restore green; Release/Debug build0 warnings/errors; полные suites1
 
 **Осталось для COMPLETED:** отправить WP10 branch/PR и получить green Windows/Linux × Debug/Release CI с новыми inventory/target/coverage steps. Remote CI в этой сессии не запускался; локальный Windows run не является Linux evidence. Functional cases и local coverage больше не являются незавершёнными пунктами. UnityClient/посторонние changes сохранены; git commit/push не выполнялись. Подробный file list и demo commands — [Migration](./WP-10_Migration.md).
 
-## 17. Current checkpoint — resumed final verification, 2026-10-05
+## 17. Previous checkpoint — resumed final verification, 2026-10-05
 
 После остановки сессии сохранённая реализация восстановлена по checkpoint, без повторной миграции DATA или замены fixtures. Заново выполнены locked restore, Release/Debug build и полные suites: по1443 passed (864U/469C/110I),0 failed/skipped, сборки0 warnings/errors. Отдельный Release `WorkPackage=WP10` завершился536 passed (327U/140C/69I); inventory132/132 green. Actual-target/process/golden/determinism проверки входят в выполненные integration suites.
 
 Повторно прошли WP04 generated Release, WP10 native generated Release/Debug и все legacy/WP10 coverage gates на сохранённых финальных reports: critical branches100%, combined Core line92.74%. Новая CLI smoke-пара `artifacts/replays/wp10-knockdown-20261005-8a1f5305.{json,config.json}` совпала побайтно с pinned golden/sidecar; outcome FighterAWin, end_tick47. Smoke outputs ignored, не заменяют fixtures и не предназначены для commit.
 
 Production-код при возобновлении менять не потребовалось; уточнены текущие DATA/history пометки и execution evidence в Docs. Статус `LOCAL ACCEPTANCE PASSED / CI PENDING` сохраняется: необходимы четыре remote Windows/Linux × Debug/Release green jobs. UnityClient/посторонние changes сохранены, commit/push не выполнялись.
+
+## 18. Current checkpoint — CI schema portability fix, 2026-10-05
+
+Remote CI выявил OS-dependent schema formatting: Git blobs LF, Windows exporter/default `JsonWriterOptions.NewLine` и local pins CRLF. Генератор schema теперь явно LF, checkout policy покрывает обе balance versions, SHA tests закрепляют существующие LF Git bytes. Historical schema blob, workbook/config/replay contents и hashes не изменены; два новых regression executions проверяют LF/no BOM/no final newline. Это исправление сериализации/checkout, не изменение approved gameplay/DATA/version contract.
+
+Locked restore; Release/Debug build0 warnings/errors; по1445 tests (864U/471C/110I),0 failed/skipped; affected suites7/7 в обеих конфигурациях. Generated WP04/WP10 Release/Debug green. Git filters при `core.autocrlf=true/false` сохраняют оба pinned schema SHA; conformance/inventory132/132, actual-target/process/historical/golden checks green. Saved coverage для unchanged critical Core/Replay scopes100%, combined Core line92.74%. Для COMPLETED нужен новый remote Windows/Linux × Debug/Release green run после push fix. UnityClient unchanged, commit/push не выполнялись.

@@ -22,7 +22,7 @@ Source v0.1, его generated/schema и historical replay0.1–0.4 не изме
 | v0.2 canonical JSON / config hash | `5361ec68359de06a1f4ff458893ad4d537825c873ffb0252e272a5b429b4e0c4` |
 | v0.2 map.csv | `218a495e35f5df16a6430921bafc457bd77bc619fabb8949914a5557b02f5b66` |
 | v0.2 validation.json | `146b96da958ec881bdfdfe5e9ddcdf47c7d591f5c83e951621b20036eb59f101` |
-| v0.2 schema | `068b1886e548f45d817cb9c8e6a88a6754c876036af934d49b2cd903bbed53ee` |
+| v0.2 schema (LF, persisted Git bytes) | `a33627ce0b382fa37bbd0ff67d3fe1a793ff6dd2d7bccba71e83ee58f0441457` |
 
 Manifest hash намеренно не whole-file pinned: только `generated_utc` может отличаться между exports; остальные поля должны совпадать. Export: `0 errors / 0 warnings`, counts `3 fighters / 24 actions / 6 passives / 10 effects / 5 effect_rules / 4 tactics / 9 gear / 12 builds`.
 
@@ -315,3 +315,25 @@ git push -u origin feature/wp-10-effects
 CLI smoke создал только новую ignored пару `artifacts/replays/wp10-knockdown-20261005-8a1f5305.json` и `artifacts/replays/wp10-knockdown-20261005-8a1f5305.config.json`; SHA обоих файлов совпадают с pinned golden/sidecar. Outcome `FighterAWin`, `end_tick=47`, final digest `sha256:416da88e97e8362c2e2ee2de256490421156bfe48d974e50f4f8be2b9981c4ca`. Эти outputs не входят в commit и не заменяют fixtures.
 
 Осталось только получить remote Windows/Linux × Debug/Release evidence через reviewed commit/push/PR. Локальные Windows результаты не доказывают Linux CI; WP10 остаётся `LOCAL ACCEPTANCE PASSED / CI PENDING`. Git handoff выше актуален, staging/commit/push не выполнялись. UnityClient и посторонние незакоммиченные changes сохранены.
+
+## CI follow-up — schema LF/CRLF portability, 2026-10-05
+
+Первый CI после7e28560 выявил Windows `Generated v0.2 schema is stale` и Linux WP10-REG-002/DATA-009 schema SHA failures. Источник проблемы — OS default `JsonWriterOptions.NewLine` при indented JSON. Локальные Windows schemas были CRLF, а Git сохранял LF; local export и pin tests совпадали с checkout, скрывая расхождение с persisted bytes.
+
+| Schema | Ошибочно pinned Windows CRLF SHA | Persisted LF Git SHA, now pinned |
+|---|---|---|
+| v0.1 | `b503b8e5d03ea5fbaed2deda6c5c5e1bc40bd1c4a86a4cbd18060468baf8b7ca` | `fd7c3c1d5b52807126e260dd71150a36ef2e68fb18c3dc332dad5c1e17eb40f0` |
+| v0.2 | `068b1886e548f45d817cb9c8e6a88a6754c876036af934d49b2cd903bbed53ee` | `a33627ce0b382fa37bbd0ff67d3fe1a793ff6dd2d7bccba71e83ee58f0441457` |
+
+Git blob v0.1 `8d2b769c54b573f509f3adb4df8f7146546c3d0a` одинаков в81b1488 и7e28560; schema content исторически не менялся. CRLF→LF преобразование полностью воспроизводит уже существующие Git blobs обеих schemas; локальные файлы только EOL-нормализованы без BOM/trailing newline, их Git diff пуст. Existing generated config/workbook/replay hashes и fixtures не перезаписаны. Table выше объясняет correction неправильных test pins, а не разрешает новые historical bytes.
+
+Patch:
+
+- `.gitattributes`: добавлен `CombatLab/schemas/balance/v0.1/*.json text eol=lf`; v0.2 уже имел LF policy.
+- `CombatLab/src/Battle.Config/Schema/BalanceSchemaJson.cs`: explicit `JsonWriterOptions.NewLine = "\n"`, одинаковый schema export на обоих OS/TFMs.
+- `Wp10HistoricalBaselineTests.cs`, `Wp10DataArtifactTests.cs`: existing Git SHA pins вместо host CRLF;2 дополнительные LF/no BOM/no final newline regression executions. Byte-exact equality/SHA assertions сохранены, сравнение не нормализует input.
+- Docs Brief/Test Plan/Status/Decisions/Index/Migration: причина CI failures, patch/evidence и CI PENDING handoff. Scope/OPEN decisions/matrix неизменны.
+
+После fix: locked restore; Release/Debug build0 warnings/errors; full suites по1445 passed (864U/471C/110I),0 failures/skips. Affected historical/data suites7 passed в каждой конфигурации; Release WP10 Conformance142 passed/inventory132/132. WP10 всего538 executions (327U/142C/69I) в полном suite. WP04/WP10 generated Release/Debug green. Read-only `git -c core.autocrlf=true/false cat-file --filters HEAD:<schema>` подтвердил одинаковые LF bytes для обеих policies; это local checkout-filter evidence, не запуск Linux runner. Full integration/conformance повторно проверили process/actual-target/goldens/historical. Saved gates неизменённых critical Core/Replay scopes100%, line92.74%; новая collection не выполнялась.
+
+Необходим reviewed fix commit/push в ту же `feature/wp-10-effects`; существующий PR обновится. Дождаться четырёх remote green jobs именно для fix commit. COMPLETED пока не ставить. Commit/push не выполнялись; UnityClient/посторонние changes сохранены.

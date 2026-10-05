@@ -7,5 +7,6 @@ CombatLab/manifest.json text eol=lf
 CombatLab/examples/*.json text eol=lf
 CombatLab/schemas/*.json text eol=lf
 CombatLab/schemas/replay/v0.1/*.json text eol=lf
+CombatLab/schemas/balance/v0.1/*.json text eol=lf
 CombatLab/schemas/balance/v0.2/*.json text eol=lf
 CombatLab/fixtures/replay/v0.1/*.json text eol=lf

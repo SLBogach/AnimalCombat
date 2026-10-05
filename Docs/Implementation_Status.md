@@ -355,7 +355,7 @@ Locked restore green; Release/Debug build0 warnings/errors; в каждой ко
 
 Незавершённые code/acceptance/coverage пункты отсутствуют. Remote Windows/Linux × Debug/Release CI ещё не выполнен, поэтому WP10 не COMPLETED. Synthetic demo не является fighter-passive/resource kit implementation: это WP11. UnityClient и его пользовательские changes сохранены; git commit/push не выполнялись. Файлы/команды/границы результата — [WP-10 Migration](./WP-10_Migration.md).
 
-### Текущий checkpoint — завершение прерванной проверки, 2026-10-05
+### Предыдущий checkpoint — завершение прерванной проверки, 2026-10-05
 
 Найден и завершён последний checkpoint WP10: повторный locked restore, Release/Debug build0 warnings/errors, полный suite1443 passed (864 Core/469 Conformance/110 Integration) в каждой конфигурации,0 failures/skips. Отдельный Release WP10 suite536 passed (327U/140C/69I), inventory132/132 green. Integration suite повторно выполнил process/profile/culture/golden/actual-target проверки. Пустой Performance project остаётся вне WP10 acceptance scope.
 
@@ -363,9 +363,19 @@ WP04 generated Release и WP10 native generated Release/Debug reproduce unchange
 
 CLI smoke `effects-knockdown` создал новую ignored replay/config пару `artifacts/replays/wp10-knockdown-20261005-8a1f5305.{json,config.json}`: FighterAWin на tick47, оба файла byte-identical к pinned golden/sidecar. Fixtures/hashes/DATA не перезаписаны; UnityClient и посторонние изменения сохранены. Дополнительные production-правки не потребовались, обновлена документация. Commit/push/remote CI не выполнялись; WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED.
 
+### Текущий checkpoint — CI schema portability fix, 2026-10-05
+
+Первый remote CI run выявил две связанные ошибки: Windows generated gate отвергал schema v0.2, Linux WP10-REG-002/DATA-009 отвергали SHA schema v0.1/v0.2. Причина подтверждена: Git blobs уже LF, локальные Windows файлы/exporter были CRLF; `JsonWriterOptions.NewLine` по умолчанию зависит от OS. Старые WP10 pins ошибочно закрепили CRLF checkout, а не persisted bytes.
+
+`BalanceSchemaJson` теперь явно использует LF; `.gitattributes` дополнен LF policy для balance v0.1 (v0.2 policy уже был). Schema SHA pins исправлены на существующие Git blobs: v0.1 `fd7c3c1d5b52807126e260dd71150a36ef2e68fb18c3dc332dad5c1e17eb40f0`, v0.2 `a33627ce0b382fa37bbd0ff67d3fe1a793ff6dd2d7bccba71e83ee58f0441457`. Локальные schema только EOL-нормализованы; Git diff их содержимого пуст. Historical v0.1 blob совпадает с baseline81b1488. JSON fields, workbook/config/replay hashes и blocking matrix не изменены; gates не ослаблены. Добавлены2 regression executions для LF/no BOM/no EOF newline в обоих schema versions.
+
+Фактические проверки после fix: locked restore; Release/Debug build0 warnings/errors; по1445 passed (864U/471C/110I),0 failed/skipped. Targeted affected suites —7 passed в каждой конфигурации; WP04/WP10 generated gates Release/Debug green. Git checkout filters с `core.autocrlf=true/false` сохраняют оба SHA. Actual-target/process/profile/culture/golden/historical/inventory checks в полном suite green,132/132 IDs; WP10 Conformance142 passed. Сохранённые coverage gates unchanged Core/Replay повторно green: critical100%, Core line92.74%.
+
+Commit/push не выполнялись. Необходим новый remote прогон для fix commit: WP10 `LOCAL ACCEPTANCE PASSED / CI PENDING`, не COMPLETED. UnityClient/посторонние changes сохранены; причина и точный patch list — [WP-10 Migration](./WP-10_Migration.md).
+
 ## Следующее действие
 
-Проверить diff, сделать отдельный WP10 commit без UnityClient, отправить ветку и дождаться Windows/Linux × Debug/Release CI. Все132 cases/local build/test/coverage/determinism/generated/historical gates green. После четырёх green jobs обновить WP10 до COMPLETED; затем подготовить WP11 Fighters (passives, Rage/Tempo/Grip, resource/kit rules). До remote evidence статус остаётся CI PENDING.
+Проверить diff, сделать отдельный CI portability fix commit без UnityClient и отправить в существующую WP10 ветку/PR. Дождаться Windows/Linux × Debug/Release CI именно для нового commit. Все132 cases/local build/test/coverage/determinism/generated/historical gates green. После четырёх green jobs обновить WP10 до COMPLETED; затем подготовить WP11 Fighters (passives, Rage/Tempo/Grip, resource/kit rules). До remote evidence статус остаётся CI PENDING.
 
 WP-UI-01 можно продолжать отдельной веткой: full three-fixture/negative PlayMode matrix, external-path UX, Windows Standalone smoke и static checks остаются его собственными условиями завершения. Они не блокируют подготовку основного combat roadmap.
 
